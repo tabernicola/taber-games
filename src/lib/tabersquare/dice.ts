@@ -1,0 +1,38 @@
+// 7 dice, each with 6 faces. Each face is a [col, row] coordinate on the 6x6 board.
+// Every board cell must be reachable by at least one die so the puzzle covers the board.
+
+import type { Cell } from "./pieces";
+
+export const DICE: Cell[][] = [
+  // Die 1
+  [[0, 0], [2, 0], [3, 0], [3, 1], [4, 1], [5, 2]],
+  // Die 2
+  [[1, 0], [0, 1], [1, 1], [2, 1], [0, 2], [1, 2]],
+  // Die 3
+  [[4, 0], [5, 0], [5, 1], [2, 2], [3, 2], [4, 2]],
+  // Die 4
+  [[0, 3], [1, 3], [0, 4], [0, 5], [1, 5], [2, 5]],
+  // Die 5
+  [[2, 3], [3, 3], [2, 4], [3, 4], [1, 4], [3, 5]],
+  // Die 6
+  [[4, 3], [5, 3], [4, 4], [5, 4], [4, 5], [5, 5]],
+  // Die 7 (extra coverage, "wild" die)
+  [[0, 0], [5, 0], [0, 5], [5, 5], [2, 2], [3, 3]],
+];
+
+export function rollDice(): Cell[] {
+  return DICE.map((faces) => faces[Math.floor(Math.random() * faces.length)]);
+}
+
+export function dedupeBlockers(blockers: Cell[]): Cell[] {
+  const seen = new Set<string>();
+  const result: Cell[] = [];
+  for (const [x, y] of blockers) {
+    const key = `${x},${y}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push([x, y]);
+    }
+  }
+  return result;
+}
