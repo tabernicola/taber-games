@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import logoAsset from "@/assets/taber-games-logo-v2.png.asset.json";
+import studyLogo from "@/assets/taber-study-logo.png.asset.json";
 import { SiteHeader } from "@/components/SiteHeader";
 import { useI18n } from "@/lib/i18n";
 
