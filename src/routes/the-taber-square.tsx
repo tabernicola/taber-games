@@ -190,10 +190,12 @@ function TaberSquarePage() {
           {/* Board */}
           <div className="flex justify-center">
             <div
-              className="grid rounded-xl border border-border bg-card p-2"
+              className="grid rounded-xl border-2 border-neon-pink/60 p-3 shadow-[0_0_30px_oklch(0.72_0.30_350/0.35)]"
               style={{
                 gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
-                gap: 4,
+                gap: 6,
+                background:
+                  "linear-gradient(135deg, oklch(0.96 0.02 90), oklch(0.88 0.04 70))",
               }}
             >
               {board.map((row, y) =>
@@ -214,25 +216,25 @@ function TaberSquarePage() {
                       style={{
                         background:
                           cell === BLOCKER
-                            ? "oklch(0.30 0.02 300)"
+                            ? "oklch(0.25 0.03 40)"
                             : pieceHere
                               ? pieceHere.color
                               : inPreview
                                 ? previewValid
-                                  ? "oklch(0.72 0.30 350 / 0.35)"
-                                  : "oklch(0.65 0.25 25 / 0.35)"
-                                : "oklch(0.18 0.02 310)",
+                                  ? "oklch(0.72 0.30 350 / 0.55)"
+                                  : "oklch(0.65 0.25 25 / 0.55)"
+                                : "oklch(0.99 0.01 90)",
                         boxShadow:
                           cell === BLOCKER
-                            ? "inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 4px 10px rgba(0,0,0,0.6)"
+                            ? "inset 0 0 0 2px oklch(0.15 0.02 40), inset 0 4px 10px rgba(0,0,0,0.7)"
                             : pieceHere
-                              ? `0 0 8px ${pieceHere.color}, inset 0 0 0 1px rgba(255,255,255,0.15)`
-                              : "inset 0 0 0 1px oklch(0.28 0.05 320)",
+                              ? `0 0 10px ${pieceHere.color}, inset 0 0 0 1px rgba(255,255,255,0.25)`
+                              : "inset 0 0 0 1px oklch(0.75 0.03 70)",
                       }}
                       aria-label={`Cell ${String.fromCharCode(65 + x)}${y + 1}`}
                     >
                       {cell === BLOCKER && (
-                        <span className="absolute inset-0 flex items-center justify-center text-neon-pink/70">
+                        <span className="absolute inset-0 flex items-center justify-center text-neon-yellow">
                           <svg
                             viewBox="0 0 24 24"
                             className="h-4 w-4 sm:h-5 sm:w-5"
