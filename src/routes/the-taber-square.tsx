@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PieceShape } from "@/components/tabersquare/PieceShape";
+import { useI18n } from "@/lib/i18n";
 import {
   BLOCKER,
   BOARD_SIZE,
@@ -50,6 +51,7 @@ type PieceState = {
 };
 
 function TaberSquarePage() {
+  const { t } = useI18n();
   const [blockers, setBlockers] = useState<Cell[]>([]);
   const [board, setBoard] = useState<BoardCell[][]>([]);
   const [pieces, setPieces] = useState<PieceState[]>([]);

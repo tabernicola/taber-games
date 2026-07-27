@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import logoAsset from "@/assets/taber-games-logo.png.asset.json";
+import logoAsset from "@/assets/taber-games-logo-v2.png.asset.json";
 import { SiteHeader } from "@/components/SiteHeader";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,6 +24,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  const { t } = useI18n();
   return (
     <div className="min-h-screen">
       <SiteHeader />
@@ -45,8 +47,7 @@ function Home() {
             />
           </div>
           <p className="mt-4 max-w-xl text-balance text-sm text-muted-foreground sm:text-base">
-            A neon arcade of hand-crafted minigames. One entry so far — more
-            drops incoming.
+            {t("home.tagline")}
           </p>
         </section>
 
@@ -57,20 +58,21 @@ function Home() {
               className="text-2xl tracking-widest text-foreground sm:text-3xl"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              GAMES
+              {t("home.games")}
             </h2>
-            <span className="text-xs text-muted-foreground">1 available</span>
+            <span className="text-xs text-muted-foreground">{t("home.available", { n: 1 })}</span>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <GameCard
               to="/the-taber-square"
               title="The Taber Square"
-              tag="Puzzle · Solo"
-              description="Roll seven blockers, then squeeze all nine pieces onto the 6×6 grid. Every game solvable, none the same."
+              tag={t("home.card.tag")}
+              description={t("home.card.desc")}
+              playLabel={t("home.play")}
             />
-            <ComingSoonCard />
-            <ComingSoonCard />
+            <ComingSoonCard lockedLabel={t("home.locked")} title={t("home.coming")} desc={t("home.coming.desc")} />
+            <ComingSoonCard lockedLabel={t("home.locked")} title={t("home.coming")} desc={t("home.coming.desc")} />
           </div>
         </section>
       </main>
@@ -86,11 +88,13 @@ function GameCard({
   title,
   tag,
   description,
+  playLabel,
 }: {
   to: string;
   title: string;
   tag: string;
   description: string;
+  playLabel: string;
 }) {
   return (
     <Link
@@ -113,27 +117,25 @@ function GameCard({
       </h3>
       <p className="mt-3 text-sm text-muted-foreground">{description}</p>
       <div className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-neon-pink">
-        Play <span aria-hidden>→</span>
+        {playLabel} <span aria-hidden>→</span>
       </div>
     </Link>
   );
 }
 
-function ComingSoonCard() {
+function ComingSoonCard({ lockedLabel, title, desc }: { lockedLabel: string; title: string; desc: string }) {
   return (
     <div className="relative overflow-hidden rounded-2xl border border-dashed border-border bg-card/40 p-6">
       <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-        Locked
+        {lockedLabel}
       </span>
       <h3
         className="mt-2 text-xl text-muted-foreground"
         style={{ fontFamily: "var(--font-display)" }}
       >
-        Coming Soon
+        {title}
       </h3>
-      <p className="mt-3 text-sm text-muted-foreground/70">
-        A new challenge is being forged. Check back soon.
-      </p>
+      <p className="mt-3 text-sm text-muted-foreground/70">{desc}</p>
     </div>
   );
 }
