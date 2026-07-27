@@ -61,7 +61,7 @@ function Home() {
             >
               {t("home.games")}
             </h2>
-            <span className="text-xs text-muted-foreground">{t("home.available", { n: 1 })}</span>
+            <span className="text-xs text-muted-foreground">{t("home.available", { n: 2 })}</span>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -72,7 +72,14 @@ function Home() {
               description={t("home.card.desc")}
               playLabel={t("home.play")}
             />
-            <ComingSoonCard lockedLabel={t("home.locked")} title={t("home.coming")} desc={t("home.coming.desc")} />
+            <ExternalGameCard
+              href="https://the-taber-study.base44.app"
+              title="The Taber Study"
+              tag={t("home.card.study.tag")}
+              description={t("home.card.study.desc")}
+              playLabel={t("home.external")}
+              image={studyLogo.url}
+            />
             <ComingSoonCard lockedLabel={t("home.locked")} title={t("home.coming")} desc={t("home.coming.desc")} />
           </div>
         </section>
@@ -81,6 +88,53 @@ function Home() {
         © {new Date().getFullYear()} The Taber Games
       </footer>
     </div>
+  );
+}
+
+function ExternalGameCard({
+  href,
+  title,
+  tag,
+  description,
+  playLabel,
+  image,
+}: {
+  href: string;
+  title: string;
+  tag: string;
+  description: string;
+  playLabel: string;
+  image: string;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group relative overflow-hidden rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-0.5 hover:border-neon-cyan"
+    >
+      <div
+        aria-hidden
+        className="absolute -right-16 -top-16 h-40 w-40 rounded-full opacity-0 blur-3xl transition-opacity group-hover:opacity-60"
+        style={{ background: "var(--neon-cyan)" }}
+      />
+      <div className="mb-3 flex justify-center">
+        <img src={image} alt="" className="h-24 w-24 object-contain drop-shadow-[0_0_20px_oklch(0.85_0.18_200/0.5)]" />
+      </div>
+      <span className="text-[10px] uppercase tracking-widest text-neon-cyan">
+        {tag}
+      </span>
+      <h3
+        className="mt-2 text-xl text-foreground"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        {title}
+      </h3>
+      <p className="mt-3 text-sm text-muted-foreground">{description}</p>
+      <div className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-neon-cyan">
+        {playLabel} <span aria-hidden>↗</span>
+      </div>
+    </a>
   );
 }
 
