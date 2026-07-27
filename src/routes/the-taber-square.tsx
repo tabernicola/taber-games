@@ -172,18 +172,17 @@ function TaberSquarePage() {
               className="text-3xl tracking-widest text-neon-pink text-glow-pink sm:text-4xl"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              THE TABER SQUARE
+              {t("game.title")}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Fit all nine pieces around the seven blockers. Rotate, flip, and
-              place until the grid is full.
+              {t("game.desc")}
             </p>
           </div>
           <button
             onClick={newGame}
             className="rounded-lg border border-neon-pink bg-neon-pink/10 px-4 py-2 text-sm font-semibold text-neon-pink transition-all hover:bg-neon-pink/20 neon-glow-pink"
           >
-            New game
+            {t("game.new")}
           </button>
         </div>
 
@@ -255,7 +254,7 @@ function TaberSquarePage() {
             <div className="rounded-xl border border-border bg-card p-4">
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">
-                  Selected
+                  {t("game.selected")}
                 </span>
                 {selected ? (
                   <span
@@ -266,7 +265,7 @@ function TaberSquarePage() {
                   </span>
                 ) : (
                   <span className="text-sm text-muted-foreground">
-                    Pick a piece below
+                    {t("game.pickPiece")}
                   </span>
                 )}
                 <div className="ml-auto flex gap-2">
@@ -275,14 +274,14 @@ function TaberSquarePage() {
                     disabled={!selected || totalOrientations <= 1}
                     className="rounded-md border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground transition-colors hover:border-neon-pink disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    Rotate (R)
+                    {t("game.rotate")}
                   </button>
                   <button
                     onClick={flipSelected}
                     disabled={!selected}
                     className="rounded-md border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground transition-colors hover:border-neon-pink disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    Flip (F)
+                    {t("game.flip")}
                   </button>
                 </div>
               </div>
@@ -303,10 +302,10 @@ function TaberSquarePage() {
             <div className="rounded-xl border border-border bg-card p-4">
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">
-                  Pieces ({trayPieces.length}/{pieces.length})
+                  {t("game.pieces")} ({trayPieces.length}/{pieces.length})
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  Click a piece → click a cell
+                  {t("game.hint")}
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
@@ -341,23 +340,23 @@ function TaberSquarePage() {
               className="text-3xl tracking-widest text-neon-pink text-glow-pink"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              SOLVED
+              {t("game.solved")}
             </h2>
             <p className="mt-3 text-sm text-muted-foreground">
-              Every cell filled. The square bends to your will.
+              {t("game.solvedDesc")}
             </p>
             <div className="mt-6 flex justify-center gap-2">
               <button
                 onClick={newGame}
                 className="rounded-lg border border-neon-pink bg-neon-pink/20 px-4 py-2 text-sm font-semibold text-neon-pink transition-all hover:bg-neon-pink/30"
               >
-                Play again
+                {t("game.playAgain")}
               </button>
               <button
                 onClick={() => setWon(false)}
                 className="rounded-lg border border-border bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:border-neon-pink"
               >
-                Close
+                {t("game.close")}
               </button>
             </div>
           </div>
