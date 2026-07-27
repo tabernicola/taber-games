@@ -8,7 +8,7 @@ const translations: Record<Lang, Dict> = {
   eu: {
     "nav.home": "Hasiera",
     "nav.play": "Jokatu",
-    "home.tagline": "Eskuz egindako minijokoen neon aretoa. Sarrera bakarra oraingoz — laster gehiago.",
+    "home.tagline": "IA egindako minijokoen aretoa. Sarrera bakarra oraingoz — laster gehiago.",
     "home.games": "JOKOAK",
     "home.available": "{n} eskuragarri",
     "home.card.tag": "Puzzlea · Bakarka",
@@ -34,7 +34,7 @@ const translations: Record<Lang, Dict> = {
   es: {
     "nav.home": "Inicio",
     "nav.play": "Jugar",
-    "home.tagline": "Un salón neón de minijuegos hechos a mano. Solo uno por ahora — vendrán más.",
+    "home.tagline": "Un salón de minijuegos hechos con la IA. Solo uno por ahora — vendrán más.",
     "home.games": "JUEGOS",
     "home.available": "{n} disponible",
     "home.card.tag": "Puzle · Solitario",
@@ -60,7 +60,7 @@ const translations: Record<Lang, Dict> = {
   en: {
     "nav.home": "Home",
     "nav.play": "Play",
-    "home.tagline": "A neon arcade of hand-crafted minigames. One entry so far — more drops incoming.",
+    "home.tagline": "A arcade of AI-crafted minigames. One entry so far — more drops incoming.",
     "home.games": "GAMES",
     "home.available": "{n} available",
     "home.card.tag": "Puzzle · Solo",
