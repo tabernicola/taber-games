@@ -12,7 +12,9 @@ import {
   isSolved,
   placeCells,
   removePiece,
+  solveBlockers,
   type BoardCell,
+  type Placement,
 } from "@/lib/tabersquare/game";
 import {
   PIECES,
@@ -58,6 +60,9 @@ function TaberSquarePage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hover, setHover] = useState<{ x: number; y: number } | null>(null);
   const [won, setWon] = useState(false);
+  const [solution, setSolution] = useState<Placement[] | null>(null);
+  const [showSolution, setShowSolution] = useState(false);
+  const [hintUsed, setHintUsed] = useState(false);
 
   const newGame = useCallback(() => {
     const puzzle = generatePuzzle();
@@ -74,6 +79,9 @@ function TaberSquarePage() {
     setSelectedId(null);
     setHover(null);
     setWon(false);
+    setSolution(solveBlockers(puzzle.blockers));
+    setShowSolution(false);
+    setHintUsed(false);
   }, []);
 
   useEffect(() => {
@@ -83,6 +91,37 @@ function TaberSquarePage() {
   useEffect(() => {
     if (board.length && isSolved(board)) setWon(true);
   }, [board]);
+
+  const giveHint = useCallback(() => {
+    if (hintUsed || !solution) return;
+    // Find a piece that is not yet placed exactly where the solution wants it.
+    const target = solution.find((pl) => {
+      return !pl.cells.every(
+        ([dx, dy]) => board[pl.oy + dy]?.[pl.ox + dx] === pl.id,
+      );
+    });
+    if (!target) return;
+    // Clear anything occupying those cells, plus the target piece itself.
+    let next = removePiece(board, target.id);
+    for (const [dx, dy] of target.cells) {
+      const occupant = next[target.oy + dy]?.[target.ox + dx];
+      if (occupant && occupant !== BLOCKER) next = removePiece(next, occupant);
+    }
+    next = placeCells(next, target.cells, target.ox, target.oy, target.id);
+    setPieces((prev) =>
+      prev.map((p) => (p.id === target.id ? { ...p, cells: normalize(target.cells) } : p)),
+    );
+    setBoard(next);
+    setSelectedId(null);
+    setHintUsed(true);
+  }, [board, hintUsed, solution]);
+
+  const solutionBoard = useMemo(() => {
+    if (!showSolution || !solution) return null;
+    let b = applyBlockers(blockers);
+    for (const pl of solution) b = placeCells(b, pl.cells, pl.ox, pl.oy, pl.id);
+    return b;
+  }, [showSolution, solution, blockers]);
 
   const selected = useMemo(
     () => pieces.find((p) => p.id === selectedId) ?? null,
@@ -178,13 +217,35 @@ function TaberSquarePage() {
               {t("game.desc")}
             </p>
           </div>
+          <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={giveHint}
+            disabled={hintUsed || !solution || won}
+            className="rounded-lg border border-neon-cyan bg-neon-cyan/10 px-4 py-2 text-sm font-semibold text-neon-cyan transition-all hover:bg-neon-cyan/20 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {hintUsed ? t("game.hintUsed") : t("game.hintBtn")}
+          </button>
+          <button
+            onClick={() => setShowSolution((v) => !v)}
+            disabled={!solution}
+            className="rounded-lg border border-neon-yellow bg-neon-yellow/10 px-4 py-2 text-sm font-semibold text-neon-yellow transition-all hover:bg-neon-yellow/20 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {showSolution ? t("game.hideSolution") : t("game.solution")}
+          </button>
           <button
             onClick={newGame}
             className="rounded-lg border border-neon-pink bg-neon-pink/10 px-4 py-2 text-sm font-semibold text-neon-pink transition-all hover:bg-neon-pink/20 neon-glow-pink"
           >
             {t("game.new")}
           </button>
+          </div>
         </div>
+
+        {showSolution && (
+          <div className="mb-4 rounded-lg border border-neon-yellow/60 bg-neon-yellow/10 px-4 py-2 text-sm text-neon-yellow">
+            {t("game.solutionShown")}
+          </div>
+        )}
 
         <div className="grid gap-6 lg:grid-cols-[auto,1fr]">
           {/* Board */}
@@ -198,7 +259,7 @@ function TaberSquarePage() {
                   "linear-gradient(135deg, oklch(0.96 0.02 90), oklch(0.88 0.04 70))",
               }}
             >
-              {board.map((row, y) =>
+              {(solutionBoard ?? board).map((row, y) =>
                 row.map((cell, x) => {
                   const pieceIdHere = cell && cell !== BLOCKER ? cell : null;
                   const pieceHere = pieceIdHere
@@ -209,7 +270,7 @@ function TaberSquarePage() {
                   return (
                     <button
                       key={`${x}-${y}`}
-                      onClick={() => handleCellClick(x, y)}
+                      onClick={() => !showSolution && handleCellClick(x, y)}
                       onMouseEnter={() => setHover({ x, y })}
                       onMouseLeave={() => setHover(null)}
                       className="relative aspect-square w-11 rounded-md transition-colors sm:w-14"
