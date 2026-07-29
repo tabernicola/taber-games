@@ -107,6 +107,59 @@ export function generatePuzzle(maxAttempts = 200): Puzzle {
   return { blockers: fallback, board: applyBlockers(fallback) };
 }
 
+export interface Placement {
+  id: string;
+  cells: Cell[];
+  ox: number;
+  oy: number;
+}
+
+function solveWithPlacements(
+  board: BoardCell[][],
+  pieces: PieceDef[],
+  idx: number,
+  acc: Placement[],
+): Placement[] | null {
+  if (idx >= pieces.length) return acc;
+  const piece = pieces[idx];
+  const orients = allOrientations(piece.cells);
+  let firstX = -1;
+  let firstY = -1;
+  outer: for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x < BOARD_SIZE; x++) {
+      if (board[y][x] === null) {
+        firstX = x;
+        firstY = y;
+        break outer;
+      }
+    }
+  }
+  if (firstX === -1) return null;
+
+  for (const orient of orients) {
+    for (const [dx, dy] of orient) {
+      const ox = firstX - dx;
+      const oy = firstY - dy;
+      if (canPlaceAt(board, orient, ox, oy)) {
+        const next = placeCells(board, orient, ox, oy, piece.id);
+        const res = solveWithPlacements(next, pieces, idx + 1, [
+          ...acc,
+          { id: piece.id, cells: orient, ox, oy },
+        ]);
+        if (res) return res;
+      }
+    }
+  }
+  return null;
+}
+
+/** Full solution for a set of blockers: one placement per piece. */
+export function solveBlockers(blockers: Cell[]): Placement[] | null {
+  const board = applyBlockers(blockers);
+  const ordered = [...PIECES].sort((a, b) => b.cells.length - a.cells.length);
+  return solveWithPlacements(board, ordered, 0, []);
+}
+
 export function isSolved(board: BoardCell[][]): boolean {
   for (let y = 0; y < BOARD_SIZE; y++) {
     for (let x = 0; x < BOARD_SIZE; x++) {
