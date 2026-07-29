@@ -33,6 +33,11 @@ const translations: Record<Lang, Dict> = {
     "game.solvedDesc": "Gelaxka guztiak beteta. Karratua zure aginduetara makurtzen da.",
     "game.playAgain": "Berriz jokatu",
     "game.close": "Itxi",
+    "game.hintBtn": "Pista (1)",
+    "game.hintUsed": "Pista erabilita",
+    "game.solution": "Ikusi soluzioa",
+    "game.hideSolution": "Ezkutatu soluzioa",
+    "game.solutionShown": "Soluzioa ikusgai — ez du kontatzen irabazteko.",
   },
   es: {
     "nav.home": "Inicio",
@@ -62,6 +67,11 @@ const translations: Record<Lang, Dict> = {
     "game.solvedDesc": "Todas las celdas llenas. El cuadrado se dobla a tu voluntad.",
     "game.playAgain": "Jugar otra vez",
     "game.close": "Cerrar",
+    "game.hintBtn": "Pista (1)",
+    "game.hintUsed": "Pista usada",
+    "game.solution": "Ver solución",
+    "game.hideSolution": "Ocultar solución",
+    "game.solutionShown": "Solución a la vista — no cuenta como victoria.",
   },
   en: {
     "nav.home": "Home",
@@ -91,6 +101,11 @@ const translations: Record<Lang, Dict> = {
     "game.solvedDesc": "Every cell filled. The square bends to your will.",
     "game.playAgain": "Play again",
     "game.close": "Close",
+    "game.hintBtn": "Hint (1)",
+    "game.hintUsed": "Hint used",
+    "game.solution": "Show solution",
+    "game.hideSolution": "Hide solution",
+    "game.solutionShown": "Solution revealed — it will not count as a win.",
   },
 };
 
