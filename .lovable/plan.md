@@ -17,8 +17,8 @@ Añadir un tercer minijuego, **Eternity II**, a The Taber Games. Será un puzle 
 - **Modo progresivo**: niveles de tablero crecientes — 4×4, 6×6, 8×8, 12×12 y 16×16 (el tamaño original de 256 fichas). Cada tamaño se desbloquea al resolver el anterior.
 - **Mecánica**: fichas cuadradas con cuatro bordes de colores/patrones; los bordes adyacentes deben coincidir. Algunas fichas quedan fijas como pistas para garantizar solubilidad.
 - **Interacción**: click para seleccionar ficha del mazo, click en celda para colocarla; botones/teclas para rotar (R) y voltear (F); doble-click o botón para quitar ficha.
-- **Ayudas**: pista que coloca una ficha correcta (una por partida) y botón para ver la solución completa (sin contar como victoria).
-- **Estilo**: neon arcade — fondo oscuro, bordes de ficha con glow en rosa, cian, amarillo y violeta; tipografía display para títulos.
+- **Sin ayudas**: no habrá pista ni botón de solución. Eternity II no tiene solución conocida y el reto es precisamente ese; solo se validan visualmente los bordes que encajan.
+- **Estilo**: estética propia, independiente de la neón del sitio. Base pensada para un look cartoon 3D con motivos de animales (bordes con iconos/figuras animales, fichas con volumen, sombras suaves y colores saturados). Se implementa con tokens propios del juego para poder cambiar la piel visual más adelante sin tocar la lógica.
 - **Generación**: crear puzles resolubles de forma procedural. Para tamaños pequeños se genera desde cero; para 12×12 y 16×16 se parte de un patrón base resoluble y se le aplica una transformación aleatoria para obtener miles de variaciones.
 
 ## Estructura
