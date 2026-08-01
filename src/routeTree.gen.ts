@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TheTaberSquareRouteImport } from './routes/the-taber-square'
+import { Route as EternityIiRouteImport } from './routes/eternity-ii'
 import { Route as IndexRouteImport } from './routes/index'
 
 const TheTaberSquareRoute = TheTaberSquareRouteImport.update({
   id: '/the-taber-square',
   path: '/the-taber-square',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EternityIiRoute = EternityIiRouteImport.update({
+  id: '/eternity-ii',
+  path: '/eternity-ii',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,27 +31,31 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/eternity-ii': typeof EternityIiRoute
   '/the-taber-square': typeof TheTaberSquareRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/eternity-ii': typeof EternityIiRoute
   '/the-taber-square': typeof TheTaberSquareRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/eternity-ii': typeof EternityIiRoute
   '/the-taber-square': typeof TheTaberSquareRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/the-taber-square'
+  fullPaths: '/' | '/eternity-ii' | '/the-taber-square'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/the-taber-square'
-  id: '__root__' | '/' | '/the-taber-square'
+  to: '/' | '/eternity-ii' | '/the-taber-square'
+  id: '__root__' | '/' | '/eternity-ii' | '/the-taber-square'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  EternityIiRoute: typeof EternityIiRoute
   TheTaberSquareRoute: typeof TheTaberSquareRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/the-taber-square'
       fullPath: '/the-taber-square'
       preLoaderRoute: typeof TheTaberSquareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/eternity-ii': {
+      id: '/eternity-ii'
+      path: '/eternity-ii'
+      fullPath: '/eternity-ii'
+      preLoaderRoute: typeof EternityIiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  EternityIiRoute: EternityIiRoute,
   TheTaberSquareRoute: TheTaberSquareRoute,
 }
 export const routeTree = rootRouteImport
