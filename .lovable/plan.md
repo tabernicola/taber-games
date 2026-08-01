@@ -41,7 +41,7 @@ Añadir un tercer minijuego, **Eternity II**, a The Taber Games. Será un puzle 
 - `Tile.tsx`: ficha cuadrada con cuatro bordes renderizados (SVG o divs), soporte para rotación y estado seleccionado.
 - `Board.tsx`: cuadrícula interactiva con celdas fijas y huecos, preview de colocación.
 - `Tray.tsx`: mazo de fichas disponibles.
-- `Controls.tsx`: rotar, voltear, nueva partida, pista, ver solución.
+- `Controls.tsx`: rotar, voltear, nueva partida, reiniciar nivel.
 - `LevelSelector.tsx`: selector/desbloqueo de tamaños de tablero.
 - `VictoryModal.tsx`: mensaje de victoria + pasar al siguiente nivel / jugar de nuevo.
 
