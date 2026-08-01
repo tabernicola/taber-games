@@ -61,7 +61,7 @@ function Home() {
             >
               {t("home.games")}
             </h2>
-            <span className="text-xs text-muted-foreground">{t("home.available", { n: 2 })}</span>
+            <span className="text-xs text-muted-foreground">{t("home.available", { n: 3 })}</span>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -80,8 +80,15 @@ function Home() {
               playLabel={t("home.external")}
               image={studyLogo.url}
             />
-            <ComingSoonCard lockedLabel={t("home.locked")} title={t("home.coming")} desc={t("home.coming.desc")} />
+            <GameCard
+              to="/eternity-ii"
+              title="Eternity II"
+              tag={t("home.card.e2.tag")}
+              description={t("home.card.e2.desc")}
+              playLabel={t("home.play")}
+            />
           </div>
+
         </section>
       </main>
       <footer className="mx-auto max-w-6xl px-4 pb-10 text-center text-xs text-muted-foreground">
