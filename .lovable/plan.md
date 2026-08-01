@@ -61,8 +61,8 @@ Añadir un tercer minijuego, **Eternity II**, a The Taber Games. Será un puzle 
 ## Pasos
 1. Crear modelos de ficha, paleta de bordes y utilidades de rotación en `src/lib/eternity2/`.
 2. Implementar generador de tableros resueltos y puzles progresivos.
-3. Implementar lógica de colocación, validación de bordes, pistas y solución.
-4. Crear componentes visuales del tablero, fichas, mazo y controles con estilo neon.
+3. Implementar lógica de colocación y validación de bordes (sin pistas ni solución).
+4. Crear componentes visuales del tablero, fichas, mazo y controles con la piel visual propia del juego (base cartoon 3D con motivos animales, tokens aislados para poder cambiarla luego).
 5. Crear la ruta `/eternity-ii` con selector de niveles y modal de victoria.
 6. Añadir tarjeta del juego en la home y actualizar traducciones.
 7. Añadir metadatos de ruta.
@@ -73,6 +73,7 @@ Añadir un tercer minijuego, **Eternity II**, a The Taber Games. Será un puzle 
 - El juego genera puzles resolubles en todos los tamaños progresivos.
 - El jugador puede colocar, rotar, voltear y quitar fichas.
 - Los bordes adyacentes se validan visualmente (coinciden/difieren).
-- Hay pista única y botón de solución, como en The Taber Square.
+- No hay botón de pista ni de solución.
+- El juego tiene estética propia, claramente distinta de la neón del resto del sitio, y su piel visual se puede cambiar sin tocar la lógica.
 - Al resolver un tamaño se desbloquea el siguiente.
 - Build sin errores y UI responsive hasta 16×16 (con scroll/zoom si es necesario).
