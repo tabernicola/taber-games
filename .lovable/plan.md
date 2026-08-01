@@ -2,7 +2,7 @@
 El servidor de desarrollo está caído por un error en la dependencia `@tanstack/start-plugin-core@1.171.18`: en `schema.js` aparece `.prefault({})` en lugar de `.default({})`. El primer paso del plan será corregir esto (fijando la versión o aplicando un override en `package.json`) para poder compilar y previsualizar.
 
 ## Objetivo
-Añadir un tercer minijuego, **Eternity II**, a The Taber Games. Será un puzle de emparejamiento de bordes jugable dentro del sitio, con dificultad progresiva (tableros pequeños que desbloquean tamaños mayores) y estética neon arcade coherente con el resto de la web.
+Añadir un tercer minijuego, **Eternity II**, a The Taber Games. Será un puzle de emparejamiento de bordes jugable dentro del sitio, con dificultad progresiva (tableros pequeños que desbloquean tamaños mayores) y estética propia (no la neón de la web), pensada para evolucionar hacia un look cartoon 3D con motivos de animales.
 
 
 ## Estado actual
