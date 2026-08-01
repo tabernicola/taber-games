@@ -1,84 +1,78 @@
+## Prerrequisito técnico
+El servidor de desarrollo está caído por un error en la dependencia `@tanstack/start-plugin-core@1.171.18`: en `schema.js` aparece `.prefault({})` en lugar de `.default({})`. El primer paso del plan será corregir esto (fijando la versión o aplicando un override en `package.json`) para poder compilar y previsualizar.
+
 ## Objetivo
-Construir **The Taber Games**, una web de minijuegos con estética oscura y neón rosa (inspirada en el nuevo logo estilo Squid Game), usando ese logo como imagen central. El primer minijuego será **The Taber Square**, versión single player basada en *The Genius Square*.
+Añadir un tercer minijuego, **Eternity II**, a The Taber Games. Será un puzle de emparejamiento de bordes jugable dentro del sitio, con dificultad progresiva (tableros pequeños que desbloquean tamaños mayores) y estética neon arcade coherente con el resto de la web.
+
 
 ## Estado actual
-Proyecto TanStack Start v1 recién creado, Tailwind v4, ruta raíz básica y home placeholder. Sin backend.
+- Proyecto TanStack Start v1 con tema oscuro/neón.
+- Home (`/`) con tres tarjetas: The Taber Square, The Taber Study (externo) y "Próximamente".
+- The Taber Square (`/the-taber-square`) ya tiene lógica de puzle, pistas, solución y victoria.
+- Sistema de i18n en `src/lib/i18n.tsx` para euskera, castellano e inglés.
+- Sin backend; todo frontend.
 
 ## Decisiones
-- **Logo**: usar `file_00000000c06471fd9e9511c913590b3c.png` como asset CDN, mostrado prominentemente en la home.
-- **Nombre del sitio**: The Taber Games.
-- **Estilo visual**: fondo negro/muy oscuro, acentos rosa neón (#ff2ea6 aprox.), toques multicolor (guiño al drip del logo), tipografía display con carácter graffiti/arcade para títulos y sans-serif limpia para el resto. Glow sutil en elementos interactivos.
-- **Juego**: single player, reglas estándar de The Genius Square (tablero 6x6, 7 dados que bloquean celdas, 9 piezas poliminó para rellenar el resto).
-- Solo frontend, sin persistencia.
+- **Nombre**: Eternity II (ruta `/eternity-ii`).
+- **Modo progresivo**: niveles de tablero crecientes — 4×4, 6×6, 8×8, 12×12 y 16×16 (el tamaño original de 256 fichas). Cada tamaño se desbloquea al resolver el anterior.
+- **Mecánica**: fichas cuadradas con cuatro bordes de colores/patrones; los bordes adyacentes deben coincidir. Algunas fichas quedan fijas como pistas para garantizar solubilidad.
+- **Interacción**: click para seleccionar ficha del mazo, click en celda para colocarla; botones/teclas para rotar (R) y voltear (F); doble-click o botón para quitar ficha.
+- **Ayudas**: pista que coloca una ficha correcta (una por partida) y botón para ver la solución completa (sin contar como victoria).
+- **Estilo**: neon arcade — fondo oscuro, bordes de ficha con glow en rosa, cian, amarillo y violeta; tipografía display para títulos.
+- **Generación**: crear puzles resolubles de forma procedural. Para tamaños pequeños se genera desde cero; para 12×12 y 16×16 se parte de un patrón base resoluble y se le aplica una transformación aleatoria para obtener miles de variaciones.
 
 ## Estructura
-1. **Home `/`**
-   - Hero con el logo grande de Taber Games sobre fondo negro con glow rosa.
-   - Tagline corta.
-   - Grid/tarjetas de minijuegos (por ahora solo "The Taber Square") con hover neón.
-   - Nav minimalista (Home, Games).
 
-2. **`/the-taber-square`**
-   - Tablero 6x6 con celdas oscuras, bloqueos como "piedras" neón.
-   - Panel de piezas de colores vivos (guiño al drip multicolor del logo).
-   - Controles: nuevo juego, rotar (R), voltear (F), reset piezas.
-   - Modal de victoria con efecto neón.
-
-## Diseño visual
-- Fondo: negro/near-black.
-- Acento principal: rosa neón; acentos secundarios: cian, amarillo, violeta (para piezas del puzzle).
-- Sombras/glow: `box-shadow` con color rosa translúcido.
-- Bordes redondeados moderados.
-- Tipografía: fuente display con carácter (tipo Bungee, Rubik Mono, o similar) para títulos; Inter/Space Grotesk para UI. Cargar por `<link>` en `__root.tsx`.
-- Tokens de color en `src/styles.css` usando `oklch`.
-
-## Implementación del juego
-
-### Lógica (`src/lib/tabersquare/`)
-- `dice.ts`: 7 dados con las caras del juego original (posiciones de bloqueo tipo "A1", "B2"…).
-- `pieces.ts`: 9 piezas poliminó con forma, color y estado (rotación/flip).
+### 1. Lógica del juego (`src/lib/eternity2/`)
+- `tiles.ts`: definición de ficha (`id`, `edges: [top, right, bottom, left]`, rotación).
+- `palette.ts`: paleta de colores/patrones de borde (6-8 estilos visuales distintos, suficientes para generar puzles sin ambigüedad).
+- `generator.ts`:
+  - `createSolvedBoard(size)`: genera un tablero resuelto con bordes coincidentes.
+  - `shuffleBoard(board)`: aplica rotaciones aleatorias a las fichas.
+  - `removeTiles(board, count)`: retira fichas para formar el puzle, dejando algunas fijas como pistas.
+  - `generatePuzzle(size, difficulty)`: devuelve `{size, fixedTiles, trayTiles, solution}`.
 - `game.ts`:
-  - `rollDice()` → array de 7 posiciones bloqueadas.
-  - `generatePuzzle()`: tira dados y **verifica que existe solución** con backtracking colocando las 9 piezas; si no, vuelve a tirar. (El juego original garantiza siempre solución.)
-  - `rotatePiece()`, `flipPiece()`.
-  - `canPlace(board, piece, x, y)`, `placePiece()`, `removePiece()`.
+  - `canPlace(board, tile, x, y)`: valida colocación y emparejamiento de bordes.
+  - `placeTile()`, `removeTile()`, `rotateTile()`.
   - `isSolved(board)`.
+  - `getHint(board, solution)` y `applySolution(board, solution)`.
 
-### Componentes
-- `GameBoard.tsx`: grid 6x6 interactivo.
-- `Piece.tsx`: render de una pieza (SVG o divs) con color.
-- `PiecesTray.tsx`: piezas disponibles + selección.
-- `GameControls.tsx`: nuevo juego, rotar, voltear, reset.
-- `VictoryModal.tsx`: mensaje de victoria + jugar de nuevo.
-- Todo con clases Tailwind usando los tokens semánticos.
+### 2. Componentes (`src/components/eternity2/`)
+- `Tile.tsx`: ficha cuadrada con cuatro bordes renderizados (SVG o divs), soporte para rotación y estado seleccionado.
+- `Board.tsx`: cuadrícula interactiva con celdas fijas y huecos, preview de colocación.
+- `Tray.tsx`: mazo de fichas disponibles.
+- `Controls.tsx`: rotar, voltear, nueva partida, pista, ver solución.
+- `LevelSelector.tsx`: selector/desbloqueo de tamaños de tablero.
+- `VictoryModal.tsx`: mensaje de victoria + pasar al siguiente nivel / jugar de nuevo.
 
-### Interacción
-- Click en pieza del tray → seleccionada.
-- Botones/teclas para rotar (R) y voltear (F).
-- Click en celda del tablero → coloca si es válido.
-- Click en pieza ya colocada → la devuelve al tray.
-- Al completar todas las celdas libres → modal de victoria.
+### 3. Ruta y navegación
+- `src/routes/eternity-ii.tsx`: página del juego con `head()` propio.
+- Añadir tarjeta de Eternity II en `src/routes/index.tsx` (sustituye la tarjeta "Próximamente" o se añade como cuarta entrada).
+- Actualizar `src/components/SiteHeader.tsx` si se añade entrada directa en el menú (opcional; la home ya sirve de selector).
 
-### Assets
-- Subir el logo con `lovable-assets create --file /mnt/user-uploads/file_00000000c06471fd9e9511c913590b3c.png --filename taber-games-logo.png > src/assets/taber-games-logo.png.asset.json`.
+### 4. Internacionalización
+- Añadir claves en `src/lib/i18n.tsx` para:
+  - `home.card.eternity.tag`, `home.card.eternity.desc`, `home.card.eternity.play`
+  - `eternity.title`, `eternity.desc`, `eternity.new`, `eternity.rotate`, `eternity.flip`, `eternity.hint`, `eternity.solution`, `eternity.solved`, `eternity.level`, `eternity.locked`, etc.
 
-### Metadatos
-- Actualizar `head()` en `__root.tsx` y en cada ruta con título "The Taber Games", descripción y og tags apropiados.
+### 5. Metadatos
+- `head()` en `/eternity-ii` con título, descripción y og tags.
 
 ## Pasos
-1. Subir logo como asset CDN.
-2. Definir tokens de color/tipografía en `src/styles.css` y cargar fuentes en `__root.tsx`.
-3. Implementar lógica del juego en `src/lib/tabersquare/`.
-4. Crear componentes del juego.
-5. Crear la ruta `/the-taber-square`.
-6. Rehacer `src/routes/index.tsx` como home con logo y tarjeta del juego.
-7. Actualizar metadatos.
-8. Verificar build y preview.
+1. Crear modelos de ficha, paleta de bordes y utilidades de rotación en `src/lib/eternity2/`.
+2. Implementar generador de tableros resueltos y puzles progresivos.
+3. Implementar lógica de colocación, validación de bordes, pistas y solución.
+4. Crear componentes visuales del tablero, fichas, mazo y controles con estilo neon.
+5. Crear la ruta `/eternity-ii` con selector de niveles y modal de victoria.
+6. Añadir tarjeta del juego en la home y actualizar traducciones.
+7. Añadir metadatos de ruta.
+8. Verificar build, responsive y rendimiento en tamaños grandes (especialmente 16×16).
 
 ## Criterios de aceptación
-- La home muestra el logo de The Taber Games con estética neón rosa sobre fondo oscuro.
-- Existe una tarjeta que lleva a `/the-taber-square`.
-- El juego genera puzzles siempre resolubles.
-- El jugador puede rotar, voltear, colocar y quitar piezas.
-- Al resolverlo, aparece un mensaje de victoria.
-- Build sin errores.
+- Existe la ruta `/eternity-ii` accesible desde la home.
+- El juego genera puzles resolubles en todos los tamaños progresivos.
+- El jugador puede colocar, rotar, voltear y quitar fichas.
+- Los bordes adyacentes se validan visualmente (coinciden/difieren).
+- Hay pista única y botón de solución, como en The Taber Square.
+- Al resolver un tamaño se desbloquea el siguiente.
+- Build sin errores y UI responsive hasta 16×16 (con scroll/zoom si es necesario).
