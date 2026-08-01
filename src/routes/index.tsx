@@ -184,20 +184,3 @@ function GameCard({
     </Link>
   );
 }
-
-function ComingSoonCard({ lockedLabel, title, desc }: { lockedLabel: string; title: string; desc: string }) {
-  return (
-    <div className="relative overflow-hidden rounded-2xl border border-dashed border-border bg-card/40 p-6">
-      <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-        {lockedLabel}
-      </span>
-      <h3
-        className="mt-2 text-xl text-muted-foreground"
-        style={{ fontFamily: "var(--font-display)" }}
-      >
-        {title}
-      </h3>
-      <p className="mt-3 text-sm text-muted-foreground/70">{desc}</p>
-    </div>
-  );
-}
