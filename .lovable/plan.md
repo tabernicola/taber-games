@@ -53,7 +53,7 @@ Añadir un tercer minijuego, **Eternity II**, a The Taber Games. Será un puzle 
 ### 4. Internacionalización
 - Añadir claves en `src/lib/i18n.tsx` para:
   - `home.card.eternity.tag`, `home.card.eternity.desc`, `home.card.eternity.play`
-  - `eternity.title`, `eternity.desc`, `eternity.new`, `eternity.rotate`, `eternity.flip`, `eternity.hint`, `eternity.solution`, `eternity.solved`, `eternity.level`, `eternity.locked`, etc.
+  - `eternity.title`, `eternity.desc`, `eternity.new`, `eternity.rotate`, `eternity.flip`, `eternity.reset`, `eternity.solved`, `eternity.level`, `eternity.locked`, etc.
 
 ### 5. Metadatos
 - `head()` en `/eternity-ii` con título, descripción y og tags.
