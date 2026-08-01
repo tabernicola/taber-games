@@ -142,7 +142,25 @@ const translations: Record<Lang, Dict> = {
     "game.solution": "Show solution",
     "game.hideSolution": "Hide solution",
     "game.solutionShown": "Solution revealed — it will not count as a win.",
+    "home.card.e2.tag": "Puzzle · Edge matching",
+    "home.card.e2.desc": "Match the animal edges. Start on small boards and work up to the original 256-piece puzzle.",
+    "e2.desc": "Match the edges of neighbouring pieces. Start at 4×4 and unlock bigger boards up to the original Eternity II.",
+    "e2.rotate": "Rotate (R)",
+    "e2.new": "New board",
+    "e2.reset": "Reset",
+    "e2.pieces": "Pieces",
+    "e2.help": "Click a piece → click a cell · R to rotate",
+    "e2.score": "Matching edges: {m}/{n}",
+    "e2.placed": "Placed: {m}/{n}",
+    "e2.trayEmpty": "No pieces left.",
+    "e2.solved": "SOLVED!",
+    "e2.solvedDesc": "Every edge matches. The next size is unlocked.",
+    "e2.next": "Next level",
+    "e2.close": "Close",
+    "e2.originalNote":
+      "This is the original Eternity II puzzle: the real 256 pieces and the official clue piece. Nobody has solved it, so there is no hint and no solution.",
   },
+
 };
 
 const I18nContext = createContext<{
