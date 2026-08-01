@@ -35,7 +35,7 @@ Añadir un tercer minijuego, **Eternity II**, a The Taber Games. Será un puzle 
   - `canPlace(board, tile, x, y)`: valida colocación y emparejamiento de bordes.
   - `placeTile()`, `removeTile()`, `rotateTile()`.
   - `isSolved(board)`.
-  - `getHint(board, solution)` y `applySolution(board, solution)`.
+  - (sin funciones de pista ni de solución).
 
 ### 2. Componentes (`src/components/eternity2/`)
 - `Tile.tsx`: ficha cuadrada con cuatro bordes renderizados (SVG o divs), soporte para rotación y estado seleccionado.
