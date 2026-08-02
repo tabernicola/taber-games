@@ -183,3 +183,45 @@ export function matchedSeams(level: Level, board: Placement[]): { matched: numbe
   }
   return { matched, total };
 }
+
+/** Can a tile with these (already rotated) edges sit legally at `index`? */
+export function fitsAt(level: Level, board: Placement[], index: number, e: Edges): boolean {
+  const n = level.size;
+  const r = Math.floor(index / n);
+  const c = index % n;
+
+  if ((r === 0) !== (e[0] === 0)) return false;
+  if ((c === n - 1) !== (e[1] === 0)) return false;
+  if ((r === n - 1) !== (e[2] === 0)) return false;
+  if ((c === 0) !== (e[3] === 0)) return false;
+
+  const up = r > 0 ? edgesAt(level, board[index - n]) : null;
+  if (up && up[2] !== e[0]) return false;
+  const right = c < n - 1 ? edgesAt(level, board[index + 1]) : null;
+  if (right && right[3] !== e[1]) return false;
+  const down = r < n - 1 ? edgesAt(level, board[index + n]) : null;
+  if (down && down[0] !== e[2]) return false;
+  const left = c > 0 ? edgesAt(level, board[index - 1]) : null;
+  if (left && left[1] !== e[3]) return false;
+
+  return true;
+}
+
+/** Tiles from `tiles` that fit at `index`, with the first rotation that works. */
+export function candidatesAt(
+  level: Level,
+  board: Placement[],
+  index: number,
+  tiles: Tile[],
+): Map<number, Rotation> {
+  const out = new Map<number, Rotation>();
+  for (const tile of tiles) {
+    for (let r = 0 as Rotation; r < 4; r = (r + 1) as Rotation) {
+      if (fitsAt(level, board, index, rotate(tile.edges, r))) {
+        out.set(tile.id, r);
+        break;
+      }
+    }
+  }
+  return out;
+}
