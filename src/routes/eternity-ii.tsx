@@ -258,7 +258,16 @@ function EternityPage() {
               {t("e2.score", { m: seams.matched, n: seams.total })} ·{" "}
               {t("e2.placed", { m: board.filter(Boolean).length, n: board.length })}
             </p>
+
+            {candidates && (
+              <p className="mt-2 text-sm font-semibold" style={{ color: "var(--e2-ink)" }}>
+                {candidates.size > 0
+                  ? t("e2.candidates", { n: candidates.size })
+                  : t("e2.noCandidates")}
+              </p>
+            )}
           </div>
+
 
           {/* Tray */}
           <section
