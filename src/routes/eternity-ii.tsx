@@ -7,6 +7,7 @@ import {
   createLevel,
   emptyBoard,
   conflictsAt,
+  candidatesAt,
   isSolved,
   matchedSeams,
   rotate,
@@ -16,6 +17,7 @@ import {
   type Placement,
   type Rotation,
 } from "@/lib/eternity2/game";
+
 
 export const Route = createFileRoute("/eternity-ii")({
   head: () => ({
@@ -41,13 +43,16 @@ export const Route = createFileRoute("/eternity-ii")({
 
 const UNLOCK_KEY = "taber-e2-unlocked";
 
+const EMPTY_LEVEL: Level = { size: 4, tiles: [], fixed: [], original: false };
+
 function EternityPage() {
   const { t } = useI18n();
   const [size, setSize] = useState<LevelSize>(4);
   const [unlocked, setUnlocked] = useState(0);
-  const [level, setLevel] = useState<Level>(() => createLevel(4));
-  const [board, setBoard] = useState<Placement[]>(() => emptyBoard(createLevel(4)));
+  const [level, setLevel] = useState<Level>(EMPTY_LEVEL);
+  const [board, setBoard] = useState<Placement[]>(() => emptyBoard(EMPTY_LEVEL));
   const [selected, setSelected] = useState<{ tileId: number; rotation: Rotation } | null>(null);
+  const [focus, setFocus] = useState<number | null>(null);
   const [showWin, setShowWin] = useState(false);
 
   useEffect(() => {
@@ -60,6 +65,7 @@ function EternityPage() {
     setLevel(lv);
     setBoard(emptyBoard(lv));
     setSelected(null);
+    setFocus(null);
     setShowWin(false);
     setSize(s);
   }, []);
@@ -79,6 +85,11 @@ function EternityPage() {
     [level, placedIds],
   );
 
+  const candidates = useMemo(
+    () => (focus == null ? null : candidatesAt(level, board, focus, tray)),
+    [focus, level, board, tray],
+  );
+
   const seams = useMemo(() => matchedSeams(level, board), [level, board]);
 
   const rotateSelection = useCallback(() => {
@@ -88,27 +99,21 @@ function EternityPage() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "r" || e.key === "R") rotateSelection();
-      if (e.key === "Escape") setSelected(null);
+      if (e.key === "Escape") {
+        setSelected(null);
+        setFocus(null);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [rotateSelection]);
 
-  const handleCell = (index: number) => {
-    const current = board[index];
-    if (current?.locked) return;
-
-    if (current) {
-      // pick the tile back up
-      setBoard((b) => b.map((p, i) => (i === index ? null : p)));
-      setSelected({ tileId: current.tileId, rotation: current.rotation });
-      return;
-    }
-    if (!selected) return;
+  const place = (index: number, tileId: number, rotation: Rotation) => {
     const next = board.slice();
-    next[index] = { tileId: selected.tileId, rotation: selected.rotation, locked: false };
+    next[index] = { tileId, rotation, locked: false };
     setBoard(next);
     setSelected(null);
+    setFocus(null);
     if (isSolved(level, next)) {
       setShowWin(true);
       const idx = LEVELS.indexOf(size);
@@ -118,6 +123,26 @@ function EternityPage() {
       }
     }
   };
+
+  const handleCell = (index: number) => {
+    const current = board[index];
+    if (current?.locked) return;
+
+    if (current) {
+      // pick the tile back up
+      setBoard((b) => b.map((p, i) => (i === index ? null : p)));
+      setSelected({ tileId: current.tileId, rotation: current.rotation });
+      setFocus(null);
+      return;
+    }
+    if (selected) {
+      place(index, selected.tileId, selected.rotation);
+      return;
+    }
+    // empty cell without a selected tile: highlight the pieces that fit here
+    setFocus((f) => (f === index ? null : index));
+  };
+
 
   // board fits the screen: capped at 680px, otherwise the available width
   const [viewportW, setViewportW] = useState(680);
@@ -200,8 +225,10 @@ function EternityPage() {
                         aria-label={`cell ${i}`}
                         onClick={() => handleCell(i)}
                         className="e2-cell"
+                        data-focus={focus === i ? "" : undefined}
                         style={{ width: tilePx, height: tilePx }}
                       />
+
                     );
                   }
                   return (
@@ -231,7 +258,16 @@ function EternityPage() {
               {t("e2.score", { m: seams.matched, n: seams.total })} ·{" "}
               {t("e2.placed", { m: board.filter(Boolean).length, n: board.length })}
             </p>
+
+            {candidates && (
+              <p className="mt-2 text-sm font-semibold" style={{ color: "var(--e2-ink)" }}>
+                {candidates.size > 0
+                  ? t("e2.candidates", { n: candidates.size })
+                  : t("e2.noCandidates")}
+              </p>
+            )}
           </div>
+
 
           {/* Tray */}
           <section
@@ -248,25 +284,33 @@ function EternityPage() {
               className="flex max-h-[520px] flex-wrap gap-2 overflow-y-auto pr-1"
               style={{ scrollbarWidth: "thin" }}
             >
-              {tray.map((tile) => (
-                <Tile
-                  key={tile.id}
-                  size={trayPx}
-                  edges={
-                    selected?.tileId === tile.id
-                      ? rotate(tile.edges, selected.rotation)
-                      : tile.edges
-                  }
-                  selected={selected?.tileId === tile.id}
-                  onClick={() =>
-                    setSelected((s) =>
-                      s?.tileId === tile.id
-                        ? { tileId: tile.id, rotation: ((s.rotation + 1) % 4) as Rotation }
-                        : { tileId: tile.id, rotation: 0 },
-                    )
-                  }
-                />
-              ))}
+              {tray.map((tile) => {
+                const fitRot = candidates?.get(tile.id);
+                const rot =
+                  selected?.tileId === tile.id ? selected.rotation : (fitRot ?? (0 as Rotation));
+                return (
+                  <Tile
+                    key={tile.id}
+                    size={trayPx}
+                    edges={rotate(tile.edges, rot)}
+                    selected={selected?.tileId === tile.id}
+                    candidate={fitRot !== undefined}
+                    dim={candidates ? fitRot === undefined : false}
+                    onClick={() => {
+                      if (focus != null && fitRot !== undefined) {
+                        place(focus, tile.id, fitRot);
+                        return;
+                      }
+                      setSelected((s) =>
+                        s?.tileId === tile.id
+                          ? { tileId: tile.id, rotation: ((s.rotation + 1) % 4) as Rotation }
+                          : { tileId: tile.id, rotation: 0 },
+                      );
+                    }}
+                  />
+                );
+              })}
+
               {tray.length === 0 && (
                 <p className="text-sm" style={{ color: "var(--e2-ink-soft)" }}>
                   {t("e2.trayEmpty")}
