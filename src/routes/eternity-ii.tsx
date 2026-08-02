@@ -43,13 +43,16 @@ export const Route = createFileRoute("/eternity-ii")({
 
 const UNLOCK_KEY = "taber-e2-unlocked";
 
+const EMPTY_LEVEL: Level = { size: 4, tiles: [], fixed: [], original: false };
+
 function EternityPage() {
   const { t } = useI18n();
   const [size, setSize] = useState<LevelSize>(4);
   const [unlocked, setUnlocked] = useState(0);
-  const [level, setLevel] = useState<Level>(() => createLevel(4));
-  const [board, setBoard] = useState<Placement[]>(() => emptyBoard(createLevel(4)));
+  const [level, setLevel] = useState<Level>(EMPTY_LEVEL);
+  const [board, setBoard] = useState<Placement[]>(() => emptyBoard(EMPTY_LEVEL));
   const [selected, setSelected] = useState<{ tileId: number; rotation: Rotation } | null>(null);
+  const [focus, setFocus] = useState<number | null>(null);
   const [showWin, setShowWin] = useState(false);
 
   useEffect(() => {
@@ -62,6 +65,7 @@ function EternityPage() {
     setLevel(lv);
     setBoard(emptyBoard(lv));
     setSelected(null);
+    setFocus(null);
     setShowWin(false);
     setSize(s);
   }, []);
@@ -81,6 +85,11 @@ function EternityPage() {
     [level, placedIds],
   );
 
+  const candidates = useMemo(
+    () => (focus == null ? null : candidatesAt(level, board, focus, tray)),
+    [focus, level, board, tray],
+  );
+
   const seams = useMemo(() => matchedSeams(level, board), [level, board]);
 
   const rotateSelection = useCallback(() => {
@@ -90,27 +99,21 @@ function EternityPage() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "r" || e.key === "R") rotateSelection();
-      if (e.key === "Escape") setSelected(null);
+      if (e.key === "Escape") {
+        setSelected(null);
+        setFocus(null);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [rotateSelection]);
 
-  const handleCell = (index: number) => {
-    const current = board[index];
-    if (current?.locked) return;
-
-    if (current) {
-      // pick the tile back up
-      setBoard((b) => b.map((p, i) => (i === index ? null : p)));
-      setSelected({ tileId: current.tileId, rotation: current.rotation });
-      return;
-    }
-    if (!selected) return;
+  const place = (index: number, tileId: number, rotation: Rotation) => {
     const next = board.slice();
-    next[index] = { tileId: selected.tileId, rotation: selected.rotation, locked: false };
+    next[index] = { tileId, rotation, locked: false };
     setBoard(next);
     setSelected(null);
+    setFocus(null);
     if (isSolved(level, next)) {
       setShowWin(true);
       const idx = LEVELS.indexOf(size);
@@ -120,6 +123,26 @@ function EternityPage() {
       }
     }
   };
+
+  const handleCell = (index: number) => {
+    const current = board[index];
+    if (current?.locked) return;
+
+    if (current) {
+      // pick the tile back up
+      setBoard((b) => b.map((p, i) => (i === index ? null : p)));
+      setSelected({ tileId: current.tileId, rotation: current.rotation });
+      setFocus(null);
+      return;
+    }
+    if (selected) {
+      place(index, selected.tileId, selected.rotation);
+      return;
+    }
+    // empty cell without a selected tile: highlight the pieces that fit here
+    setFocus((f) => (f === index ? null : index));
+  };
+
 
   // board fits the screen: capped at 680px, otherwise the available width
   const [viewportW, setViewportW] = useState(680);
