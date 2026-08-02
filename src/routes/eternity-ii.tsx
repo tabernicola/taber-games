@@ -284,25 +284,33 @@ function EternityPage() {
               className="flex max-h-[520px] flex-wrap gap-2 overflow-y-auto pr-1"
               style={{ scrollbarWidth: "thin" }}
             >
-              {tray.map((tile) => (
-                <Tile
-                  key={tile.id}
-                  size={trayPx}
-                  edges={
-                    selected?.tileId === tile.id
-                      ? rotate(tile.edges, selected.rotation)
-                      : tile.edges
-                  }
-                  selected={selected?.tileId === tile.id}
-                  onClick={() =>
-                    setSelected((s) =>
-                      s?.tileId === tile.id
-                        ? { tileId: tile.id, rotation: ((s.rotation + 1) % 4) as Rotation }
-                        : { tileId: tile.id, rotation: 0 },
-                    )
-                  }
-                />
-              ))}
+              {tray.map((tile) => {
+                const fitRot = candidates?.get(tile.id);
+                const rot =
+                  selected?.tileId === tile.id ? selected.rotation : (fitRot ?? (0 as Rotation));
+                return (
+                  <Tile
+                    key={tile.id}
+                    size={trayPx}
+                    edges={rotate(tile.edges, rot)}
+                    selected={selected?.tileId === tile.id}
+                    candidate={fitRot !== undefined}
+                    dim={candidates ? fitRot === undefined : false}
+                    onClick={() => {
+                      if (focus != null && fitRot !== undefined) {
+                        place(focus, tile.id, fitRot);
+                        return;
+                      }
+                      setSelected((s) =>
+                        s?.tileId === tile.id
+                          ? { tileId: tile.id, rotation: ((s.rotation + 1) % 4) as Rotation }
+                          : { tileId: tile.id, rotation: 0 },
+                      );
+                    }}
+                  />
+                );
+              })}
+
               {tray.length === 0 && (
                 <p className="text-sm" style={{ color: "var(--e2-ink-soft)" }}>
                   {t("e2.trayEmpty")}
