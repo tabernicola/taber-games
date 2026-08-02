@@ -119,8 +119,19 @@ function EternityPage() {
     }
   };
 
-  const boardPx = Math.min(680, 88 * 8);
-  const tilePx = Math.floor(boardPx / level.size);
+  // board fits the screen: capped at 680px, otherwise the available width
+  const [viewportW, setViewportW] = useState(680);
+  useEffect(() => {
+    const update = () => setViewportW(window.innerWidth);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  // 32px page padding + 24px frame padding, plus 2px gap per column
+  const available = Math.max(160, viewportW - 56 - 2 * (level.size - 1));
+  const boardPx = Math.min(680, available);
+  const tilePx = Math.max(14, Math.floor(boardPx / level.size));
   const trayPx = level.size >= 12 ? 42 : 60;
 
   return (
