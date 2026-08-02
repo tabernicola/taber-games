@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PieceShape } from "@/components/tabersquare/PieceShape";
 import { useI18n } from "@/lib/i18n";
+import taberSquareLogoAsset from "@/assets/taber-square-logo.png.asset.json";
 import {
   BLOCKER,
   BOARD_SIZE,
@@ -206,16 +207,23 @@ function TaberSquarePage() {
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-4 pb-24 pt-8">
         <div className="mb-6 flex items-end justify-between gap-4">
-          <div>
-            <h1
-              className="text-3xl tracking-widest text-neon-pink text-glow-pink sm:text-4xl"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              {t("game.title")}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {t("game.desc")}
-            </p>
+          <div className="flex items-center gap-4">
+            <img
+              src={taberSquareLogoAsset.url}
+              alt="The Taber Square Logo"
+              className="h-20 w-20 object-contain sm:h-24 sm:w-24"
+            />
+            <div>
+              <h1
+                className="text-3xl tracking-widest text-neon-pink text-glow-pink sm:text-4xl"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                {t("game.title")}
+              </h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {t("game.desc")}
+              </p>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
           <button
