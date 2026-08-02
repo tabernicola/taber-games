@@ -7,6 +7,7 @@ import {
   createLevel,
   emptyBoard,
   conflictsAt,
+  candidatesAt,
   isSolved,
   matchedSeams,
   rotate,
@@ -16,6 +17,7 @@ import {
   type Placement,
   type Rotation,
 } from "@/lib/eternity2/game";
+
 
 export const Route = createFileRoute("/eternity-ii")({
   head: () => ({
