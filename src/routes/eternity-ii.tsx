@@ -225,8 +225,10 @@ function EternityPage() {
                         aria-label={`cell ${i}`}
                         onClick={() => handleCell(i)}
                         className="e2-cell"
+                        data-focus={focus === i ? "" : undefined}
                         style={{ width: tilePx, height: tilePx }}
                       />
+
                     );
                   }
                   return (
