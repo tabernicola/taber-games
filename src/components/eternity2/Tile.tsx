@@ -83,11 +83,13 @@ type Props = {
   selected?: boolean;
   conflict?: boolean;
   locked?: boolean;
+  candidate?: boolean;
+  dim?: boolean;
   onClick?: () => void;
   title?: string;
 };
 
-function TileImpl({ edges, size, selected, conflict, locked, onClick, title }: Props) {
+function TileImpl({ edges, size, selected, conflict, locked, candidate, dim, onClick, title }: Props) {
   const showMotifs = size >= 34;
   return (
     <button
@@ -98,8 +100,11 @@ function TileImpl({ edges, size, selected, conflict, locked, onClick, title }: P
       data-selected={selected ? "" : undefined}
       data-conflict={conflict ? "" : undefined}
       data-locked={locked ? "" : undefined}
+      data-candidate={candidate ? "" : undefined}
+      data-dim={dim ? "" : undefined}
       style={{ width: size, height: size }}
     >
+
       <svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden>
         <defs>
           <linearGradient id="e2gloss" x1="0" y1="0" x2="0" y2="1">
