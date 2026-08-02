@@ -186,10 +186,9 @@ function EternityPage() {
               }}
             >
               <div
-                className="grid gap-[2px] overflow-auto"
+                className="grid gap-[2px]"
                 style={{
                   gridTemplateColumns: `repeat(${level.size}, ${tilePx}px)`,
-                  maxWidth: "min(88vw, 700px)",
                 }}
               >
                 {board.map((p, i) => {
