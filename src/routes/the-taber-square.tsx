@@ -4,6 +4,8 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { PieceShape } from "@/components/tabersquare/PieceShape";
 import { useI18n } from "@/lib/i18n";
 import taberSquareLogoAsset from "@/assets/taber-square-logo-v2.png.asset.json";
+import taberGamesLogoAsset from "@/assets/taber-games-logo-v2.png.asset.json";
+import lovableLogoAsset from "@/assets/lovable-logo.png.asset.json";
 import {
   BLOCKER,
   BOARD_SIZE,
