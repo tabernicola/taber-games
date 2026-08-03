@@ -41,7 +41,6 @@ export const Route = createFileRoute("/eternity-ii")({
   component: EternityPage,
 });
 
-const UNLOCK_KEY = "taber-e2-unlocked";
 
 const EMPTY_LEVEL: Level = { size: 4, tiles: [], fixed: [], original: false };
 
