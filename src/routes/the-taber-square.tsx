@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PieceShape } from "@/components/tabersquare/PieceShape";
 import { useI18n } from "@/lib/i18n";
-import taberSquareLogoAsset from "@/assets/taber-square-logo.png.asset.json";
+import taberSquareLogoAsset from "@/assets/taber-square-logo-v2.png.asset.json";
 import {
   BLOCKER,
   BOARD_SIZE,
