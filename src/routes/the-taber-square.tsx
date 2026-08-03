@@ -325,7 +325,7 @@ function TaberSquarePage() {
             <div className="rounded-xl border border-border bg-card p-4">
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">
-                  {t("game.selected")}
+                  {t("game.pieces")} ({trayPieces.length}/{pieces.length})
                 </span>
                 {selected ? (
                   <span
@@ -335,7 +335,7 @@ function TaberSquarePage() {
                     {selected.name}
                   </span>
                 ) : (
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {t("game.pickPiece")}
                   </span>
                 )}
@@ -356,30 +356,7 @@ function TaberSquarePage() {
                   </button>
                 </div>
               </div>
-
-              {selected ? (
-                <div className="flex min-h-[80px] items-center justify-center rounded-lg bg-background/40 p-3">
-                  <PieceShape
-                    cells={selected.cells}
-                    color={selected.color}
-                    cellSize={26}
-                  />
-                </div>
-              ) : (
-                <div className="min-h-[80px] rounded-lg bg-background/40" />
-              )}
-            </div>
-
-            <div className="rounded-xl border border-border bg-card p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-xs uppercase tracking-widest text-muted-foreground">
-                  {t("game.pieces")} ({trayPieces.length}/{pieces.length})
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {t("game.hint")}
-                </span>
-              </div>
-              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
+              <div className="grid grid-cols-5 gap-2 sm:grid-cols-6 md:grid-cols-9">
                 {pieces.map((p) => {
                   const placed = placedIds.has(p.id);
                   const isSel = p.id === selectedId;
@@ -388,20 +365,54 @@ function TaberSquarePage() {
                       key={p.id}
                       onClick={() => !placed && setSelectedId(p.id)}
                       disabled={placed}
-                      className={`flex aspect-square items-center justify-center rounded-lg border p-2 transition-all ${
+                      className={`flex aspect-square items-center justify-center rounded-lg border p-1 transition-all ${
                         isSel
-                          ? "border-neon-pink bg-neon-pink/10"
+                          ? "border-neon-pink bg-neon-pink/20 neon-glow-pink"
                           : "border-border bg-background/40 hover:border-neon-pink/60"
                       } ${placed ? "opacity-25" : ""}`}
                     >
-                      <PieceShape cells={p.cells} color={p.color} cellSize={14} />
+                      <PieceShape cells={p.cells} color={p.color} cellSize={9} gap={1} />
                     </button>
                   );
                 })}
               </div>
+              <p className="mt-3 text-xs text-muted-foreground">{t("game.hint")}</p>
             </div>
           </div>
         </div>
+
+        <footer className="mt-12 border-t border-border pt-6 text-center text-xs text-muted-foreground">
+          <p>
+            The Taber Square: basado en The Genius Square de Salim Berghiche
+          </p>
+          <p className="mt-3 flex flex-wrap items-center justify-center gap-2">
+            <span>developed by</span>
+            <a
+              href="/"
+              className="inline-flex items-center transition-opacity hover:opacity-80"
+            >
+              <img
+                src={taberGamesLogoAsset.url}
+                alt="The Taber Games"
+                className="h-7 w-auto object-contain"
+              />
+            </a>
+            <span>with</span>
+            <a
+              href="https://lovable.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center transition-opacity hover:opacity-80"
+            >
+              <img
+                src={lovableLogoAsset.url}
+                alt="Lovable"
+                className="h-6 w-auto rounded object-contain"
+              />
+            </a>
+          </p>
+        </footer>
+
       </main>
 
       {won && (
