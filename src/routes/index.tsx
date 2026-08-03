@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import logoAsset from "@/assets/taber-games-logo-v2.png.asset.json";
 import studyLogo from "@/assets/taber-study-logo.png.asset.json";
+import squareLogo from "@/assets/taber-square-logo-v2.png.asset.json";
 import { SiteHeader } from "@/components/SiteHeader";
 import { useI18n } from "@/lib/i18n";
 
@@ -71,6 +72,7 @@ function Home() {
               tag={t("home.card.tag")}
               description={t("home.card.desc")}
               playLabel={t("home.play")}
+              image={squareLogo.url}
             />
             <ExternalGameCard
               href="https://the-taber-study.base44.app"
@@ -151,12 +153,14 @@ function GameCard({
   tag,
   description,
   playLabel,
+  image,
 }: {
   to: string;
   title: string;
   tag: string;
   description: string;
   playLabel: string;
+  image?: string;
 }) {
   return (
     <Link
@@ -168,6 +172,15 @@ function GameCard({
         className="absolute -right-16 -top-16 h-40 w-40 rounded-full opacity-0 blur-3xl transition-opacity group-hover:opacity-60"
         style={{ background: "var(--neon-pink)" }}
       />
+      {image && (
+        <div className="mb-3 flex justify-center">
+          <img
+            src={image}
+            alt=""
+            className="h-24 w-24 object-contain drop-shadow-[0_0_20px_oklch(0.72_0.30_350/0.5)]"
+          />
+        </div>
+      )}
       <span className="text-[10px] uppercase tracking-widest text-neon-pink">
         {tag}
       </span>

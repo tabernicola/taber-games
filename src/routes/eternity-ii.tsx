@@ -41,24 +41,19 @@ export const Route = createFileRoute("/eternity-ii")({
   component: EternityPage,
 });
 
-const UNLOCK_KEY = "taber-e2-unlocked";
 
 const EMPTY_LEVEL: Level = { size: 4, tiles: [], fixed: [], original: false };
 
 function EternityPage() {
   const { t } = useI18n();
   const [size, setSize] = useState<LevelSize>(4);
-  const [unlocked, setUnlocked] = useState(0);
+  
   const [level, setLevel] = useState<Level>(EMPTY_LEVEL);
   const [board, setBoard] = useState<Placement[]>(() => emptyBoard(EMPTY_LEVEL));
   const [selected, setSelected] = useState<{ tileId: number; rotation: Rotation } | null>(null);
   const [focus, setFocus] = useState<number | null>(null);
   const [showWin, setShowWin] = useState(false);
 
-  useEffect(() => {
-    const saved = Number(localStorage.getItem(UNLOCK_KEY) ?? "0");
-    if (!Number.isNaN(saved)) setUnlocked(Math.min(saved, LEVELS.length - 1));
-  }, []);
 
   const startLevel = useCallback((s: LevelSize) => {
     const lv = createLevel(s);
@@ -116,11 +111,6 @@ function EternityPage() {
     setFocus(null);
     if (isSolved(level, next)) {
       setShowWin(true);
-      const idx = LEVELS.indexOf(size);
-      if (idx >= 0 && idx + 1 < LEVELS.length && idx + 1 > unlocked) {
-        setUnlocked(idx + 1);
-        localStorage.setItem(UNLOCK_KEY, String(idx + 1));
-      }
     }
   };
 
@@ -172,23 +162,18 @@ function EternityPage() {
 
         {/* Levels */}
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-          {LEVELS.map((s, i) => {
-            const locked = i > unlocked;
-            return (
-              <button
-                key={s}
-                type="button"
-                disabled={locked}
-                onClick={() => startLevel(s)}
-                className="e2-btn"
-                data-variant={s === size ? undefined : "soft"}
-              >
-                {locked ? "🔒 " : ""}
-                {s}×{s}
-                {s === 16 ? " ★" : ""}
-              </button>
-            );
-          })}
+          {LEVELS.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => startLevel(s)}
+              className="e2-btn"
+              data-variant={s === size ? undefined : "soft"}
+            >
+              {s}×{s}
+              {s === 16 ? " ★" : ""}
+            </button>
+          ))}
         </div>
 
         {level.original && (
