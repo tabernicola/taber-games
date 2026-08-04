@@ -16,7 +16,7 @@ export async function loadSave(): Promise<SavedGame | null> {
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
-  const state = data.state as { board: Placement[]; tiles: Edges[] };
+  const state = data.state as unknown as { board: Placement[]; tiles: Edges[] };
   return {
     level: data.level,
     seconds: data.seconds,
@@ -35,7 +35,7 @@ export async function storeSave(
 ): Promise<void> {
   const { error } = await supabase
     .from("eternity_saves")
-    .upsert({ user_id: userId, level, seconds, state: { board, tiles } }, { onConflict: "user_id" });
+    .upsert({ user_id: userId, level, seconds, state: { board, tiles } as unknown as never }, { onConflict: "user_id" });
   if (error) throw error;
 }
 

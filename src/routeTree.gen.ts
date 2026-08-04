@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as LangIndexRouteImport } from './routes/$lang/index'
 import { Route as LangAuthRouteImport } from './routes/$lang/auth'
 import { Route as LangTheTaberSquareIndexRouteImport } from './routes/$lang/the-taber-square/index'
+import { Route as LangEternityIiIndexRouteImport } from './routes/$lang/eternity-ii/index'
 import { Route as LangTheTaberSquarePlayRouteImport } from './routes/$lang/the-taber-square/play'
 
 const TheTaberSquareRoute = TheTaberSquareRouteImport.update({
@@ -53,6 +54,11 @@ const LangTheTaberSquareIndexRoute = LangTheTaberSquareIndexRouteImport.update({
   path: '/the-taber-square/',
   getParentRoute: () => LangRouteRoute,
 } as any)
+const LangEternityIiIndexRoute = LangEternityIiIndexRouteImport.update({
+  id: '/eternity-ii/',
+  path: '/eternity-ii/',
+  getParentRoute: () => LangRouteRoute,
+} as any)
 const LangTheTaberSquarePlayRoute = LangTheTaberSquarePlayRouteImport.update({
   id: '/the-taber-square/play',
   path: '/the-taber-square/play',
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/$lang/auth': typeof LangAuthRoute
   '/$lang/': typeof LangIndexRoute
   '/$lang/the-taber-square/play': typeof LangTheTaberSquarePlayRoute
+  '/$lang/eternity-ii/': typeof LangEternityIiIndexRoute
   '/$lang/the-taber-square/': typeof LangTheTaberSquareIndexRoute
 }
 export interface FileRoutesByTo {
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/$lang/auth': typeof LangAuthRoute
   '/$lang': typeof LangIndexRoute
   '/$lang/the-taber-square/play': typeof LangTheTaberSquarePlayRoute
+  '/$lang/eternity-ii': typeof LangEternityIiIndexRoute
   '/$lang/the-taber-square': typeof LangTheTaberSquareIndexRoute
 }
 export interface FileRoutesById {
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/$lang/auth': typeof LangAuthRoute
   '/$lang/': typeof LangIndexRoute
   '/$lang/the-taber-square/play': typeof LangTheTaberSquarePlayRoute
+  '/$lang/eternity-ii/': typeof LangEternityIiIndexRoute
   '/$lang/the-taber-square/': typeof LangTheTaberSquareIndexRoute
 }
 export interface FileRouteTypes {
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/$lang/auth'
     | '/$lang/'
     | '/$lang/the-taber-square/play'
+    | '/$lang/eternity-ii/'
     | '/$lang/the-taber-square/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/$lang/auth'
     | '/$lang'
     | '/$lang/the-taber-square/play'
+    | '/$lang/eternity-ii'
     | '/$lang/the-taber-square'
   id:
     | '__root__'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/$lang/auth'
     | '/$lang/'
     | '/$lang/the-taber-square/play'
+    | '/$lang/eternity-ii/'
     | '/$lang/the-taber-square/'
   fileRoutesById: FileRoutesById
 }
@@ -179,6 +191,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangTheTaberSquareIndexRouteImport
       parentRoute: typeof LangRouteRoute
     }
+    '/$lang/eternity-ii/': {
+      id: '/$lang/eternity-ii/'
+      path: '/eternity-ii'
+      fullPath: '/$lang/eternity-ii/'
+      preLoaderRoute: typeof LangEternityIiIndexRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
     '/$lang/the-taber-square/play': {
       id: '/$lang/the-taber-square/play'
       path: '/the-taber-square/play'
@@ -193,6 +212,7 @@ interface LangRouteRouteChildren {
   LangAuthRoute: typeof LangAuthRoute
   LangIndexRoute: typeof LangIndexRoute
   LangTheTaberSquarePlayRoute: typeof LangTheTaberSquarePlayRoute
+  LangEternityIiIndexRoute: typeof LangEternityIiIndexRoute
   LangTheTaberSquareIndexRoute: typeof LangTheTaberSquareIndexRoute
 }
 
@@ -200,6 +220,7 @@ const LangRouteRouteChildren: LangRouteRouteChildren = {
   LangAuthRoute: LangAuthRoute,
   LangIndexRoute: LangIndexRoute,
   LangTheTaberSquarePlayRoute: LangTheTaberSquarePlayRoute,
+  LangEternityIiIndexRoute: LangEternityIiIndexRoute,
   LangTheTaberSquareIndexRoute: LangTheTaberSquareIndexRoute,
 }
 
