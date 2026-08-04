@@ -1,6 +1,31 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 export type Lang = "eu" | "es" | "en";
+export type LangSlug = "eus" | "es" | "en";
+
+export const LANG_SLUGS: LangSlug[] = ["eus", "es", "en"];
+
+export function langFromSlug(slug: string | undefined): Lang | null {
+  if (slug === "eus") return "eu";
+  if (slug === "es") return "es";
+  if (slug === "en") return "en";
+  return null;
+}
+
+export function slugFromLang(lang: Lang): LangSlug {
+  return lang === "eu" ? "eus" : lang;
+}
+
+/** Best guess for a visitor with no URL language: saved choice, then browser. */
+export function detectLangSlug(): LangSlug {
+  if (typeof window === "undefined") return "es";
+  const saved = localStorage.getItem("taber-lang") as Lang | null;
+  if (saved && ["eu", "es", "en"].includes(saved)) return slugFromLang(saved);
+  const nav = navigator.language?.toLowerCase() ?? "";
+  if (nav.startsWith("eu")) return "eus";
+  if (nav.startsWith("es")) return "es";
+  return "en";
+}
 
 type Dict = Record<string, string>;
 
@@ -57,6 +82,47 @@ const translations: Record<Lang, Dict> = {
     "e2.close": "Itxi",
     "e2.originalNote":
       "Hau da jatorrizko Eternity II puzzlea: 256 pieza finko eta argibide-pieza ofiziala. Inork ez du ebatzi; ez dago pistarik ez soluziorik.",
+
+    "common.back": "Atzera",
+    "common.time": "Denbora",
+    "common.loading": "Kargatzen…",
+    "landing.howto": "Nola jokatu",
+    "landing.startPlay": "Hasi jokatzen",
+    "landing.chooseLevel": "Aukeratu maila",
+    "landing.ranking": "Sailkapena",
+    "rank.title": "Onenak 5",
+    "rank.empty": "Oraindik ez dago markarik. Izan zaitez lehena!",
+    "rank.player": "Jokalaria",
+    "rank.time": "Denbora",
+    "score.yourTime": "Zure denbora: {t}",
+    "score.enterName": "Zure izena",
+    "score.submit": "Bidali sailkapenera",
+    "score.saved": "Sailkapenean gordeta!",
+    "score.skip": "Ez, eskerrik asko",
+    "e2.level": "Maila",
+    "e2.save": "Gorde partida",
+    "e2.saving": "Gordetzen…",
+    "e2.savedOk": "Partida gordeta",
+    "e2.saveNeedsAccount": "Kontu bat behar duzu partida gordetzeko.",
+    "e2.continue": "Jarraitu gordetako partidarekin",
+    "e2.savedInfo": "Gordeta: {size}×{size} · {t}",
+    "e2.noSave": "Ez duzu gordetako partidarik.",
+    "e2.deleteSave": "Ezabatu gordetakoa",
+    "auth.title": "Sartu edo erregistratu",
+    "auth.desc": "Kontu batekin Eternity II partida gorde eta gero jarraitu dezakezu.",
+    "auth.email": "Emaila",
+    "auth.password": "Pasahitza",
+    "auth.signIn": "Sartu",
+    "auth.signUp": "Erregistratu",
+    "auth.google": "Jarraitu Google-rekin",
+    "auth.or": "edo",
+    "auth.signOut": "Irten",
+    "auth.checkEmail": "Egiaztatu zure emaila kontua baieztatzeko.",
+    "auth.toggleSignUp": "Ez duzu konturik? Erregistratu",
+    "auth.toggleSignIn": "Baduzu kontua? Sartu",
+    "cookies.text":
+      "Cookie teknikoak baino ez ditugu erabiltzen (hizkuntza eta saioa). Ez dago jarraipenik ez publizitaterik.",
+    "cookies.accept": "Ados",
   },
 
   es: {
@@ -111,6 +177,47 @@ const translations: Record<Lang, Dict> = {
     "e2.close": "Cerrar",
     "e2.originalNote":
       "Este es el puzle Eternity II original: las 256 piezas reales y la pieza pista oficial. Nadie lo ha resuelto todavía, así que no hay pistas ni solución.",
+
+    "common.back": "Volver",
+    "common.time": "Tiempo",
+    "common.loading": "Cargando…",
+    "landing.howto": "Cómo se juega",
+    "landing.startPlay": "Empezar a jugar",
+    "landing.chooseLevel": "Elige nivel",
+    "landing.ranking": "Ranking",
+    "rank.title": "Top 5",
+    "rank.empty": "Todavía no hay marcas. ¡Sé el primero!",
+    "rank.player": "Jugador",
+    "rank.time": "Tiempo",
+    "score.yourTime": "Tu tiempo: {t}",
+    "score.enterName": "Tu nombre",
+    "score.submit": "Enviar al ranking",
+    "score.saved": "¡Guardado en el ranking!",
+    "score.skip": "No, gracias",
+    "e2.level": "Nivel",
+    "e2.save": "Guardar partida",
+    "e2.saving": "Guardando…",
+    "e2.savedOk": "Partida guardada",
+    "e2.saveNeedsAccount": "Necesitas una cuenta para guardar la partida.",
+    "e2.continue": "Continuar partida guardada",
+    "e2.savedInfo": "Guardada: {size}×{size} · {t}",
+    "e2.noSave": "No tienes ninguna partida guardada.",
+    "e2.deleteSave": "Borrar la partida guardada",
+    "auth.title": "Entrar o registrarse",
+    "auth.desc": "Con una cuenta puedes guardar tu partida de Eternity II y continuarla más tarde.",
+    "auth.email": "Correo",
+    "auth.password": "Contraseña",
+    "auth.signIn": "Entrar",
+    "auth.signUp": "Registrarse",
+    "auth.google": "Continuar con Google",
+    "auth.or": "o",
+    "auth.signOut": "Salir",
+    "auth.checkEmail": "Revisa tu correo para confirmar la cuenta.",
+    "auth.toggleSignUp": "¿No tienes cuenta? Regístrate",
+    "auth.toggleSignIn": "¿Ya tienes cuenta? Entra",
+    "cookies.text":
+      "Solo usamos cookies técnicas (idioma y sesión). No hay seguimiento ni publicidad.",
+    "cookies.accept": "Entendido",
   },
 
   en: {
@@ -165,26 +272,69 @@ const translations: Record<Lang, Dict> = {
     "e2.close": "Close",
     "e2.originalNote":
       "This is the original Eternity II puzzle: the real 256 pieces and the official clue piece. Nobody has solved it, so there is no hint and no solution.",
-  },
 
+    "common.back": "Back",
+    "common.time": "Time",
+    "common.loading": "Loading…",
+    "landing.howto": "How to play",
+    "landing.startPlay": "Start playing",
+    "landing.chooseLevel": "Choose a level",
+    "landing.ranking": "Ranking",
+    "rank.title": "Top 5",
+    "rank.empty": "No times yet. Be the first!",
+    "rank.player": "Player",
+    "rank.time": "Time",
+    "score.yourTime": "Your time: {t}",
+    "score.enterName": "Your name",
+    "score.submit": "Send to ranking",
+    "score.saved": "Saved to the ranking!",
+    "score.skip": "No thanks",
+    "e2.level": "Level",
+    "e2.save": "Save game",
+    "e2.saving": "Saving…",
+    "e2.savedOk": "Game saved",
+    "e2.saveNeedsAccount": "You need an account to save your game.",
+    "e2.continue": "Continue saved game",
+    "e2.savedInfo": "Saved: {size}×{size} · {t}",
+    "e2.noSave": "You have no saved game.",
+    "e2.deleteSave": "Delete saved game",
+    "auth.title": "Sign in or sign up",
+    "auth.desc": "With an account you can save your Eternity II game and continue it later.",
+    "auth.email": "Email",
+    "auth.password": "Password",
+    "auth.signIn": "Sign in",
+    "auth.signUp": "Sign up",
+    "auth.google": "Continue with Google",
+    "auth.or": "or",
+    "auth.signOut": "Sign out",
+    "auth.checkEmail": "Check your email to confirm your account.",
+    "auth.toggleSignUp": "No account? Sign up",
+    "auth.toggleSignIn": "Already have an account? Sign in",
+    "cookies.text":
+      "We only use technical cookies (language and session). No tracking, no ads.",
+    "cookies.accept": "Got it",
+  },
 };
 
 const I18nContext = createContext<{
   lang: Lang;
+  slug: LangSlug;
   setLang: (l: Lang) => void;
   t: (key: string, vars?: Record<string, string | number>) => string;
-}>({ lang: "es", setLang: () => {}, t: (k) => k });
+}>({ lang: "es", slug: "es", setLang: () => {}, t: (k) => k });
 
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("es");
+export function I18nProvider({ children, lang: controlled }: { children: ReactNode; lang?: Lang }) {
+  const [internal, setInternal] = useState<Lang>("es");
+  const lang = controlled ?? internal;
 
   useEffect(() => {
-    const saved = (typeof window !== "undefined" && localStorage.getItem("taber-lang")) as Lang | null;
-    if (saved && ["eu", "es", "en"].includes(saved)) setLangState(saved);
-  }, []);
+    if (controlled && typeof window !== "undefined") {
+      localStorage.setItem("taber-lang", controlled);
+    }
+  }, [controlled]);
 
   const setLang = (l: Lang) => {
-    setLangState(l);
+    setInternal(l);
     if (typeof window !== "undefined") localStorage.setItem("taber-lang", l);
   };
 
@@ -194,7 +344,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return s;
   };
 
-  return <I18nContext.Provider value={{ lang, setLang, t }}>{children}</I18nContext.Provider>;
+  return (
+    <I18nContext.Provider value={{ lang, slug: slugFromLang(lang), setLang, t }}>
+      {children}
+    </I18nContext.Provider>
+  );
 }
 
 export const useI18n = () => useContext(I18nContext);
