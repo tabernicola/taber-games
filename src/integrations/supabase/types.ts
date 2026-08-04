@@ -14,7 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      eternity_saves: {
+        Row: {
+          created_at: string
+          level: number
+          seconds: number
+          state: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          level: number
+          seconds?: number
+          state: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          level?: number
+          seconds?: number
+          state?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      scores: {
+        Row: {
+          created_at: string
+          game: string
+          id: string
+          level: string
+          player_name: string
+          seconds: number
+        }
+        Insert: {
+          created_at?: string
+          game: string
+          id?: string
+          level?: string
+          player_name: string
+          seconds: number
+        }
+        Update: {
+          created_at?: string
+          game?: string
+          id?: string
+          level?: string
+          player_name?: string
+          seconds?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
