@@ -123,6 +123,14 @@ const translations: Record<Lang, Dict> = {
     "cookies.text":
       "Cookie teknikoak baino ez ditugu erabiltzen (hizkuntza eta saioa). Ez dago jarraipenik ez publizitaterik.",
     "cookies.accept": "Ados",
+    "square.rule1": "Bota zazpi blokeatzaile: gelaxka horiek itxita daude.",
+    "square.rule2": "Sartu bederatzi piezak gainerako gelaxketan.",
+    "square.rule3": "Piezak biratu (R) eta iraul (F) daitezke.",
+    "square.rule4": "Puzzle guztiak askagarriak dira; denbora gutxien behar duenak irabazten du.",
+    "e2.rule1": "Jarri piezak taulan ondoko ertzak bat etor daitezen.",
+    "e2.rule2": "Kanpoko ertzak taularen mugarekin bat etorri behar dira.",
+    "e2.rule3": "Egin klik gelaxka huts batean gelaxka horretan sartzen diren piezak ikusteko.",
+    "e2.rule4": "Ez dago pistarik ez soluziorik: 16×16 jatorrizkoa inork ez du ebatzi.",
   },
 
   es: {
@@ -218,6 +226,14 @@ const translations: Record<Lang, Dict> = {
     "cookies.text":
       "Solo usamos cookies técnicas (idioma y sesión). No hay seguimiento ni publicidad.",
     "cookies.accept": "Entendido",
+    "square.rule1": "Se tiran siete bloqueadores: esas casillas quedan ocupadas.",
+    "square.rule2": "Encaja las nueve piezas en las casillas restantes.",
+    "square.rule3": "Las piezas se pueden rotar (R) y voltear (F).",
+    "square.rule4": "Todos los puzles tienen solución; gana quien lo resuelva en menos tiempo.",
+    "e2.rule1": "Coloca las piezas de forma que los bordes vecinos coincidan.",
+    "e2.rule2": "Los bordes exteriores deben mirar hacia fuera del tablero.",
+    "e2.rule3": "Pulsa una casilla vacía para ver qué piezas encajan ahí.",
+    "e2.rule4": "No hay pistas ni solución: el 16×16 original nadie lo ha resuelto.",
   },
 
   en: {
@@ -313,6 +329,14 @@ const translations: Record<Lang, Dict> = {
     "cookies.text":
       "We only use technical cookies (language and session). No tracking, no ads.",
     "cookies.accept": "Got it",
+    "square.rule1": "Seven blockers are rolled: those cells are taken.",
+    "square.rule2": "Fit the nine pieces into the remaining cells.",
+    "square.rule3": "Pieces can be rotated (R) and flipped (F).",
+    "square.rule4": "Every puzzle is solvable; the fastest solve wins.",
+    "e2.rule1": "Place pieces so neighbouring edges match.",
+    "e2.rule2": "Outer edges must face the border of the board.",
+    "e2.rule3": "Tap an empty cell to highlight the pieces that fit there.",
+    "e2.rule4": "No hints and no solution: nobody has solved the original 16x16.",
   },
 };
 
