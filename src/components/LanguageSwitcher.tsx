@@ -1,4 +1,5 @@
-import { useI18n, type Lang } from "@/lib/i18n";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { useI18n, slugFromLang, type Lang } from "@/lib/i18n";
 import flagEu from "@/assets/flag-eu.png.asset.json";
 
 const LANGS: { code: Lang; label: string; flag: string; isImg?: boolean }[] = [
@@ -9,6 +10,18 @@ const LANGS: { code: Lang; label: string; flag: string; isImg?: boolean }[] = [
 
 export function LanguageSwitcher() {
   const { lang, setLang } = useI18n();
+  const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  const go = (l: Lang) => {
+    setLang(l);
+    const slug = slugFromLang(l);
+    const parts = pathname.split("/").filter(Boolean);
+    const rest = ["eus", "es", "en"].includes(parts[0] ?? "") ? parts.slice(1) : parts;
+    const next = "/" + [slug, ...rest].join("/");
+    navigate({ to: next } as never);
+  };
+
   return (
     <div className="flex items-center gap-1">
       {LANGS.map((l) => {
@@ -16,7 +29,7 @@ export function LanguageSwitcher() {
         return (
           <button
             key={l.code}
-            onClick={() => setLang(l.code)}
+            onClick={() => go(l.code)}
             title={l.label}
             aria-label={l.label}
             aria-pressed={active}
