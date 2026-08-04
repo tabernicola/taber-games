@@ -11,7 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TheTaberSquareRouteImport } from './routes/the-taber-square'
 import { Route as EternityIiRouteImport } from './routes/eternity-ii'
+import { Route as LangRouteRouteImport } from './routes/$lang/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LangIndexRouteImport } from './routes/$lang/index'
+import { Route as LangAuthRouteImport } from './routes/$lang/auth'
 
 const TheTaberSquareRoute = TheTaberSquareRouteImport.update({
   id: '/the-taber-square',
@@ -23,38 +26,75 @@ const EternityIiRoute = EternityIiRouteImport.update({
   path: '/eternity-ii',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LangRouteRoute = LangRouteRouteImport.update({
+  id: '/$lang',
+  path: '/$lang',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LangIndexRoute = LangIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LangRouteRoute,
+} as any)
+const LangAuthRoute = LangAuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => LangRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$lang': typeof LangRouteRouteWithChildren
   '/eternity-ii': typeof EternityIiRoute
   '/the-taber-square': typeof TheTaberSquareRoute
+  '/$lang/auth': typeof LangAuthRoute
+  '/$lang/': typeof LangIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/eternity-ii': typeof EternityIiRoute
   '/the-taber-square': typeof TheTaberSquareRoute
+  '/$lang/auth': typeof LangAuthRoute
+  '/$lang': typeof LangIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$lang': typeof LangRouteRouteWithChildren
   '/eternity-ii': typeof EternityIiRoute
   '/the-taber-square': typeof TheTaberSquareRoute
+  '/$lang/auth': typeof LangAuthRoute
+  '/$lang/': typeof LangIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/eternity-ii' | '/the-taber-square'
+  fullPaths:
+    | '/'
+    | '/$lang'
+    | '/eternity-ii'
+    | '/the-taber-square'
+    | '/$lang/auth'
+    | '/$lang/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/eternity-ii' | '/the-taber-square'
-  id: '__root__' | '/' | '/eternity-ii' | '/the-taber-square'
+  to: '/' | '/eternity-ii' | '/the-taber-square' | '/$lang/auth' | '/$lang'
+  id:
+    | '__root__'
+    | '/'
+    | '/$lang'
+    | '/eternity-ii'
+    | '/the-taber-square'
+    | '/$lang/auth'
+    | '/$lang/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LangRouteRoute: typeof LangRouteRouteWithChildren
   EternityIiRoute: typeof EternityIiRoute
   TheTaberSquareRoute: typeof TheTaberSquareRoute
 }
@@ -75,6 +115,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EternityIiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$lang': {
+      id: '/$lang'
+      path: '/$lang'
+      fullPath: '/$lang'
+      preLoaderRoute: typeof LangRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -82,11 +129,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$lang/': {
+      id: '/$lang/'
+      path: '/'
+      fullPath: '/$lang/'
+      preLoaderRoute: typeof LangIndexRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/auth': {
+      id: '/$lang/auth'
+      path: '/auth'
+      fullPath: '/$lang/auth'
+      preLoaderRoute: typeof LangAuthRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
   }
 }
 
+interface LangRouteRouteChildren {
+  LangAuthRoute: typeof LangAuthRoute
+  LangIndexRoute: typeof LangIndexRoute
+}
+
+const LangRouteRouteChildren: LangRouteRouteChildren = {
+  LangAuthRoute: LangAuthRoute,
+  LangIndexRoute: LangIndexRoute,
+}
+
+const LangRouteRouteWithChildren = LangRouteRoute._addFileChildren(
+  LangRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LangRouteRoute: LangRouteRouteWithChildren,
   EternityIiRoute: EternityIiRoute,
   TheTaberSquareRoute: TheTaberSquareRoute,
 }
