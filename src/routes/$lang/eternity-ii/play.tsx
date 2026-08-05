@@ -242,10 +242,10 @@ function EternityPage() {
           </p>
         )}
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[auto_1fr]">
-          <div className="flex flex-col items-center">
+        <div className="mt-6 grid min-w-0 gap-6 lg:grid-cols-[auto_1fr]">
+          <div ref={boardWrapRef} className="flex w-full min-w-0 flex-col items-center">
             <div
-              className="rounded-2xl p-3"
+              className="max-w-full rounded-2xl p-3"
               style={{
                 background: "linear-gradient(180deg, var(--e2-frame), var(--e2-frame-dark))",
                 boxShadow: "0 8px 24px rgba(60,35,10,0.35)",
