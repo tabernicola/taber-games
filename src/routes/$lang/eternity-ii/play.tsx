@@ -190,17 +190,28 @@ function EternityPage() {
     }
   };
 
-  const [viewportW, setViewportW] = useState(680);
+  const boardWrapRef = useRef<HTMLDivElement | null>(null);
+  const [wrapW, setWrapW] = useState(680);
   useEffect(() => {
-    const update = () => setViewportW(window.innerWidth);
+    const el = boardWrapRef.current;
+    if (!el) return;
+    const update = () => setWrapW(el.getBoundingClientRect().width);
     update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
     window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    window.addEventListener("orientationchange", update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+      window.removeEventListener("orientationchange", update);
+    };
   }, []);
 
-  const available = Math.max(160, viewportW - 56 - 2 * (level.size - 1));
+  // wrapper width minus the board frame padding (12px each side) and the 2px seams
+  const available = Math.max(120, wrapW - 24 - 2 * (level.size - 1));
   const boardPx = Math.min(680, available);
-  const tilePx = Math.max(14, Math.floor(boardPx / level.size));
+  const tilePx = Math.max(10, Math.floor(boardPx / level.size));
   const trayPx = level.size >= 12 ? 42 : 60;
 
   return (
