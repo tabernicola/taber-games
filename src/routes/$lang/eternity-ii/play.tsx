@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Tile } from "@/components/eternity2/Tile";
@@ -190,17 +190,28 @@ function EternityPage() {
     }
   };
 
-  const [viewportW, setViewportW] = useState(680);
+  const boardWrapRef = useRef<HTMLDivElement | null>(null);
+  const [wrapW, setWrapW] = useState(680);
   useEffect(() => {
-    const update = () => setViewportW(window.innerWidth);
+    const el = boardWrapRef.current;
+    if (!el) return;
+    const update = () => setWrapW(el.getBoundingClientRect().width);
     update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
     window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    window.addEventListener("orientationchange", update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+      window.removeEventListener("orientationchange", update);
+    };
   }, []);
 
-  const available = Math.max(160, viewportW - 56 - 2 * (level.size - 1));
+  // wrapper width minus the board frame padding (12px each side) and the 2px seams
+  const available = Math.max(120, wrapW - 24 - 2 * (level.size - 1));
   const boardPx = Math.min(680, available);
-  const tilePx = Math.max(14, Math.floor(boardPx / level.size));
+  const tilePx = Math.max(10, Math.floor(boardPx / level.size));
   const trayPx = level.size >= 12 ? 42 : 60;
 
   return (
@@ -231,10 +242,10 @@ function EternityPage() {
           </p>
         )}
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[auto_1fr]">
-          <div className="flex flex-col items-center">
+        <div ref={boardWrapRef} className="mt-6 grid min-w-0 gap-6 lg:grid-cols-[auto_1fr]">
+          <div className="flex w-full min-w-0 flex-col items-center">
             <div
-              className="rounded-2xl p-3"
+              className="max-w-full rounded-2xl p-3"
               style={{
                 background: "linear-gradient(180deg, var(--e2-frame), var(--e2-frame-dark))",
                 boxShadow: "0 8px 24px rgba(60,35,10,0.35)",
