@@ -242,8 +242,8 @@ function EternityPage() {
           </p>
         )}
 
-        <div className="mt-6 grid min-w-0 gap-6 lg:grid-cols-[auto_1fr]">
-          <div ref={boardWrapRef} className="flex w-full min-w-0 flex-col items-center">
+        <div ref={boardWrapRef} className="mt-6 grid min-w-0 gap-6 lg:grid-cols-[auto_1fr]">
+          <div className="flex w-full min-w-0 flex-col items-center">
             <div
               className="max-w-full rounded-2xl p-3"
               style={{
