@@ -62,19 +62,24 @@ function EternityLanding() {
           <h2 className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
             {t("landing.chooseLevel")}
           </h2>
-          <div className="flex flex-wrap items-center justify-center gap-2">
+          <div className="flex flex-wrap items-stretch justify-center gap-3">
             {LEVELS.map((s) => (
               <button
                 key={s}
                 onClick={() => setLevel(s)}
-                className={`rounded-lg border px-4 py-2 text-sm font-semibold transition-all ${
+                className={`flex flex-col items-center rounded-lg border px-4 py-2 text-sm font-semibold transition-all ${
                   s === level
                     ? "border-neon-pink bg-neon-pink/15 text-neon-pink neon-glow-pink"
                     : "border-border bg-card text-muted-foreground hover:border-neon-pink/60"
                 }`}
               >
-                {s}×{s}
-                {s === 16 ? " ★" : ""}
+                <span>
+                  {s}×{s}
+                  {s === 16 ? " ★" : ""}
+                </span>
+                <span className="mt-1 text-[10px] font-normal opacity-80">
+                  {t("e2.solveRateLabel")} {t(`e2.rate${s}` as const)}
+                </span>
               </button>
             ))}
           </div>
