@@ -283,16 +283,20 @@ function TaberSquarePage() {
                   <button
                     onClick={rotateSelected}
                     disabled={!selected || totalOrientations <= 1}
-                    className="rounded-md border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground transition-colors hover:border-neon-pink disabled:cursor-not-allowed disabled:opacity-40"
+                    aria-label={t("game.rotate")}
+                    title={t("game.rotate")}
+                    className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-secondary text-secondary-foreground transition-colors hover:border-neon-pink disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    {t("game.rotate")}
+                    <RotateCw className="h-5 w-5" />
                   </button>
                   <button
                     onClick={flipSelected}
                     disabled={!selected}
-                    className="rounded-md border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground transition-colors hover:border-neon-pink disabled:cursor-not-allowed disabled:opacity-40"
+                    aria-label={t("game.flip")}
+                    title={t("game.flip")}
+                    className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-secondary text-secondary-foreground transition-colors hover:border-neon-pink disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    {t("game.flip")}
+                    <FlipHorizontal2 className="h-5 w-5" />
                   </button>
                 </div>
               </div>
