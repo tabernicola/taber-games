@@ -6,7 +6,8 @@ import { ScoreForm } from "@/components/ScoreForm";
 import { useI18n } from "@/lib/i18n";
 import { useTimer } from "@/hooks/useTimer";
 import { formatTime } from "@/lib/scores";
-import taberSquareLogoAsset from "@/assets/taber-square-logo-v2.png.asset.json";
+import { FlipHorizontal2, Home, Lightbulb, RefreshCw, RotateCw, Eye, EyeOff } from "lucide-react";
+import taberSquareHeaderAsset from "@/assets/taber-square-header.png.asset.json";
 import {
   BLOCKER,
   BOARD_SIZE,
@@ -189,67 +190,24 @@ function TaberSquarePage() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <main className="mx-auto max-w-6xl px-4 pb-24 pt-8">
-        <div className="mb-6 flex items-end justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <img
-              src={taberSquareLogoAsset.url}
-              alt="The Taber Square Logo"
-              className="h-20 w-20 object-contain sm:h-24 sm:w-24"
-            />
-            <div>
-              <h1
-                className="text-3xl tracking-widest text-neon-pink text-glow-pink sm:text-4xl"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                {t("game.title")}
-              </h1>
-              <p className="mt-1 flex items-center gap-3 text-sm text-muted-foreground">
-                <Link
-                  to="/$lang/the-taber-square"
-                  params={{ lang: slug }}
-                  className="hover:text-neon-pink"
-                >
-                  ← {t("common.back")}
-                </Link>
-                <span className="tabular-nums text-neon-cyan">
-                  {t("common.time")}: {formatTime(seconds)}
-                </span>
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={giveHint}
-              disabled={hintUsed || !solution || won}
-              className="rounded-lg border border-neon-cyan bg-neon-cyan/10 px-4 py-2 text-sm font-semibold text-neon-cyan transition-all hover:bg-neon-cyan/20 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {hintUsed ? t("game.hintUsed") : t("game.hintBtn")}
-            </button>
-            <button
-              onClick={() => {
-                setShowSolution((v) => !v);
-                setHelped(true);
-              }}
-              disabled={!solution}
-              className="rounded-lg border border-neon-yellow bg-neon-yellow/10 px-4 py-2 text-sm font-semibold text-neon-yellow transition-all hover:bg-neon-yellow/20 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {showSolution ? t("game.hideSolution") : t("game.solution")}
-            </button>
-            <button
-              onClick={newGame}
-              className="rounded-lg border border-neon-pink bg-neon-pink/10 px-4 py-2 text-sm font-semibold text-neon-pink transition-all hover:bg-neon-pink/20 neon-glow-pink"
-            >
-              {t("game.new")}
-            </button>
-          </div>
-        </div>
+      <main className="mx-auto max-w-6xl px-4 pb-32 pt-4">
+        <header className="flex flex-col items-center">
+          <img
+            src={taberSquareHeaderAsset.url}
+            alt="The Taber Square"
+            className="w-full max-w-md object-contain"
+          />
+          <span className="mt-1 text-sm tabular-nums text-neon-cyan">
+            {t("common.time")}: {formatTime(seconds)}
+          </span>
+        </header>
 
         {showSolution && (
-          <div className="mb-4 rounded-lg border border-neon-yellow/60 bg-neon-yellow/10 px-4 py-2 text-sm text-neon-yellow">
+          <div className="my-4 rounded-lg border border-neon-yellow/60 bg-neon-yellow/10 px-4 py-2 text-sm text-neon-yellow">
             {t("game.solutionShown")}
           </div>
         )}
+
 
         <div className="grid gap-6 lg:grid-cols-[auto,1fr]">
           <div className="flex justify-center">
@@ -325,16 +283,20 @@ function TaberSquarePage() {
                   <button
                     onClick={rotateSelected}
                     disabled={!selected || totalOrientations <= 1}
-                    className="rounded-md border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground transition-colors hover:border-neon-pink disabled:cursor-not-allowed disabled:opacity-40"
+                    aria-label={t("game.rotate")}
+                    title={t("game.rotate")}
+                    className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-secondary text-secondary-foreground transition-colors hover:border-neon-pink disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    {t("game.rotate")}
+                    <RotateCw className="h-5 w-5" />
                   </button>
                   <button
                     onClick={flipSelected}
                     disabled={!selected}
-                    className="rounded-md border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground transition-colors hover:border-neon-pink disabled:cursor-not-allowed disabled:opacity-40"
+                    aria-label={t("game.flip")}
+                    title={t("game.flip")}
+                    className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-secondary text-secondary-foreground transition-colors hover:border-neon-pink disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    {t("game.flip")}
+                    <FlipHorizontal2 className="h-5 w-5" />
                   </button>
                 </div>
               </div>
@@ -363,6 +325,46 @@ function TaberSquarePage() {
           </div>
         </div>
       </main>
+
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-neon-pink/40 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+        <div className="mx-auto flex max-w-md items-stretch justify-around gap-1 px-2 py-2">
+          <Link
+            to="/$lang/the-taber-square"
+            params={{ lang: slug }}
+            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-muted-foreground transition-colors hover:text-neon-pink"
+          >
+            <Home className="h-5 w-5" />
+            {t("common.back")}
+          </Link>
+          <button
+            onClick={giveHint}
+            disabled={hintUsed || !solution || won}
+            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-neon-cyan transition-colors disabled:opacity-40"
+          >
+            <Lightbulb className="h-5 w-5" />
+            {hintUsed ? t("game.hintUsed") : t("game.hintBtn")}
+          </button>
+          <button
+            onClick={() => {
+              setShowSolution((v) => !v);
+              setHelped(true);
+            }}
+            disabled={!solution}
+            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-neon-yellow transition-colors disabled:opacity-40"
+          >
+            {showSolution ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            {showSolution ? t("game.hideSolution") : t("game.solution")}
+          </button>
+          <button
+            onClick={newGame}
+            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-neon-pink transition-colors"
+          >
+            <RefreshCw className="h-5 w-5" />
+            {t("game.new")}
+          </button>
+        </div>
+      </nav>
+
 
       {won && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
