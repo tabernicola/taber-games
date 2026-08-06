@@ -6,7 +6,8 @@ import { ScoreForm } from "@/components/ScoreForm";
 import { useI18n } from "@/lib/i18n";
 import { useTimer } from "@/hooks/useTimer";
 import { formatTime } from "@/lib/scores";
-import taberSquareLogoAsset from "@/assets/taber-square-logo-v2.png.asset.json";
+import { FlipHorizontal2, Home, Lightbulb, RefreshCw, RotateCw, Eye, EyeOff } from "lucide-react";
+import taberSquareHeaderAsset from "@/assets/taber-square-header.png.asset.json";
 import {
   BLOCKER,
   BOARD_SIZE,
