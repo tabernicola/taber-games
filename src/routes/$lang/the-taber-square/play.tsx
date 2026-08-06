@@ -326,6 +326,46 @@ function TaberSquarePage() {
         </div>
       </main>
 
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-neon-pink/40 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+        <div className="mx-auto flex max-w-md items-stretch justify-around gap-1 px-2 py-2">
+          <Link
+            to="/$lang/the-taber-square"
+            params={{ lang: slug }}
+            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-muted-foreground transition-colors hover:text-neon-pink"
+          >
+            <Home className="h-5 w-5" />
+            {t("common.back")}
+          </Link>
+          <button
+            onClick={giveHint}
+            disabled={hintUsed || !solution || won}
+            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-neon-cyan transition-colors disabled:opacity-40"
+          >
+            <Lightbulb className="h-5 w-5" />
+            {hintUsed ? t("game.hintUsed") : t("game.hintBtn")}
+          </button>
+          <button
+            onClick={() => {
+              setShowSolution((v) => !v);
+              setHelped(true);
+            }}
+            disabled={!solution}
+            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-neon-yellow transition-colors disabled:opacity-40"
+          >
+            {showSolution ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            {showSolution ? t("game.hideSolution") : t("game.solution")}
+          </button>
+          <button
+            onClick={newGame}
+            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-neon-pink transition-colors"
+          >
+            <RefreshCw className="h-5 w-5" />
+            {t("game.new")}
+          </button>
+        </div>
+      </nav>
+
+
       {won && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
           <div className="w-full max-w-sm rounded-2xl border border-neon-pink bg-card p-8 text-center neon-glow-pink">
