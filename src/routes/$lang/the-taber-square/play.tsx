@@ -333,6 +333,10 @@ function TaberSquarePage() {
             <Home className="h-5 w-5" />
             {t("common.back")}
           </Link>
+          <div className="flex flex-none flex-col items-center justify-center gap-1 rounded-lg border border-neon-cyan/30 bg-neon-cyan/10 px-3 py-1.5 text-[10px] font-semibold text-neon-cyan">
+            <Clock className="h-5 w-5" />
+            <span className="tabular-nums">{formatTime(seconds)}</span>
+          </div>
           <button
             onClick={giveHint}
             disabled={hintUsed || !solution || won}
