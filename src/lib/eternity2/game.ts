@@ -21,6 +21,8 @@ export type Level = {
   fixed: { index: number; tileId: number; rotation: Rotation }[];
   /** true for the original, published Eternity II puzzle */
   original: boolean;
+  /** known solution per cell (absent for the original 16x16 board) */
+  solution?: { tileId: number; rotation: Rotation }[];
 };
 
 export const LEVELS = [4, 6, 8, 12, 16] as const;
@@ -73,14 +75,17 @@ function generateRandomLevel(size: number): Level {
   }
 
   // tiles are handed to the player already rotated and shuffled
-  const tiles: Tile[] = shuffle(
-    solved.map((edges, i) => ({
-      id: i,
-      edges: rotate(edges, Math.floor(Math.random() * 4) as Rotation),
-    })),
-  ).map((t, i) => ({ id: i, edges: t.edges }));
+  const shuffled = shuffle(
+    solved.map((_edges, cell) => ({ cell, r: Math.floor(Math.random() * 4) as Rotation })),
+  );
+  const tiles: Tile[] = shuffled.map((s, i) => ({ id: i, edges: rotate(solved[s.cell], s.r) }));
 
-  return { size, tiles, fixed: [], original: false };
+  const solution: { tileId: number; rotation: Rotation }[] = new Array(size * size);
+  shuffled.forEach((s, i) => {
+    solution[s.cell] = { tileId: i, rotation: ((4 - s.r) % 4) as Rotation };
+  });
+
+  return { size, tiles, fixed: [], original: false, solution };
 }
 
 /** The one and only original Eternity II board: fixed 256-piece set + published clue. */
