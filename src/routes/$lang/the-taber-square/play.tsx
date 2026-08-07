@@ -190,6 +190,9 @@ function TaberSquarePage() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
+      <div className="fixed right-3 top-3 z-50 rounded-full border border-neon-cyan/40 bg-background/90 px-3 py-1 text-sm tabular-nums text-neon-cyan shadow-[0_0_12px_oklch(0.72_0.25_195/0.45)] backdrop-blur">
+        {formatTime(seconds)}
+      </div>
       <main className="mx-auto max-w-6xl px-4 pb-32 pt-4">
         <header className="flex flex-col items-center">
           <img
@@ -197,9 +200,6 @@ function TaberSquarePage() {
             alt="The Taber Square"
             className="w-full max-w-md object-contain"
           />
-          <span className="mt-1 text-sm tabular-nums text-neon-cyan">
-            {t("common.time")}: {formatTime(seconds)}
-          </span>
         </header>
 
         {showSolution && (
