@@ -6,7 +6,7 @@ import { ScoreForm } from "@/components/ScoreForm";
 import { useI18n } from "@/lib/i18n";
 import { useTimer } from "@/hooks/useTimer";
 import { formatTime } from "@/lib/scores";
-import { FlipHorizontal2, Home, Lightbulb, RefreshCw, RotateCw, Eye, EyeOff } from "lucide-react";
+import { Clock, FlipHorizontal2, Home, Lightbulb, RefreshCw, RotateCw, Eye, EyeOff } from "lucide-react";
 import taberSquareHeaderAsset from "@/assets/taber-square-header.png.asset.json";
 import {
   BLOCKER,
