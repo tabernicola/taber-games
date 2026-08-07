@@ -6,7 +6,7 @@ import { ScoreForm } from "@/components/ScoreForm";
 import { useI18n } from "@/lib/i18n";
 import { useTimer } from "@/hooks/useTimer";
 import { formatTime } from "@/lib/scores";
-import { FlipHorizontal2, Home, Lightbulb, RefreshCw, RotateCw, Eye, EyeOff } from "lucide-react";
+import { Clock, FlipHorizontal2, Home, Lightbulb, RefreshCw, RotateCw, Eye, EyeOff } from "lucide-react";
 import taberSquareHeaderAsset from "@/assets/taber-square-header.png.asset.json";
 import {
   BLOCKER,
@@ -190,9 +190,6 @@ function TaberSquarePage() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <div className="fixed right-3 top-3 z-50 rounded-full border border-neon-cyan/40 bg-background/90 px-3 py-1 text-sm tabular-nums text-neon-cyan shadow-[0_0_12px_oklch(0.72_0.25_195/0.45)] backdrop-blur">
-        {formatTime(seconds)}
-      </div>
       <main className="mx-auto max-w-6xl px-4 pb-32 pt-4">
         <header className="flex flex-col items-center">
           <img
@@ -336,6 +333,10 @@ function TaberSquarePage() {
             <Home className="h-5 w-5" />
             {t("common.back")}
           </Link>
+          <div className="flex flex-none flex-col items-center justify-center gap-1 rounded-lg border border-neon-cyan/30 bg-neon-cyan/10 px-3 py-1.5 text-[10px] font-semibold text-neon-cyan">
+            <Clock className="h-5 w-5" />
+            <span className="tabular-nums">{formatTime(seconds)}</span>
+          </div>
           <button
             onClick={giveHint}
             disabled={hintUsed || !solution || won}
