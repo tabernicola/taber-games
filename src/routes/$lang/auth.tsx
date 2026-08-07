@@ -12,12 +12,12 @@ export const Route = createFileRoute("/$lang/auth")({
       { title: "Sign in — The Taber Games" },
       {
         name: "description",
-        content: "Sign in to The Taber Games to save your Eternity II progress and continue later.",
+        content: "Sign in to The Taber Games to save your Taber's Eternity progress and continue later.",
       },
       { property: "og:title", content: "Sign in — The Taber Games" },
       {
         property: "og:description",
-        content: "Sign in to The Taber Games to save your Eternity II progress and continue later.",
+        content: "Sign in to The Taber Games to save your Taber's Eternity progress and continue later.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

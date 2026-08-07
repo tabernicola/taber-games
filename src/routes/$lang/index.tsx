@@ -12,13 +12,13 @@ export const Route = createFileRoute("/$lang/")({
       {
         name: "description",
         content:
-          "Enter The Taber Games arcade: The Taber Square, Eternity II and The Taber Study, with rankings and saved games.",
+          "Enter The Taber Games arcade: The Taber Square, Taber's Eternity and The Taber Study, with rankings and saved games.",
       },
       { property: "og:title", content: "The Taber Games — Neon Arcade of Minigames" },
       {
         property: "og:description",
         content:
-          "Enter The Taber Games arcade: The Taber Square, Eternity II and The Taber Study, with rankings and saved games.",
+          "Enter The Taber Games arcade: The Taber Square, Taber's Eternity and The Taber Study, with rankings and saved games.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -85,7 +85,7 @@ function Home() {
             <GameCard
               to="/$lang/eternity-ii"
               lang={slug}
-              title="Eternity II"
+              title="Taber's Eternity"
               tag={t("home.card.e2.tag")}
               description={t("home.card.e2.desc")}
               playLabel={t("home.play")}

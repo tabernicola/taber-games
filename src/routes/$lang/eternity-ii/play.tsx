@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Clock, Eye, EyeOff, Home, RefreshCw, RotateCw, Save } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Tile } from "@/components/eternity2/Tile";
 import { ScoreForm } from "@/components/ScoreForm";
@@ -30,17 +31,17 @@ export const Route = createFileRoute("/$lang/eternity-ii/play")({
   }),
   head: () => ({
     meta: [
-      { title: "Play Eternity II — The Taber Games" },
+      { title: "Play Taber's Eternity — The Taber Games" },
       {
         name: "description",
         content:
-          "Play Eternity II: edge-matching boards from 4x4 up to the original 256-piece puzzle, against the clock.",
+          "Play Taber's Eternity: edge-matching boards from 4x4 up to the original 256-piece puzzle, against the clock.",
       },
-      { property: "og:title", content: "Play Eternity II" },
+      { property: "og:title", content: "Play Taber's Eternity" },
       {
         property: "og:description",
         content:
-          "Play Eternity II: edge-matching boards from 4x4 up to the original 256-piece puzzle, against the clock.",
+          "Play Taber's Eternity: edge-matching boards from 4x4 up to the original 256-piece puzzle, against the clock.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -63,6 +64,9 @@ function EternityPage() {
   const [showWin, setShowWin] = useState(false);
   const [ready, setReady] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "done">("idle");
+  const [showSolution, setShowSolution] = useState(false);
+  const [prevBoard, setPrevBoard] = useState<Placement[] | null>(null);
+  const [helped, setHelped] = useState(false);
   const { seconds, setSeconds } = useTimer(ready && !showWin);
 
   const startLevel = useCallback(
@@ -73,6 +77,9 @@ function EternityPage() {
       setSelected(null);
       setFocus(null);
       setShowWin(false);
+      setShowSolution(false);
+      setPrevBoard(null);
+      setHelped(false);
       setSeconds(0);
       setReady(true);
     },
@@ -172,6 +179,21 @@ function EternityPage() {
     setFocus((f) => (f === index ? null : index));
   };
 
+  const toggleSolution = () => {
+    if (!level.solution) return;
+    if (showSolution) {
+      setBoard(prevBoard ?? emptyBoard(level));
+      setShowSolution(false);
+      return;
+    }
+    setPrevBoard(board);
+    setBoard(level.solution.map((p) => ({ ...p, locked: true })));
+    setSelected(null);
+    setFocus(null);
+    setShowSolution(true);
+    setHelped(true);
+  };
+
   const save = async () => {
     if (!user) return;
     setSaveState("saving");
@@ -217,18 +239,12 @@ function EternityPage() {
   return (
     <div className="e2-scope min-h-screen">
       <SiteHeader />
-      <main className="mx-auto max-w-6xl px-4 pb-24 pt-8">
+      <main className="mx-auto max-w-6xl px-4 pb-36 pt-8">
         <header className="text-center">
-          <h1 className="e2-title text-3xl sm:text-5xl">ETERNITY II</h1>
+          <h1 className="e2-title text-3xl sm:text-5xl">TABER&apos;S ETERNITY</h1>
           <p className="mt-2 flex flex-wrap items-center justify-center gap-4 text-sm" style={{ color: "var(--e2-ink-soft)" }}>
-            <Link to="/$lang/eternity-ii" params={{ lang: slug }} className="underline">
-              ← {t("common.back")}
-            </Link>
             <span>
               {t("e2.level")}: {level.size}×{level.size}
-            </span>
-            <span className="tabular-nums">
-              {t("common.time")}: {formatTime(seconds)}
             </span>
           </p>
         </header>
@@ -283,33 +299,6 @@ function EternityPage() {
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-              <button type="button" className="e2-btn" onClick={rotateSelection} disabled={!selected}>
-                {t("e2.rotate")}
-              </button>
-              <button
-                type="button"
-                className="e2-btn"
-                data-variant="soft"
-                onClick={() => startLevel(level.size as LevelSize)}
-              >
-                {level.original ? t("e2.reset") : t("e2.new")}
-              </button>
-              {user ? (
-                <button type="button" className="e2-btn" data-variant="soft" onClick={save}>
-                  {saveState === "saving"
-                    ? t("e2.saving")
-                    : saveState === "done"
-                      ? t("e2.savedOk")
-                      : t("e2.save")}
-                </button>
-              ) : (
-                <Link to="/$lang/auth" params={{ lang: slug }} className="e2-btn" data-variant="soft">
-                  {t("e2.save")}
-                </Link>
-              )}
-            </div>
-
             <p className="mt-3 text-sm" style={{ color: "var(--e2-ink-soft)" }}>
               {t("e2.score", { m: seams.matched, n: seams.total })} ·{" "}
               {t("e2.placed", { m: board.filter(Boolean).length, n: board.length })}
@@ -330,9 +319,21 @@ function EternityPage() {
           >
             <div className="mb-3 flex items-baseline justify-between">
               <h2 className="e2-title text-lg">{t("e2.pieces")}</h2>
-              <span className="text-xs" style={{ color: "var(--e2-ink-soft)" }}>
-                {t("e2.help")}
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="hidden text-xs sm:inline" style={{ color: "var(--e2-ink-soft)" }}>
+                  {t("e2.help")}
+                </span>
+                <button
+                  type="button"
+                  className="e2-btn inline-flex items-center gap-1.5"
+                  onClick={rotateSelection}
+                  disabled={!selected}
+                  aria-label={t("e2.rotate")}
+                >
+                  <RotateCw className="h-4 w-4" />
+                  {t("e2.rotate")}
+                </button>
+              </div>
             </div>
             <div
               className="flex max-h-[520px] flex-wrap gap-2 overflow-y-auto pr-1"
@@ -375,6 +376,65 @@ function EternityPage() {
         </div>
       </main>
 
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+        <div className="mx-auto flex max-w-md items-stretch justify-around gap-1 px-2 py-2">
+          <Link
+            to="/$lang/eternity-ii"
+            params={{ lang: slug }}
+            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-muted-foreground transition-colors hover:text-neon-pink"
+          >
+            <Home className="h-5 w-5" />
+            {t("common.back")}
+          </Link>
+          <div className="flex flex-none flex-col items-center justify-center gap-1 rounded-lg border border-neon-cyan/30 bg-neon-cyan/10 px-3 py-1.5 text-[10px] font-semibold text-neon-cyan">
+            <Clock className="h-5 w-5" />
+            <span className="tabular-nums">{formatTime(seconds)}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => startLevel(level.size as LevelSize)}
+            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-neon-pink transition-colors"
+          >
+            <RefreshCw className="h-5 w-5" />
+            {level.original ? t("e2.reset") : t("e2.new")}
+          </button>
+          {user ? (
+            <button
+              type="button"
+              onClick={save}
+              className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-neon-cyan transition-colors"
+            >
+              <Save className="h-5 w-5" />
+              {saveState === "saving"
+                ? t("e2.saving")
+                : saveState === "done"
+                  ? t("e2.savedOk")
+                  : t("e2.save")}
+            </button>
+          ) : (
+            <Link
+              to="/$lang/auth"
+              params={{ lang: slug }}
+              className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-neon-cyan transition-colors"
+            >
+              <Save className="h-5 w-5" />
+              {t("e2.save")}
+            </Link>
+          )}
+          {!level.original && (
+            <button
+              type="button"
+              onClick={toggleSolution}
+              disabled={!level.solution}
+              className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-neon-yellow transition-colors disabled:opacity-40"
+            >
+              {showSolution ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              {showSolution ? t("e2.hideSolution") : t("e2.solution")}
+            </button>
+          )}
+        </div>
+      </nav>
+
       {showWin && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4">
           <div
@@ -385,7 +445,13 @@ function EternityPage() {
             <p className="mt-3 text-sm" style={{ color: "var(--e2-ink-soft)" }}>
               {t("e2.solvedDesc")}
             </p>
-            <ScoreForm game="eternity-ii" level={String(level.size)} seconds={seconds} />
+            {helped ? (
+              <p className="mt-4 text-sm" style={{ color: "var(--e2-ink-soft)" }}>
+                {t("e2.solutionNote")}
+              </p>
+            ) : (
+              <ScoreForm game="eternity-ii" level={String(level.size)} seconds={seconds} />
+            )}
             <div className="mt-5 flex justify-center gap-2">
               <button
                 type="button"

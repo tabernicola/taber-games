@@ -13,17 +13,17 @@ import { formatTime } from "@/lib/scores";
 export const Route = createFileRoute("/$lang/eternity-ii/")({
   head: () => ({
     meta: [
-      { title: "Eternity II — rules, levels and ranking | The Taber Games" },
+      { title: "Taber's Eternity — rules, levels and ranking | The Taber Games" },
       {
         name: "description",
         content:
-          "How to play Eternity II, pick a board from 4x4 to the original 256-piece puzzle, check the fastest times and resume a saved game.",
+          "How to play Taber's Eternity, pick a board from 4x4 to the original 256-piece puzzle, check the fastest times and resume a saved game.",
       },
-      { property: "og:title", content: "Eternity II — rules, levels and ranking" },
+      { property: "og:title", content: "Taber's Eternity — rules, levels and ranking" },
       {
         property: "og:description",
         content:
-          "How to play Eternity II, pick a board from 4x4 to the original 256-piece puzzle, check the fastest times and resume a saved game.",
+          "How to play Taber's Eternity, pick a board from 4x4 to the original 256-piece puzzle, check the fastest times and resume a saved game.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -52,7 +52,7 @@ function EternityLanding() {
             className="text-3xl tracking-widest text-neon-pink text-glow-pink sm:text-4xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            ETERNITY II
+            TABER&apos;S ETERNITY
           </h1>
           <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">{t("e2.desc")}</p>
         </header>
@@ -144,7 +144,7 @@ function EternityLanding() {
           />
         </div>
 
-        <GameFooter basedOn="Eternity II: basado en el puzle original de Christopher Monckton (Tomy)" />
+        <GameFooter basedOn="Taber's Eternity: basado en el puzle original de Christopher Monckton (Tomy)" />
       </main>
     </div>
   );
