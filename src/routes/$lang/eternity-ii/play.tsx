@@ -109,6 +109,7 @@ function EternityPage() {
                   ]
                 : [],
             original: save.level === 16,
+            solution: save.solution,
           };
           setLevel(lv);
           setBoard(save.board);
@@ -205,6 +206,7 @@ function EternityPage() {
         seconds,
         board,
         level.tiles.map((tl) => tl.edges),
+        level.solution,
       );
       setSaveState("done");
       window.setTimeout(() => setSaveState("idle"), 2500);
