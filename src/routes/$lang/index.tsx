@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import logoAsset from "@/assets/taber-games-logo-v2.png.asset.json";
 import studyLogo from "@/assets/taber-study-logo.png.asset.json";
 import squareLogo from "@/assets/taber-square-logo-v2.png.asset.json";
+import eternityLogo from "@/assets/tabers-eternity-logo.png.asset.json";
 import { SiteHeader } from "@/components/SiteHeader";
 import { useI18n } from "@/lib/i18n";
 
@@ -74,14 +75,6 @@ function Home() {
               playLabel={t("home.play")}
               image={squareLogo.url}
             />
-            <ExternalGameCard
-              href="https://the-taber-study.base44.app"
-              title="The Taber Study"
-              tag={t("home.card.study.tag")}
-              description={t("home.card.study.desc")}
-              playLabel={t("home.external")}
-              image={studyLogo.url}
-            />
             <GameCard
               to="/$lang/eternity-ii"
               lang={slug}
@@ -89,6 +82,15 @@ function Home() {
               tag={t("home.card.e2.tag")}
               description={t("home.card.e2.desc")}
               playLabel={t("home.play")}
+              image={eternityLogo.url}
+            />
+            <ExternalGameCard
+              href="https://the-taber-study.base44.app"
+              title="The Taber Study"
+              tag={t("home.card.study.tag")}
+              description={t("home.card.study.desc")}
+              playLabel={t("home.external")}
+              image={studyLogo.url}
             />
           </div>
         </section>
@@ -179,7 +181,7 @@ function GameCard({
           <img
             src={image}
             alt=""
-            className="h-24 w-24 object-contain drop-shadow-[0_0_20px_oklch(0.72_0.30_350/0.5)]"
+            className="h-24 max-w-64 object-contain drop-shadow-[0_0_20px_oklch(0.72_0.30_350/0.5)]"
           />
         </div>
       )}

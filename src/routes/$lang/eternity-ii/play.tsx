@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Clock, Eye, EyeOff, Home, RefreshCw, RotateCw, Save } from "lucide-react";
+import eternityLogo from "@/assets/tabers-eternity-logo.png.asset.json";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Tile } from "@/components/eternity2/Tile";
 import { ScoreForm } from "@/components/ScoreForm";
@@ -240,8 +241,21 @@ function EternityPage() {
     <div className="e2-scope min-h-screen">
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-4 pb-36 pt-8">
-        <header className="text-center">
-          <h1 className="e2-title text-3xl sm:text-5xl">TABER&apos;S ETERNITY</h1>
+       <header className="text-center">
+          <div className="relative inline-block">
+            <div
+              aria-hidden
+              className="absolute inset-0 -z-10 blur-3xl opacity-70"
+              style={{
+                background: "radial-gradient(closest-side, var(--neon-pink), transparent 70%)",
+              }}
+            />
+            <img
+              src={eternityLogo.url}
+              alt="Taber's Eternity"
+              className="h-32 w-64 drop-shadow-[0_0_40px_oklch(0.72_0.30_350/0.55)]"
+            />
+          </div>
           <p className="mt-2 flex flex-wrap items-center justify-center gap-4 text-sm" style={{ color: "var(--e2-ink-soft)" }}>
             <span>
               {t("e2.level")}: {level.size}×{level.size}

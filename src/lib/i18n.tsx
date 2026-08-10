@@ -177,7 +177,7 @@ const translations: Record<Lang, Dict> = {
     "game.solutionShown": "Solución a la vista — no cuenta como victoria.",
     "home.card.e2.tag": "Puzle · Encaje de bordes",
     "home.card.e2.desc": "Haz coincidir los bordes de animales. Empieza en tableros pequeños y llega al puzle original de 256 piezas.",
-    "e2.desc": "El reto de Taber's Eternity: haz coincidir los bordes de las piezas vecinas. Nadie ha resuelto el tablero original de 16×16 — no existe solución. ¿Conseguirás tú?",
+    "e2.desc": "El reto de Taber's Eternity: haz coincidir los bordes de las piezas vecinas. Nadie ha resuelto el tablero original de 16×16 — no existe solución. ¿Lo conseguirás tú?",
     "e2.solveRateLabel": "Lo resuelven",
     "e2.rate4": "60-70%",
     "e2.rate6": "25-30%",

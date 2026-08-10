@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import eternityLogo from "@/assets/tabers-eternity-logo.png.asset.json";
 import { SiteHeader } from "@/components/SiteHeader";
 import { GameFooter } from "@/components/GameFooter";
 import { Ranking } from "@/components/Ranking";
@@ -47,13 +48,21 @@ function EternityLanding() {
     <div className="min-h-screen">
       <SiteHeader />
       <main className="mx-auto max-w-4xl px-4 pb-24 pt-10">
-        <header className="text-center">
-          <h1
-            className="text-3xl tracking-widest text-neon-pink text-glow-pink sm:text-4xl"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            TABER&apos;S ETERNITY
-          </h1>
+       <header className="text-center">
+          <div className="relative inline-block">
+            <div
+              aria-hidden
+              className="absolute inset-0 -z-10 blur-3xl opacity-70"
+              style={{
+                background: "radial-gradient(closest-side, var(--neon-pink), transparent 70%)",
+              }}
+            />
+            <img
+              src={eternityLogo.url}
+              alt="Taber's Eternity"
+              className="h-32 w-64 drop-shadow-[0_0_40px_oklch(0.72_0.30_350/0.55)]"
+            />
+          </div>
           <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">{t("e2.desc")}</p>
         </header>
 
