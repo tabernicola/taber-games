@@ -247,10 +247,13 @@ function solveWithPlacements(
       const oy = firstY - dy;
       if (canPlaceAt(board, orient, ox, oy, level, piece.id)) {
         const next = placeCells(board, orient, ox, oy, piece.id);
-        const res = solveWithPlacements(next, pieces, idx + 1, [
-          ...acc,
-          { id: piece.id, cells: orient, ox, oy },
-        ], level);
+        const res = solveWithPlacements(
+          next,
+          pieces,
+          idx + 1,
+          [...acc, { id: piece.id, cells: orient, ox, oy }],
+          level,
+        );
         if (res) return res;
       }
     }
@@ -259,7 +262,10 @@ function solveWithPlacements(
 }
 
 /** Full solution for a set of blockers: one placement per piece. */
-export function solveBlockers(blockers: Cell[], levelId: SquareLevelId = "starter"): Placement[] | null {
+export function solveBlockers(
+  blockers: Cell[],
+  levelId: SquareLevelId = "starter",
+): Placement[] | null {
   const level = getLevel(levelId);
   const board = applyBlockers(blockers);
   const ordered = [...PIECES].sort((a, b) => b.cells.length - a.cells.length);
