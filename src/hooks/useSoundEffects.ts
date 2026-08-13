@@ -2,17 +2,24 @@ import { useCallback, useRef } from "react";
 
 type SoundType = "click" | "place" | "rotate" | "win" | "roll";
 
+let sharedAudioContext: AudioContext | null = null;
+
+function getSharedAudioContext(): AudioContext {
+  if (!sharedAudioContext) {
+    const Ctor =
+      window.AudioContext ||
+      (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctor) throw new Error("Web Audio API is not supported");
+    sharedAudioContext = new Ctor();
+  }
+  return sharedAudioContext;
+}
+
 export function useSoundEffects() {
-  const audioContextRef = useRef<AudioContext | null>(null);
   const queueRef = useRef<SoundType[]>([]);
   const flushingRef = useRef(false);
 
-  const getAudioContext = useCallback(() => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    return audioContextRef.current;
-  }, []);
+  const getAudioContext = useCallback(() => getSharedAudioContext(), []);
 
   const playSoundImmediate = useCallback(
     (type: SoundType) => {

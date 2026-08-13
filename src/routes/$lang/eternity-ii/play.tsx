@@ -1,15 +1,23 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Clock, Eye, EyeOff, Home, RefreshCw, RotateCw, Save } from "lucide-react";
-import eternityLogo from "@/assets/tabers-eternity-logo.png.asset.json";
+import { createFileRoute } from "@tanstack/react-router";
+import { Eye, EyeOff, RefreshCw, RotateCw, Save } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
+import {
+  GameNav,
+  GameNavBackLink,
+  GameNavButton,
+  GameNavLink,
+  GameNavTimer,
+} from "@/components/GameNav";
 import { Tile } from "@/components/eternity2/Tile";
+import { EternityLogo } from "@/components/eternity2/EternityLogo";
 import { ScoreForm } from "@/components/ScoreForm";
 import { useI18n } from "@/lib/i18n";
+import { pageMeta } from "@/lib/seo";
 import { useAuth } from "@/hooks/useAuth";
 import { useTimer } from "@/hooks/useTimer";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
-import { formatTime } from "@/lib/scores";
 import { loadSave, storeSave } from "@/lib/eternity2/saves";
 import { ETERNITY2_CLUE } from "@/lib/eternity2/pieces-original";
 import {
@@ -32,22 +40,12 @@ export const Route = createFileRoute("/$lang/eternity-ii/play")({
     resume: search["resume"] === true || search["resume"] === "true",
   }),
   head: () => ({
-    meta: [
-      { title: "Play Taber's Eternity — The Taber Games" },
-      {
-        name: "description",
-        content:
-          "Play Taber's Eternity: edge-matching boards from 4x4 up to the original 256-piece puzzle, against the clock.",
-      },
-      { property: "og:title", content: "Play Taber's Eternity" },
-      {
-        property: "og:description",
-        content:
-          "Play Taber's Eternity: edge-matching boards from 4x4 up to the original 256-piece puzzle, against the clock.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+    meta: pageMeta({
+      title: "Play Taber's Eternity — The Taber Games",
+      ogTitle: "Play Taber's Eternity",
+      description:
+        "Play Taber's Eternity: edge-matching boards from 4x4 up to the original 256-piece puzzle, against the clock.",
+    }),
   }),
   component: EternityPage,
 });
@@ -55,7 +53,7 @@ export const Route = createFileRoute("/$lang/eternity-ii/play")({
 const EMPTY_LEVEL: Level = { size: 4, tiles: [], fixed: [], original: false };
 
 function EternityPage() {
-  const { t, slug } = useI18n();
+  const { t } = useI18n();
   const { level: size, resume } = Route.useSearch();
   const { user } = useAuth();
   const { playSound } = useSoundEffects();
@@ -115,6 +113,7 @@ function EternityPage() {
           };
           setLevel(lv);
           setBoard(save.board);
+          setHelped(save.helped ?? false);
           setSeconds(save.seconds);
           setReady(true);
         })
@@ -150,17 +149,13 @@ function EternityPage() {
     playSound("rotate");
   }, [playSound]);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "r" || e.key === "R") rotateSelection();
-      if (e.key === "Escape") {
-        setSelected(null);
-        setFocus(null);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [rotateSelection]);
+  useKeyboardShortcuts({
+    r: rotateSelection,
+    Escape: () => {
+      setSelected(null);
+      setFocus(null);
+    },
+  });
 
   const place = (index: number, tileId: number, rotation: Rotation) => {
     playSound("place");
@@ -212,13 +207,17 @@ function EternityPage() {
     if (!user) return;
     setSaveState("saving");
     try {
+      // While the solution is revealed, persist the player's own board so the
+      // resumed game is playable rather than a locked solution grid.
+      const playerBoard = showSolution ? (prevBoard ?? emptyBoard(level)) : board;
       await storeSave(
         user.id,
         level.size,
         seconds,
-        board,
+        playerBoard,
         level.tiles.map((tl) => tl.edges),
         level.solution,
+        helped,
       );
       setSaveState("done");
       window.setTimeout(() => setSaveState("idle"), 2500);
@@ -256,20 +255,7 @@ function EternityPage() {
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-4 pb-36 pt-8">
         <header className="text-center">
-          <div className="relative inline-block">
-            <div
-              aria-hidden
-              className="absolute inset-0 -z-10 blur-3xl opacity-70"
-              style={{
-                background: "radial-gradient(closest-side, var(--neon-pink), transparent 70%)",
-              }}
-            />
-            <img
-              src={eternityLogo.url}
-              alt="Taber's Eternity"
-              className="h-32 w-64 drop-shadow-[0_0_40px_oklch(0.72_0.30_350/0.55)]"
-            />
-          </div>
+          <EternityLogo />
           <p
             className="mt-2 flex flex-wrap items-center justify-center gap-4 text-sm"
             style={{ color: "var(--e2-ink-soft)" }}
@@ -407,64 +393,46 @@ function EternityPage() {
         </div>
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
-        <div className="mx-auto flex max-w-md items-stretch justify-around gap-1 px-2 py-2">
-          <Link
-            to="/$lang/eternity-ii"
-            params={{ lang: slug }}
-            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-muted-foreground transition-colors hover:text-neon-pink"
-          >
-            <Home className="h-5 w-5" />
-            {t("common.back")}
-          </Link>
-          <div className="flex flex-none flex-col items-center justify-center gap-1 rounded-lg border border-neon-cyan/30 bg-neon-cyan/10 px-3 py-1.5 text-[10px] font-semibold text-neon-cyan">
-            <Clock className="h-5 w-5" />
-            <span className="tabular-nums">{formatTime(seconds)}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => startLevel(level.size as LevelSize)}
-            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-neon-pink transition-colors"
-          >
-            <RefreshCw className="h-5 w-5" />
-            {level.original ? t("e2.reset") : t("e2.new")}
-          </button>
-          {user ? (
-            <button
-              type="button"
-              onClick={save}
-              className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-neon-cyan transition-colors"
-            >
-              <Save className="h-5 w-5" />
-              {saveState === "saving"
+      <GameNav>
+        <GameNavBackLink to="/$lang/eternity-ii" />
+        <GameNavTimer seconds={seconds} />
+        <GameNavButton
+          onClick={() => startLevel(level.size as LevelSize)}
+          colorClass="text-neon-pink"
+          icon={<RefreshCw className="h-5 w-5" />}
+          label={level.original ? t("e2.reset") : t("e2.new")}
+        />
+        {user ? (
+          <GameNavButton
+            onClick={save}
+            colorClass="text-neon-cyan"
+            icon={<Save className="h-5 w-5" />}
+            label={
+              saveState === "saving"
                 ? t("e2.saving")
                 : saveState === "done"
                   ? t("e2.savedOk")
-                  : t("e2.save")}
-            </button>
-          ) : (
-            <Link
-              to="/$lang/auth"
-              params={{ lang: slug }}
-              className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-neon-cyan transition-colors"
-            >
-              <Save className="h-5 w-5" />
-              {t("e2.save")}
-            </Link>
-          )}
-          {!level.original && (
-            <button
-              type="button"
-              onClick={toggleSolution}
-              disabled={!level.solution}
-              className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-neon-yellow transition-colors disabled:opacity-40"
-            >
-              {showSolution ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-              {showSolution ? t("e2.hideSolution") : t("e2.solution")}
-            </button>
-          )}
-        </div>
-      </nav>
+                  : t("e2.save")
+            }
+          />
+        ) : (
+          <GameNavLink
+            to="/$lang/auth"
+            colorClass="text-neon-cyan"
+            icon={<Save className="h-5 w-5" />}
+            label={t("e2.save")}
+          />
+        )}
+        {!level.original && (
+          <GameNavButton
+            onClick={toggleSolution}
+            disabled={!level.solution}
+            colorClass="text-neon-yellow"
+            icon={showSolution ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            label={showSolution ? t("e2.hideSolution") : t("e2.solution")}
+          />
+        )}
+      </GameNav>
 
       {showWin && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4">

@@ -1,9 +1,6 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { detectLangSlug } from "@/lib/i18n";
+import { createFileRoute } from "@tanstack/react-router";
+import { redirectToLang } from "@/lib/lang-redirect";
 
 export const Route = createFileRoute("/")({
-  beforeLoad: () => {
-    const lang = typeof window === "undefined" ? "es" : detectLangSlug();
-    throw redirect({ to: "/$lang", params: { lang } });
-  },
+  beforeLoad: () => redirectToLang("/$lang"),
 });

@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
+import { getStorageItem, setStorageItem } from "@/lib/storage";
 
 export function CookieBanner() {
   const { t } = useI18n();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem("taber-cookies") !== "ok") setShow(true);
+    if (getStorageItem("taber-cookies") !== "ok") setShow(true);
   }, []);
 
   if (!show) return null;
@@ -17,7 +18,7 @@ export function CookieBanner() {
         <p className="flex-1 text-center sm:text-left">{t("cookies.text")}</p>
         <button
           onClick={() => {
-            localStorage.setItem("taber-cookies", "ok");
+            setStorageItem("taber-cookies", "ok");
             setShow(false);
           }}
           className="rounded-lg border border-neon-pink bg-neon-pink/10 px-4 py-1.5 text-xs font-semibold text-neon-pink transition-colors hover:bg-neon-pink/20"
