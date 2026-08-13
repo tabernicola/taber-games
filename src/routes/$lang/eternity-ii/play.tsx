@@ -113,6 +113,7 @@ function EternityPage() {
           };
           setLevel(lv);
           setBoard(save.board);
+          setHelped(save.helped ?? false);
           setSeconds(save.seconds);
           setReady(true);
         })
@@ -206,13 +207,17 @@ function EternityPage() {
     if (!user) return;
     setSaveState("saving");
     try {
+      // While the solution is revealed, persist the player's own board so the
+      // resumed game is playable rather than a locked solution grid.
+      const playerBoard = showSolution ? (prevBoard ?? emptyBoard(level)) : board;
       await storeSave(
         user.id,
         level.size,
         seconds,
-        board,
+        playerBoard,
         level.tiles.map((tl) => tl.edges),
         level.solution,
+        helped,
       );
       setSaveState("done");
       window.setTimeout(() => setSaveState("idle"), 2500);

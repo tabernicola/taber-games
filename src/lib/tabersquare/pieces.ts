@@ -130,7 +130,7 @@ export function flip(cells: Cell[]): Cell[] {
 export function allOrientations(cells: Cell[]): Cell[][] {
   const seen = new Set<string>();
   const result: Cell[][] = [];
-  let current = normalize(cells);
+  const current = normalize(cells);
   for (let f = 0; f < 2; f++) {
     let c = f === 0 ? current : flip(current);
     for (let r = 0; r < 4; r++) {
