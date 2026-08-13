@@ -38,7 +38,7 @@ function EternityLanding() {
   const { user } = useAuth();
   const [level, setLevel] = useState<LevelSize>(4);
 
-  const { data: save } = useQuery({
+  const { data: save, isError: saveError } = useQuery({
     queryKey: ["e2-save", user?.id],
     queryFn: loadSave,
     enabled: !!user,
@@ -126,7 +126,10 @@ function EternityLanding() {
                 {t("e2.savedInfo", { size: save.level, t: formatTime(save.seconds) })}
               </Link>
             )}
-            {user && !save && <p className="text-muted-foreground">{t("e2.noSave")}</p>}
+            {user && saveError && <p className="text-destructive">{t("e2.loadError")}</p>}
+            {user && !save && !saveError && (
+              <p className="text-muted-foreground">{t("e2.noSave")}</p>
+            )}
           </div>
         </section>
 

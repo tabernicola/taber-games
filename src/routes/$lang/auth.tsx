@@ -48,27 +48,38 @@ function AuthPage() {
     setBusy(true);
     setError(null);
     setMessage(null);
-    if (mode === "in") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setError(error.message);
-    } else {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { emailRedirectTo: window.location.origin },
-      });
-      if (error) setError(error.message);
-      else if (!data.session) setMessage(t("auth.checkEmail"));
+    try {
+      if (mode === "in") {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) setError(error.message);
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: window.location.origin },
+        });
+        if (error) setError(error.message);
+        else if (!data.session) setMessage(t("auth.checkEmail"));
+      }
+    } catch (err) {
+      console.error("Auth request failed:", err);
+      setError(err instanceof Error ? err.message : t("auth.error"));
+    } finally {
+      setBusy(false);
     }
-    setBusy(false);
   };
 
   const google = async () => {
     setError(null);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) setError(String(result.error));
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) setError(String(result.error));
+    } catch (err) {
+      console.error("Google sign-in failed:", err);
+      setError(err instanceof Error ? err.message : t("auth.error"));
+    }
   };
 
   return (

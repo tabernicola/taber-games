@@ -66,7 +66,7 @@ function EternityPage() {
   const [focus, setFocus] = useState<number | null>(null);
   const [showWin, setShowWin] = useState(false);
   const [ready, setReady] = useState(false);
-  const [saveState, setSaveState] = useState<"idle" | "saving" | "done">("idle");
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "done" | "error">("idle");
   const [showSolution, setShowSolution] = useState(false);
   const [prevBoard, setPrevBoard] = useState<Placement[] | null>(null);
   const [helped, setHelped] = useState(false);
@@ -118,7 +118,11 @@ function EternityPage() {
           setSeconds(save.seconds);
           setReady(true);
         })
-        .catch(() => startLevel(size));
+        .catch((error) => {
+          if (cancelled) return;
+          console.error("Failed to load saved game:", error);
+          startLevel(size);
+        });
     } else {
       startLevel(size);
     }
@@ -222,8 +226,10 @@ function EternityPage() {
       );
       setSaveState("done");
       window.setTimeout(() => setSaveState("idle"), 2500);
-    } catch {
-      setSaveState("idle");
+    } catch (error) {
+      console.error("Failed to save game:", error);
+      setSaveState("error");
+      window.setTimeout(() => setSaveState("idle"), 2500);
     }
   };
 
@@ -440,7 +446,9 @@ function EternityPage() {
                 ? t("e2.saving")
                 : saveState === "done"
                   ? t("e2.savedOk")
-                  : t("e2.save")}
+                  : saveState === "error"
+                    ? t("e2.saveError")
+                    : t("e2.save")}
             </button>
           ) : (
             <Link

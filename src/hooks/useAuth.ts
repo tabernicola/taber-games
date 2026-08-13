@@ -11,10 +11,17 @@ export function useAuth() {
       setSession(s);
       setLoading(false);
     });
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data, error }) => {
+        if (error) console.error("Failed to restore session:", error);
+        setSession(data.session);
+        setLoading(false);
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to restore session:", error);
+        setLoading(false);
+      });
     return () => sub.subscription.unsubscribe();
   }, []);
 
