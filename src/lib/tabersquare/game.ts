@@ -138,39 +138,13 @@ export function removePiece(board: BoardCell[][], pieceId: string): BoardCell[][
   return board.map((row) => row.map((c) => (c === pieceId ? null : c)));
 }
 
-function solve(
-  board: BoardCell[][],
-  pieces: PieceDef[],
-  idx: number,
-  level: SquareLevelDef,
-): boolean {
-  if (idx >= pieces.length) return !violatesLevelRestrictions(board, level);
-  const piece = pieces[idx];
-  const orients = allOrientations(piece.cells);
-  let firstX = -1;
-  let firstY = -1;
-  outer: for (let y = 0; y < BOARD_SIZE; y++) {
+function firstEmptyCell(board: BoardCell[][]): Cell | null {
+  for (let y = 0; y < BOARD_SIZE; y++) {
     for (let x = 0; x < BOARD_SIZE; x++) {
-      if (board[y][x] === null) {
-        firstX = x;
-        firstY = y;
-        break outer;
-      }
+      if (board[y][x] === null) return [x, y];
     }
   }
-  if (firstX === -1) return false;
-
-  for (const orient of orients) {
-    for (const [dx, dy] of orient) {
-      const ox = firstX - dx;
-      const oy = firstY - dy;
-      if (canPlaceAt(board, orient, ox, oy, level, piece.id)) {
-        const next = placeCells(board, orient, ox, oy, piece.id);
-        if (solve(next, pieces, idx + 1, level)) return true;
-      }
-    }
-  }
-  return false;
+  return null;
 }
 
 export interface Puzzle {
@@ -184,15 +158,7 @@ export function generatePuzzle(levelId: SquareLevelId = "starter", maxAttempts =
     const blockers = dedupeBlockers(rollDice());
     if (blockers.length !== 7) continue;
     const board = applyBlockers(blockers);
-    const ordered = [...PIECES].sort((a, b) => b.cells.length - a.cells.length);
-    if (
-      solve(
-        board.map((r) => r.slice()),
-        ordered,
-        0,
-        level,
-      )
-    ) {
+    if (solveWithPlacements(board, orderedPieces(), 0, [], level)) {
       return { blockers, board };
     }
   }
@@ -228,18 +194,9 @@ function solveWithPlacements(
   }
   const piece = pieces[idx];
   const orients = allOrientations(piece.cells);
-  let firstX = -1;
-  let firstY = -1;
-  outer: for (let y = 0; y < BOARD_SIZE; y++) {
-    for (let x = 0; x < BOARD_SIZE; x++) {
-      if (board[y][x] === null) {
-        firstX = x;
-        firstY = y;
-        break outer;
-      }
-    }
-  }
-  if (firstX === -1) return null;
+  const first = firstEmptyCell(board);
+  if (!first) return null;
+  const [firstX, firstY] = first;
 
   for (const orient of orients) {
     for (const [dx, dy] of orient) {
@@ -247,10 +204,13 @@ function solveWithPlacements(
       const oy = firstY - dy;
       if (canPlaceAt(board, orient, ox, oy, level, piece.id)) {
         const next = placeCells(board, orient, ox, oy, piece.id);
-        const res = solveWithPlacements(next, pieces, idx + 1, [
-          ...acc,
-          { id: piece.id, cells: orient, ox, oy },
-        ], level);
+        const res = solveWithPlacements(
+          next,
+          pieces,
+          idx + 1,
+          [...acc, { id: piece.id, cells: orient, ox, oy }],
+          level,
+        );
         if (res) return res;
       }
     }
@@ -258,12 +218,19 @@ function solveWithPlacements(
   return null;
 }
 
+/** All pieces, largest first, the order the backtracking solver tries them in. */
+function orderedPieces(): PieceDef[] {
+  return [...PIECES].sort((a, b) => b.cells.length - a.cells.length);
+}
+
 /** Full solution for a set of blockers: one placement per piece. */
-export function solveBlockers(blockers: Cell[], levelId: SquareLevelId = "starter"): Placement[] | null {
+export function solveBlockers(
+  blockers: Cell[],
+  levelId: SquareLevelId = "starter",
+): Placement[] | null {
   const level = getLevel(levelId);
   const board = applyBlockers(blockers);
-  const ordered = [...PIECES].sort((a, b) => b.cells.length - a.cells.length);
-  return solveWithPlacements(board, ordered, 0, [], level);
+  return solveWithPlacements(board, orderedPieces(), 0, [], level);
 }
 
 export function isSolved(board: BoardCell[][], level?: SquareLevelDef): boolean {

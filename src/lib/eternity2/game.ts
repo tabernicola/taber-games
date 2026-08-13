@@ -121,15 +121,9 @@ export function edgesAt(level: Level, p: Placement): Edges | null {
   return rotate(level.tiles[p.tileId].edges, p.rotation);
 }
 
-/**
- * Number of seams around a cell that clash with an already placed neighbour
- * (or with the outer frame). 0 means the tile sits legally where it is.
- */
-export function conflictsAt(level: Level, board: Placement[], index: number): number {
+/** Seams around `index` that clash for a tile showing edges `e` there. */
+function edgeConflicts(level: Level, board: Placement[], index: number, e: Edges): number {
   const n = level.size;
-  const p = board[index];
-  const e = edgesAt(level, p);
-  if (!e) return 0;
   const r = Math.floor(index / n);
   const c = index % n;
   let bad = 0;
@@ -150,6 +144,15 @@ export function conflictsAt(level: Level, board: Placement[], index: number): nu
   if (left && left[1] !== e[3]) bad++;
 
   return bad;
+}
+
+/**
+ * Number of seams around a cell that clash with an already placed neighbour
+ * (or with the outer frame). 0 means the tile sits legally where it is.
+ */
+export function conflictsAt(level: Level, board: Placement[], index: number): number {
+  const e = edgesAt(level, board[index]);
+  return e ? edgeConflicts(level, board, index, e) : 0;
 }
 
 export function totalConflicts(level: Level, board: Placement[]): number {
@@ -187,25 +190,7 @@ export function matchedSeams(level: Level, board: Placement[]): { matched: numbe
 
 /** Can a tile with these (already rotated) edges sit legally at `index`? */
 export function fitsAt(level: Level, board: Placement[], index: number, e: Edges): boolean {
-  const n = level.size;
-  const r = Math.floor(index / n);
-  const c = index % n;
-
-  if ((r === 0) !== (e[0] === 0)) return false;
-  if ((c === n - 1) !== (e[1] === 0)) return false;
-  if ((r === n - 1) !== (e[2] === 0)) return false;
-  if ((c === 0) !== (e[3] === 0)) return false;
-
-  const up = r > 0 ? edgesAt(level, board[index - n]) : null;
-  if (up && up[2] !== e[0]) return false;
-  const right = c < n - 1 ? edgesAt(level, board[index + 1]) : null;
-  if (right && right[3] !== e[1]) return false;
-  const down = r < n - 1 ? edgesAt(level, board[index + n]) : null;
-  if (down && down[0] !== e[2]) return false;
-  const left = c > 0 ? edgesAt(level, board[index - 1]) : null;
-  if (left && left[1] !== e[3]) return false;
-
-  return true;
+  return edgeConflicts(level, board, index, e) === 0;
 }
 
 /** Tiles from `tiles` that fit at `index`, with the first rotation that works. */
