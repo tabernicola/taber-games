@@ -17,11 +17,7 @@ export function PieceShape({ cells, color, cellSize = 22, gap = 2 }: PieceShapeP
   const set = new Set(cells.map(([x, y]) => `${x},${y}`));
 
   return (
-    <div
-      className="relative"
-      style={{ width: w, height: h }}
-      aria-hidden
-    >
+    <div className="relative" style={{ width: w, height: h }} aria-hidden>
       {Array.from({ length: rows }).map((_, y) =>
         Array.from({ length: cols }).map((_, x) => {
           if (!set.has(`${x},${y}`)) return null;

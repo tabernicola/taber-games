@@ -24,7 +24,9 @@ function Motif({ shape, x, y, color }: { shape: Shape; x: number; y: number; col
     case "triangle":
       return <polygon points={`${x},${y - 8} ${x + 8},${y + 6} ${x - 8},${y + 6}`} {...common} />;
     case "diamond":
-      return <polygon points={`${x},${y - 9} ${x + 8},${y} ${x},${y + 9} ${x - 8},${y}`} {...common} />;
+      return (
+        <polygon points={`${x},${y - 9} ${x + 8},${y} ${x},${y + 9} ${x - 8},${y}`} {...common} />
+      );
     case "star":
       return (
         <polygon
@@ -89,7 +91,17 @@ type Props = {
   title?: string;
 };
 
-function TileImpl({ edges, size, selected, conflict, locked, candidate, dim, onClick, title }: Props) {
+function TileImpl({
+  edges,
+  size,
+  selected,
+  conflict,
+  locked,
+  candidate,
+  dim,
+  onClick,
+  title,
+}: Props) {
   const showMotifs = size >= 34;
   return (
     <button
@@ -104,7 +116,6 @@ function TileImpl({ edges, size, selected, conflict, locked, candidate, dim, onC
       data-dim={dim ? "" : undefined}
       style={{ width: size, height: size }}
     >
-
       <svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden>
         <defs>
           <linearGradient id="e2gloss" x1="0" y1="0" x2="0" y2="1">

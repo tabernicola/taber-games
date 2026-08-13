@@ -29,7 +29,11 @@ export function GameFooter({ basedOn }: { basedOn?: string }) {
           rel="noopener noreferrer"
           className="inline-flex items-center transition-opacity hover:opacity-80"
         >
-          <img src={lovableLogoAsset.url} alt="Lovable" className="h-6 w-auto rounded object-contain" />
+          <img
+            src={lovableLogoAsset.url}
+            alt="Lovable"
+            className="h-6 w-auto rounded object-contain"
+          />
         </a>
       </p>
     </footer>

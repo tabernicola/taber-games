@@ -48,7 +48,7 @@ function EternityLanding() {
     <div className="min-h-screen">
       <SiteHeader />
       <main className="mx-auto max-w-4xl px-4 pb-24 pt-10">
-       <header className="text-center">
+        <header className="text-center">
           <div className="relative inline-block">
             <div
               aria-hidden

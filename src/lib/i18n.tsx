@@ -37,16 +37,19 @@ const translations: Record<Lang, Dict> = {
     "home.games": "JOKOAK",
     "home.available": "{n} eskuragarri",
     "home.card.tag": "Puzzlea · Jokalari bakarra",
-    "home.card.desc": "Bota zazpi blokeatzaile eta sartu bederatzi piezak 6×6ko taulan. Beti askagarria, inoiz ez berdina.",
+    "home.card.desc":
+      "Bota zazpi blokeatzaile eta sartu bederatzi piezak 6×6ko taulan. Beti askagarria, inoiz ez berdina.",
     "home.card.study.tag": "Puzzle · Jokalari bakarra",
-    "home.card.study.desc": "3x3ko taula trinko batean jokatzen den xake logika joko erronka bat, non pieza gakoak kokatu behar dituzun puzzle estrategikoak konpontzeko.",
+    "home.card.study.desc":
+      "3x3ko taula trinko batean jokatzen den xake logika joko erronka bat, non pieza gakoak kokatu behar dituzun puzzle estrategikoak konpontzeko.",
     "home.external": "Jolastu",
     "home.locked": "Blokeatuta",
     "home.coming": "Laster",
     "home.coming.desc": "Erronka berri bat forjatzen ari da. Itzuli laster.",
     "home.play": "Jokatu",
     "game.title": "THE TABER SQUARE",
-    "game.desc": "Sartu bederatzi piezak zazpi blokeatzaileen inguruan. Biratu, iraulo eta jarri taula bete arte.",
+    "game.desc":
+      "Sartu bederatzi piezak zazpi blokeatzaileen inguruan. Biratu, iraulo eta jarri taula bete arte.",
     "game.new": "Joko berria",
     "game.selected": "Aukeratuta",
     "game.pickPiece": "Aukeratu pieza bat behean",
@@ -64,8 +67,10 @@ const translations: Record<Lang, Dict> = {
     "game.hideSolution": "Ezkutatu soluzioa",
     "game.solutionShown": "Soluzioa ikusgai — ez du kontatzen irabazteko.",
     "home.card.e2.tag": "Puzzlea · Ertzak lotu",
-    "home.card.e2.desc": "Lotu animalien ertzak. Taula txikietatik hasi eta jatorrizko 256 piezetako puzzlera iritsi.",
-    "e2.desc": "Taber's Eternity erronka: ondoko piezen ertzak bat etorri behar dira. Inork ez du jatorrizko 16×16 taula ebatzi — ez dago soluziorik. Zuk lortuko duzu?",
+    "home.card.e2.desc":
+      "Lotu animalien ertzak. Taula txikietatik hasi eta jatorrizko 256 piezetako puzzlera iritsi.",
+    "e2.desc":
+      "Taber's Eternity erronka: ondoko piezen ertzak bat etorri behar dira. Inork ez du jatorrizko 16×16 taula ebatzi — ez dago soluziorik. Zuk lortuko duzu?",
     "e2.solveRateLabel": "Ebatzi duten",
     "e2.rate4": "60-70%",
     "e2.rate6": "25-30%",
@@ -149,16 +154,19 @@ const translations: Record<Lang, Dict> = {
     "home.games": "JUEGOS",
     "home.available": "{n} disponible",
     "home.card.tag": "Puzle · 1 jugador",
-    "home.card.desc": "Tira los siete bloqueadores y encaja las nueve piezas en el tablero 6×6. Siempre resoluble, nunca igual.",
+    "home.card.desc":
+      "Tira los siete bloqueadores y encaja las nueve piezas en el tablero 6×6. Siempre resoluble, nunca igual.",
     "home.card.study.tag": "Puzle · 1 jugador",
-    "home.card.study.desc": "Un desafiante juego de lógica de ajedrez en un tablero compacto de 3x3, donde debes colocar piezas clave para resolver acertijos estratégicos.",
+    "home.card.study.desc":
+      "Un desafiante juego de lógica de ajedrez en un tablero compacto de 3x3, donde debes colocar piezas clave para resolver acertijos estratégicos.",
     "home.external": "Jugar",
     "home.locked": "Bloqueado",
     "home.coming": "Próximamente",
     "home.coming.desc": "Se está forjando un nuevo desafío. Vuelve pronto.",
     "home.play": "Jugar",
     "game.title": "THE TABER SQUARE",
-    "game.desc": "Coloca las nueve piezas alrededor de los siete bloqueadores. Rota, voltea y coloca hasta llenar el tablero.",
+    "game.desc":
+      "Coloca las nueve piezas alrededor de los siete bloqueadores. Rota, voltea y coloca hasta llenar el tablero.",
     "game.new": "Nueva partida",
     "game.selected": "Seleccionada",
     "game.pickPiece": "Elige una pieza abajo",
@@ -176,8 +184,10 @@ const translations: Record<Lang, Dict> = {
     "game.hideSolution": "Ocultar solución",
     "game.solutionShown": "Solución a la vista — no cuenta como victoria.",
     "home.card.e2.tag": "Puzle · Encaje de bordes",
-    "home.card.e2.desc": "Haz coincidir los bordes de animales. Empieza en tableros pequeños y llega al puzle original de 256 piezas.",
-    "e2.desc": "El reto de Taber's Eternity: haz coincidir los bordes de las piezas vecinas. Nadie ha resuelto el tablero original de 16×16 — no existe solución. ¿Lo conseguirás tú?",
+    "home.card.e2.desc":
+      "Haz coincidir los bordes de animales. Empieza en tableros pequeños y llega al puzle original de 256 piezas.",
+    "e2.desc":
+      "El reto de Taber's Eternity: haz coincidir los bordes de las piezas vecinas. Nadie ha resuelto el tablero original de 16×16 — no existe solución. ¿Lo conseguirás tú?",
     "e2.solveRateLabel": "Lo resuelven",
     "e2.rate4": "60-70%",
     "e2.rate6": "25-30%",
@@ -230,7 +240,8 @@ const translations: Record<Lang, Dict> = {
     "e2.noSave": "No tienes ninguna partida guardada.",
     "e2.deleteSave": "Borrar la partida guardada",
     "auth.title": "Entrar o registrarse",
-    "auth.desc": "Con una cuenta puedes guardar tu partida de Taber's Eternity y continuarla más tarde.",
+    "auth.desc":
+      "Con una cuenta puedes guardar tu partida de Taber's Eternity y continuarla más tarde.",
     "auth.email": "Correo",
     "auth.password": "Contraseña",
     "auth.signIn": "Entrar",
@@ -261,16 +272,19 @@ const translations: Record<Lang, Dict> = {
     "home.games": "GAMES",
     "home.available": "{n} available",
     "home.card.tag": "Puzzle · 1  player",
-    "home.card.desc": "Roll seven blockers, then squeeze all nine pieces onto the 6×6 grid. Every game solvable, none the same.",
+    "home.card.desc":
+      "Roll seven blockers, then squeeze all nine pieces onto the 6×6 grid. Every game solvable, none the same.",
     "home.card.study.tag": "Puzzle · 1 player",
-    "home.card.study.desc": "A challenging chess logic game on a compact 3x3 board, where you must position key pieces to solve strategic puzzles.",
+    "home.card.study.desc":
+      "A challenging chess logic game on a compact 3x3 board, where you must position key pieces to solve strategic puzzles.",
     "home.external": "Play",
     "home.locked": "Locked",
     "home.coming": "Coming Soon",
     "home.coming.desc": "A new challenge is being forged. Check back soon.",
     "home.play": "Play",
     "game.title": "THE TABER SQUARE",
-    "game.desc": "Fit all nine pieces around the seven blockers. Rotate, flip, and place until the grid is full.",
+    "game.desc":
+      "Fit all nine pieces around the seven blockers. Rotate, flip, and place until the grid is full.",
     "game.new": "New game",
     "game.selected": "Selected",
     "game.pickPiece": "Pick a piece below",
@@ -288,8 +302,10 @@ const translations: Record<Lang, Dict> = {
     "game.hideSolution": "Hide solution",
     "game.solutionShown": "Solution revealed — it will not count as a win.",
     "home.card.e2.tag": "Puzzle · Edge matching",
-    "home.card.e2.desc": "Match the animal edges. Start on small boards and work up to the original 256-piece puzzle.",
-    "e2.desc": "The Taber's Eternity challenge: match the edges of neighbouring pieces. Nobody has solved the original 16×16 board — there is no known solution. Will you be the one?",
+    "home.card.e2.desc":
+      "Match the animal edges. Start on small boards and work up to the original 256-piece puzzle.",
+    "e2.desc":
+      "The Taber's Eternity challenge: match the edges of neighbouring pieces. Nobody has solved the original 16×16 board — there is no known solution. Will you be the one?",
     "e2.solveRateLabel": "Solve it:",
     "e2.rate4": "60-70%",
     "e2.rate6": "25-30%",
@@ -353,8 +369,7 @@ const translations: Record<Lang, Dict> = {
     "auth.checkEmail": "Check your email to confirm your account.",
     "auth.toggleSignUp": "No account? Sign up",
     "auth.toggleSignIn": "Already have an account? Sign in",
-    "cookies.text":
-      "We only use technical cookies (language and session). No tracking, no ads.",
+    "cookies.text": "We only use technical cookies (language and session). No tracking, no ads.",
     "cookies.accept": "Got it",
     "square.rule1": "Seven blockers are rolled: those cells are taken.",
     "square.rule2": "Fit the nine pieces into the remaining cells.",

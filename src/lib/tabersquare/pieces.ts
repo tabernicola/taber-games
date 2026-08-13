@@ -5,21 +5,108 @@ export type Cell = [number, number];
 
 export interface PieceDef {
   id: string;
+  /** Official Genius Square piece number (1–9). */
+  number: number;
   name: string;
   color: string; // css var
   cells: Cell[];
 }
 
+/** Colours aligned with The Genius Square rule sheet (Smart Games). */
 export const PIECES: PieceDef[] = [
-  { id: "p1", name: "Mono", color: "var(--neon-yellow)", cells: [[0, 0]] },
-  { id: "p2", name: "Duo", color: "var(--neon-orange)", cells: [[0, 0], [1, 0]] },
-  { id: "p3", name: "Tri-I", color: "var(--neon-cyan)", cells: [[0, 0], [1, 0], [2, 0]] },
-  { id: "p4", name: "Tri-L", color: "var(--neon-green)", cells: [[0, 0], [1, 0], [1, 1]] },
-  { id: "p5", name: "Square", color: "var(--neon-blue)", cells: [[0, 0], [1, 0], [0, 1], [1, 1]] },
-  { id: "p6", name: "L-4", color: "var(--neon-violet)", cells: [[0, 0], [1, 0], [2, 0], [2, 1]] },
-  { id: "p7", name: "T-4", color: "var(--neon-pink)", cells: [[0, 0], [1, 0], [2, 0], [1, 1]] },
-  { id: "p8", name: "S-4", color: "var(--neon-red)", cells: [[0, 0], [1, 0], [1, 1], [2, 1]] },
-  { id: "p9", name: "I-4", color: "var(--neon-orange)", cells: [[0, 0], [1, 0], [2, 0], [3, 0]] },
+  { id: "p1", number: 1, name: "Mono", color: "var(--neon-yellow)", cells: [[0, 0]] },
+  {
+    id: "p2",
+    number: 2,
+    name: "Duo",
+    color: "var(--neon-orange)",
+    cells: [
+      [0, 0],
+      [1, 0],
+    ],
+  },
+  {
+    id: "p3",
+    number: 3,
+    name: "Tri-I",
+    color: "var(--neon-cyan)",
+    cells: [
+      [0, 0],
+      [1, 0],
+      [2, 0],
+    ],
+  },
+  {
+    id: "p4",
+    number: 4,
+    name: "Tri-L",
+    color: "var(--neon-green)",
+    cells: [
+      [0, 0],
+      [1, 0],
+      [1, 1],
+    ],
+  },
+  {
+    id: "p5",
+    number: 5,
+    name: "Square",
+    color: "var(--neon-blue)",
+    cells: [
+      [0, 0],
+      [1, 0],
+      [0, 1],
+      [1, 1],
+    ],
+  },
+  {
+    id: "p6",
+    number: 6,
+    name: "L-4",
+    color: "var(--neon-violet)",
+    cells: [
+      [0, 0],
+      [1, 0],
+      [2, 0],
+      [2, 1],
+    ],
+  },
+  {
+    id: "p7",
+    number: 7,
+    name: "T-4",
+    color: "var(--neon-pink)",
+    cells: [
+      [0, 0],
+      [1, 0],
+      [2, 0],
+      [1, 1],
+    ],
+  },
+  {
+    id: "p8",
+    number: 8,
+    name: "S-4",
+    color: "var(--neon-red)",
+    cells: [
+      [0, 0],
+      [1, 0],
+      [1, 1],
+      [2, 1],
+    ],
+  },
+  {
+    id: "p9",
+    number: 9,
+    name: "I-4",
+    color: "var(--piece-orange-bar)",
+    cells: [
+      [0, 0],
+      [1, 0],
+      [2, 0],
+      [3, 0],
+    ],
+  },
 ];
 
 export function normalize(cells: Cell[]): Cell[] {

@@ -1,0 +1,183 @@
+/* 3D Dice Roll Animation - Real 3D Cube with CSS transforms */
+
+.dice-animation-overlay {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+/* Backdrop blur on a separate layer so it never flattens preserve-3d children */
+.dice-animation-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+.dice-container {
+  position: relative;
+  z-index: 1;
+  transform-style: preserve-3d;
+}
+
+/* Dice Die - Main container holding the 3D space.
+   Perspective lives here (per-die, not on the shared container) so every
+   die gets its own consistent vanishing point regardless of where it sits
+   on the board - this is what actually makes each cube read as 3D instead
+   of a flat square. */
+.dice-die {
+  position: absolute;
+  perspective: 400px;
+  perspective-origin: 50% 50%;
+  transform: translate(-50%, -50%);
+  transform-style: preserve-3d;
+  /* Never use will-change: opacity here — it promotes a compositor layer
+     and flattens the entire 3D cube into a 2D square. */
+  transition:
+    left 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+    top 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+    width 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+    height 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Dice Cube - Interior 3D structure */
+.dice-cube {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+/* Rolling animation: spin like crazy on all 3 axes */
+.dice-die.is-rolling .dice-cube {
+  animation: dice-rolling 1.5s infinite linear;
+}
+
+@keyframes dice-rolling {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(360deg) rotateY(720deg) rotateZ(360deg);
+  }
+}
+
+/* Settling animation: come to rest at a slight tilt (instead of dead-on to
+   the screen) so the top and side faces stay visible and the cube keeps
+   reading as a real 3D object instead of a flat square. */
+.dice-die.is-showing .dice-cube {
+  transform: rotateX(-28deg) rotateY(38deg) rotateZ(0deg);
+  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+}
+
+/* Transforming animation: hide the 3D cube */
+.dice-die.is-transforming .dice-cube,
+.dice-die.is-placed .dice-cube {
+  opacity: 0;
+  transform: scale(0.2) rotateZ(180deg);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* 3D Dice Faces - backface-visibility is set to preserve 3D cube geometry */
+.dice-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8), 0 4px 15px rgba(0, 0, 0, 0.6);
+}
+
+/* Styled coordinate text (A1-F6) with premium neon glow */
+.dice-face-text {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 8px rgba(255, 202, 58, 0.6), 0 0 2px rgba(255, 202, 58, 0.9);
+  user-select: none;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+/* Volumetric face shading to give realistic 3D specular highlight effects when spinning */
+.dice-front {
+  transform: translateZ(var(--die-half, 24px));
+  background: radial-gradient(circle at 35% 35%, #2a2a2a 0%, #111111 100%);
+}
+
+.dice-back {
+  transform: rotateY(180deg) translateZ(var(--die-half, 24px));
+  background: radial-gradient(circle at 35% 35%, #181818 0%, #050505 100%);
+}
+
+.dice-left {
+  transform: rotateY(-90deg) translateZ(var(--die-half, 24px));
+  background: radial-gradient(circle at 35% 35%, #222222 0%, #0c0c0c 100%);
+}
+
+.dice-right {
+  transform: rotateY(90deg) translateZ(var(--die-half, 24px));
+  background: radial-gradient(circle at 35% 35%, #282828 0%, #121212 100%);
+}
+
+.dice-top {
+  transform: rotateX(90deg) translateZ(var(--die-half, 24px));
+  background: radial-gradient(circle at 35% 35%, #3a3a3a 0%, #161616 100%);
+}
+
+.dice-bottom {
+  transform: rotateX(-90deg) translateZ(var(--die-half, 24px));
+  background: radial-gradient(circle at 35% 35%, #141414 0%, #030303 100%);
+}
+
+/* Peg (Pivote) Shape Structure - Matches blocker cell exactly when placed */
+.dice-peg-shape {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: scale(0.3);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  background: oklch(0.25 0.03 40);
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 2px oklch(0.15 0.02 40), inset 0 4px 10px rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dice-die.is-transforming .dice-peg-shape,
+.dice-die.is-placed .dice-peg-shape {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Yellow dot inside the peg */
+.dice-peg-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--neon-yellow);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--neon-yellow), 0 0 4px var(--neon-yellow);
+  animation: peg-glow-pulse 1.5s infinite alternate ease-in-out;
+}
+
+@keyframes peg-glow-pulse {
+  0% {
+    transform: scale(0.85);
+    box-shadow: 0 0 8px var(--neon-yellow);
+  }
+  100% {
+    transform: scale(1.15);
+    box-shadow: 0 0 16px var(--neon-yellow), 0 0 4px var(--neon-yellow);
+  }
+}

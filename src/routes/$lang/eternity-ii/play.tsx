@@ -8,6 +8,7 @@ import { ScoreForm } from "@/components/ScoreForm";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/useAuth";
 import { useTimer } from "@/hooks/useTimer";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { formatTime } from "@/lib/scores";
 import { loadSave, storeSave } from "@/lib/eternity2/saves";
 import { ETERNITY2_CLUE } from "@/lib/eternity2/pieces-original";
@@ -27,8 +28,8 @@ import {
 
 export const Route = createFileRoute("/$lang/eternity-ii/play")({
   validateSearch: (search: Record<string, unknown>) => ({
-    level: (Number(search['level']) || 4) as LevelSize,
-    resume: search['resume'] === true || search['resume'] === "true",
+    level: (Number(search["level"]) || 4) as LevelSize,
+    resume: search["resume"] === true || search["resume"] === "true",
   }),
   head: () => ({
     meta: [
@@ -57,6 +58,7 @@ function EternityPage() {
   const { t, slug } = useI18n();
   const { level: size, resume } = Route.useSearch();
   const { user } = useAuth();
+  const { playSound } = useSoundEffects();
 
   const [level, setLevel] = useState<Level>(EMPTY_LEVEL);
   const [board, setBoard] = useState<Placement[]>(() => emptyBoard(EMPTY_LEVEL));
@@ -131,7 +133,10 @@ function EternityPage() {
     return s;
   }, [board]);
 
-  const tray = useMemo(() => level.tiles.filter((tile) => !placedIds.has(tile.id)), [level, placedIds]);
+  const tray = useMemo(
+    () => level.tiles.filter((tile) => !placedIds.has(tile.id)),
+    [level, placedIds],
+  );
 
   const candidates = useMemo(
     () => (focus == null ? null : candidatesAt(level, board, focus, tray)),
@@ -142,7 +147,8 @@ function EternityPage() {
 
   const rotateSelection = useCallback(() => {
     setSelected((s) => (s ? { ...s, rotation: ((s.rotation + 1) % 4) as Rotation } : s));
-  }, []);
+    playSound("rotate");
+  }, [playSound]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -157,18 +163,23 @@ function EternityPage() {
   }, [rotateSelection]);
 
   const place = (index: number, tileId: number, rotation: Rotation) => {
+    playSound("place");
     const next = board.slice();
     next[index] = { tileId, rotation, locked: false };
     setBoard(next);
     setSelected(null);
     setFocus(null);
-    if (isSolved(level, next)) setShowWin(true);
+    if (isSolved(level, next)) {
+      playSound("win");
+      setShowWin(true);
+    }
   };
 
   const handleCell = (index: number) => {
     const current = board[index];
     if (current?.locked) return;
     if (current) {
+      playSound("click");
       setBoard((b) => b.map((p, i) => (i === index ? null : p)));
       setSelected({ tileId: current.tileId, rotation: current.rotation });
       setFocus(null);
@@ -178,6 +189,7 @@ function EternityPage() {
       place(index, selected.tileId, selected.rotation);
       return;
     }
+    playSound("click");
     setFocus((f) => (f === index ? null : index));
   };
 
@@ -243,7 +255,7 @@ function EternityPage() {
     <div className="e2-scope min-h-screen">
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-4 pb-36 pt-8">
-       <header className="text-center">
+        <header className="text-center">
           <div className="relative inline-block">
             <div
               aria-hidden
@@ -258,7 +270,10 @@ function EternityPage() {
               className="h-32 w-64 drop-shadow-[0_0_40px_oklch(0.72_0.30_350/0.55)]"
             />
           </div>
-          <p className="mt-2 flex flex-wrap items-center justify-center gap-4 text-sm" style={{ color: "var(--e2-ink-soft)" }}>
+          <p
+            className="mt-2 flex flex-wrap items-center justify-center gap-4 text-sm"
+            style={{ color: "var(--e2-ink-soft)" }}
+          >
             <span>
               {t("e2.level")}: {level.size}×{level.size}
             </span>

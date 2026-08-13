@@ -2,15 +2,7 @@
 // Pattern 0 is the grey outer border. 1..22 are the "animal" motifs.
 // Kept isolated from the game logic so the whole look can be re-skinned later.
 
-export type Shape =
-  | "paw"
-  | "circle"
-  | "star"
-  | "triangle"
-  | "diamond"
-  | "flower"
-  | "bone"
-  | "leaf";
+export type Shape = "paw" | "circle" | "star" | "triangle" | "diamond" | "flower" | "bone" | "leaf";
 
 export type EdgePattern = {
   /** fill colour of the wedge */

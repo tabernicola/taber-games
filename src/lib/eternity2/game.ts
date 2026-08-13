@@ -55,12 +55,8 @@ function generateRandomLevel(size: number): Level {
   const rnd = () => 1 + Math.floor(Math.random() * k);
 
   // horizontal seams between row r and r+1, vertical seams between col c and c+1
-  const h: number[][] = Array.from({ length: size - 1 }, () =>
-    Array.from({ length: size }, rnd),
-  );
-  const v: number[][] = Array.from({ length: size }, () =>
-    Array.from({ length: size - 1 }, rnd),
-  );
+  const h: number[][] = Array.from({ length: size - 1 }, () => Array.from({ length: size }, rnd));
+  const v: number[][] = Array.from({ length: size }, () => Array.from({ length: size - 1 }, rnd));
 
   const solved: Edges[] = [];
   for (let r = 0; r < size; r++) {
@@ -139,10 +135,10 @@ export function conflictsAt(level: Level, board: Placement[], index: number): nu
   let bad = 0;
 
   // outer frame: edge facing outside must be the grey border pattern (0)
-  if (r === 0 !== (e[0] === 0)) bad++;
-  if (c === n - 1 !== (e[1] === 0)) bad++;
-  if (r === n - 1 !== (e[2] === 0)) bad++;
-  if (c === 0 !== (e[3] === 0)) bad++;
+  if ((r === 0) !== (e[0] === 0)) bad++;
+  if ((c === n - 1) !== (e[1] === 0)) bad++;
+  if ((r === n - 1) !== (e[2] === 0)) bad++;
+  if ((c === 0) !== (e[3] === 0)) bad++;
 
   const up = r > 0 ? edgesAt(level, board[index - n]) : null;
   if (up && up[2] !== e[0]) bad++;

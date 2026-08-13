@@ -1,12 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PieceShape } from "@/components/tabersquare/PieceShape";
+import { DiceRollAnimation } from "@/components/tabersquare/DiceRollAnimation";
 import { ScoreForm } from "@/components/ScoreForm";
 import { useI18n } from "@/lib/i18n";
 import { useTimer } from "@/hooks/useTimer";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { formatTime } from "@/lib/scores";
-import { Clock, FlipHorizontal2, Home, Lightbulb, RefreshCw, RotateCw, Eye, EyeOff } from "lucide-react";
+import {
+  Clock,
+  FlipHorizontal2,
+  Home,
+  Lightbulb,
+  RefreshCw,
+  RotateCw,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import taberSquareHeaderAsset from "@/assets/taber-square-header.png.asset.json";
 import {
   BLOCKER,
@@ -21,7 +32,14 @@ import {
   type BoardCell,
   type Placement,
 } from "@/lib/tabersquare/game";
-import { PIECES, allOrientations, flip, normalize, rotate, type Cell } from "@/lib/tabersquare/pieces";
+import {
+  PIECES,
+  allOrientations,
+  flip,
+  normalize,
+  rotate,
+  type Cell,
+} from "@/lib/tabersquare/pieces";
 
 export const Route = createFileRoute("/$lang/the-taber-square/play")({
   head: () => ({
@@ -54,6 +72,8 @@ type PieceState = {
 
 function TaberSquarePage() {
   const { t, slug } = useI18n();
+  const { playSound } = useSoundEffects();
+  const boardContainerRef = useRef<HTMLDivElement>(null);
   const [blockers, setBlockers] = useState<Cell[]>([]);
   const [board, setBoard] = useState<BoardCell[][]>([]);
   const [pieces, setPieces] = useState<PieceState[]>([]);
@@ -64,7 +84,8 @@ function TaberSquarePage() {
   const [showSolution, setShowSolution] = useState(false);
   const [hintUsed, setHintUsed] = useState(false);
   const [helped, setHelped] = useState(false);
-  const { seconds, setSeconds } = useTimer(!won && board.length > 0);
+  const [showDiceAnimation, setShowDiceAnimation] = useState(true);
+  const { seconds, setSeconds } = useTimer(!won && board.length > 0 && !showDiceAnimation);
 
   const newGame = useCallback(() => {
     const puzzle = generatePuzzle();
@@ -81,6 +102,7 @@ function TaberSquarePage() {
     setHintUsed(false);
     setHelped(false);
     setSeconds(0);
+    setShowDiceAnimation(true);
   }, [setSeconds]);
 
   useEffect(() => {
@@ -88,8 +110,11 @@ function TaberSquarePage() {
   }, [newGame]);
 
   useEffect(() => {
-    if (board.length && isSolved(board)) setWon(true);
-  }, [board]);
+    if (board.length && isSolved(board)) {
+      playSound("win");
+      setWon(true);
+    }
+  }, [board, playSound]);
 
   const giveHint = useCallback(() => {
     if (hintUsed || !solution) return;
@@ -134,15 +159,19 @@ function TaberSquarePage() {
 
   const rotateSelected = useCallback(() => {
     if (!selected) return;
+    playSound("rotate");
     setPieces((prev) =>
       prev.map((p) => (p.id === selected.id ? { ...p, cells: rotate(p.cells) } : p)),
     );
-  }, [selected]);
+  }, [selected, playSound]);
 
   const flipSelected = useCallback(() => {
     if (!selected) return;
-    setPieces((prev) => prev.map((p) => (p.id === selected.id ? { ...p, cells: flip(p.cells) } : p)));
-  }, [selected]);
+    playSound("rotate");
+    setPieces((prev) =>
+      prev.map((p) => (p.id === selected.id ? { ...p, cells: flip(p.cells) } : p)),
+    );
+  }, [selected, playSound]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -157,15 +186,19 @@ function TaberSquarePage() {
   const handleCellClick = (x: number, y: number) => {
     const cell = board[y]?.[x];
     if (cell && cell !== BLOCKER) {
+      playSound("click");
       setBoard(removePiece(board, cell));
       setSelectedId(cell);
       return;
     }
     if (!selected) return;
     if (canPlaceAt(board, selected.cells, x, y)) {
+      playSound("place");
       setBoard(placeCells(board, selected.cells, x, y, selected.id));
       const remaining = trayPieces.filter((p) => p.id !== selected.id);
       setSelectedId(remaining[0]?.id ?? null);
+    } else {
+      playSound("click");
     }
   };
 
@@ -205,19 +238,29 @@ function TaberSquarePage() {
           </div>
         )}
 
-
         <div className="grid gap-6 lg:grid-cols-[auto,1fr]">
           <div className="flex justify-center">
             <div
-              className="grid rounded-xl border-2 border-neon-pink/60 p-3 shadow-[0_0_30px_oklch(0.72_0.30_350/0.35)]"
+              ref={boardContainerRef}
+              className="relative grid rounded-xl border-2 border-neon-pink/60 p-3 shadow-[0_0_30px_oklch(0.72_0.30_350/0.35)]"
               style={{
                 gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
                 gap: 6,
                 background: "linear-gradient(135deg, oklch(0.96 0.02 90), oklch(0.88 0.04 70))",
               }}
             >
+              {showDiceAnimation && (
+                <DiceRollAnimation
+                  blockers={blockers}
+                  onComplete={() => setShowDiceAnimation(false)}
+                  boardContainerRef={boardContainerRef}
+                />
+              )}
               {(solutionBoard ?? board).map((row, y) =>
                 row.map((cell, x) => {
+                  // Keep the board looking empty until the dice roll finishes and the
+                  // dice visually transform into the pivots on top of it.
+                  const isBlocker = cell === BLOCKER && !showDiceAnimation;
                   const pieceIdHere = cell && cell !== BLOCKER ? cell : null;
                   const pieceHere = pieceIdHere ? pieces.find((p) => p.id === pieceIdHere) : null;
                   const inPreview = previewCells?.set.has(`${x},${y}`);
@@ -230,28 +273,30 @@ function TaberSquarePage() {
                       onMouseLeave={() => setHover(null)}
                       className="relative aspect-square w-11 rounded-md transition-colors sm:w-14"
                       style={{
-                        background:
-                          cell === BLOCKER
-                            ? "oklch(0.25 0.03 40)"
-                            : pieceHere
-                              ? pieceHere.color
-                              : inPreview
-                                ? previewValid
-                                  ? "oklch(0.72 0.30 350 / 0.55)"
-                                  : "oklch(0.65 0.25 25 / 0.55)"
-                                : "oklch(0.99 0.01 90)",
-                        boxShadow:
-                          cell === BLOCKER
-                            ? "inset 0 0 0 2px oklch(0.15 0.02 40), inset 0 4px 10px rgba(0,0,0,0.7)"
-                            : pieceHere
-                              ? `0 0 10px ${pieceHere.color}, inset 0 0 0 1px rgba(255,255,255,0.25)`
-                              : "inset 0 0 0 1px oklch(0.75 0.03 70)",
+                        background: isBlocker
+                          ? "oklch(0.25 0.03 40)"
+                          : pieceHere
+                            ? pieceHere.color
+                            : inPreview
+                              ? previewValid
+                                ? "oklch(0.72 0.30 350 / 0.55)"
+                                : "oklch(0.65 0.25 25 / 0.55)"
+                              : "oklch(0.99 0.01 90)",
+                        boxShadow: isBlocker
+                          ? "inset 0 0 0 2px oklch(0.15 0.02 40), inset 0 4px 10px rgba(0,0,0,0.7)"
+                          : pieceHere
+                            ? `0 0 10px ${pieceHere.color}, inset 0 0 0 1px rgba(255,255,255,0.25)`
+                            : "inset 0 0 0 1px oklch(0.75 0.03 70)",
                       }}
                       aria-label={`Cell ${String.fromCharCode(65 + x)}${y + 1}`}
                     >
-                      {cell === BLOCKER && (
+                      {isBlocker && (
                         <span className="absolute inset-0 flex items-center justify-center text-neon-yellow">
-                          <svg viewBox="0 0 24 24" className="h-4 w-4 sm:h-5 sm:w-5" fill="currentColor">
+                          <svg
+                            viewBox="0 0 24 24"
+                            className="h-4 w-4 sm:h-5 sm:w-5"
+                            fill="currentColor"
+                          >
                             <circle cx="12" cy="12" r="4" />
                           </svg>
                         </span>
@@ -365,7 +410,6 @@ function TaberSquarePage() {
           </button>
         </div>
       </nav>
-
 
       {won && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
