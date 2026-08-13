@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { getStorageItem, setStorageItem } from "@/lib/storage";
 
 export type Lang = "eu" | "es" | "en";
 export type LangSlug = "eus" | "es" | "en";
@@ -19,7 +20,7 @@ export function slugFromLang(lang: Lang): LangSlug {
 /** Best guess for a visitor with no URL language: saved choice, then browser. */
 export function detectLangSlug(): LangSlug {
   if (typeof window === "undefined") return "es";
-  const saved = localStorage.getItem("taber-lang") as Lang | null;
+  const saved = getStorageItem("taber-lang") as Lang | null;
   if (saved && ["eu", "es", "en"].includes(saved)) return slugFromLang(saved);
   const nav = navigator.language?.toLowerCase() ?? "";
   if (nav.startsWith("eu")) return "eus";
@@ -409,14 +410,12 @@ export function I18nProvider({ children, lang: controlled }: { children: ReactNo
   const lang = controlled ?? internal;
 
   useEffect(() => {
-    if (controlled && typeof window !== "undefined") {
-      localStorage.setItem("taber-lang", controlled);
-    }
+    if (controlled) setStorageItem("taber-lang", controlled);
   }, [controlled]);
 
   const setLang = (l: Lang) => {
     setInternal(l);
-    if (typeof window !== "undefined") localStorage.setItem("taber-lang", l);
+    setStorageItem("taber-lang", l);
   };
 
   const t = (key: string, vars?: Record<string, string | number>) => {

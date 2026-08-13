@@ -1,23 +1,16 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
+import { GameNav, GameNavBackLink, GameNavButton, GameNavTimer } from "@/components/GameNav";
 import { PieceShape } from "@/components/tabersquare/PieceShape";
 import { DiceRollAnimation } from "@/components/tabersquare/DiceRollAnimation";
 import { ScoreForm } from "@/components/ScoreForm";
 import { useI18n } from "@/lib/i18n";
+import { pageMeta } from "@/lib/seo";
 import { useTimer } from "@/hooks/useTimer";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
-import { formatTime } from "@/lib/scores";
-import {
-  Clock,
-  FlipHorizontal2,
-  Home,
-  Lightbulb,
-  RefreshCw,
-  RotateCw,
-  Eye,
-  EyeOff,
-} from "lucide-react";
+import { FlipHorizontal2, Lightbulb, RefreshCw, RotateCw, Eye, EyeOff } from "lucide-react";
 import taberSquareHeaderAsset from "@/assets/taber-square-header.png.asset.json";
 import {
   BLOCKER,
@@ -43,22 +36,12 @@ import {
 
 export const Route = createFileRoute("/$lang/the-taber-square/play")({
   head: () => ({
-    meta: [
-      { title: "Play The Taber Square — The Taber Games" },
-      {
-        name: "description",
-        content:
-          "Solo puzzle inspired by The Genius Square. Roll the blockers and fit all nine neon pieces onto the 6x6 grid against the clock.",
-      },
-      { property: "og:title", content: "Play The Taber Square" },
-      {
-        property: "og:description",
-        content:
-          "Solo puzzle inspired by The Genius Square. Roll the blockers and fit all nine neon pieces onto the 6x6 grid against the clock.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+    meta: pageMeta({
+      title: "Play The Taber Square — The Taber Games",
+      ogTitle: "Play The Taber Square",
+      description:
+        "Solo puzzle inspired by The Genius Square. Roll the blockers and fit all nine neon pieces onto the 6x6 grid against the clock.",
+    }),
   }),
   component: TaberSquarePage,
 });
@@ -71,7 +54,7 @@ type PieceState = {
 };
 
 function TaberSquarePage() {
-  const { t, slug } = useI18n();
+  const { t } = useI18n();
   const { playSound } = useSoundEffects();
   const boardContainerRef = useRef<HTMLDivElement>(null);
   const [blockers, setBlockers] = useState<Cell[]>([]);
@@ -173,15 +156,11 @@ function TaberSquarePage() {
     );
   }, [selected, playSound]);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "r" || e.key === "R") rotateSelected();
-      if (e.key === "f" || e.key === "F") flipSelected();
-      if (e.key === "Escape") setSelectedId(null);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [rotateSelected, flipSelected]);
+  useKeyboardShortcuts({
+    r: rotateSelected,
+    f: flipSelected,
+    Escape: () => setSelectedId(null),
+  });
 
   const handleCellClick = (x: number, y: number) => {
     const cell = board[y]?.[x];
@@ -368,48 +347,33 @@ function TaberSquarePage() {
         </div>
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-neon-pink/40 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
-        <div className="mx-auto flex max-w-md items-stretch justify-around gap-1 px-2 py-2">
-          <Link
-            to="/$lang/the-taber-square"
-            params={{ lang: slug }}
-            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-muted-foreground transition-colors hover:text-neon-pink"
-          >
-            <Home className="h-5 w-5" />
-            {t("common.back")}
-          </Link>
-          <div className="flex flex-none flex-col items-center justify-center gap-1 rounded-lg border border-neon-cyan/30 bg-neon-cyan/10 px-3 py-1.5 text-[10px] font-semibold text-neon-cyan">
-            <Clock className="h-5 w-5" />
-            <span className="tabular-nums">{formatTime(seconds)}</span>
-          </div>
-          <button
-            onClick={giveHint}
-            disabled={hintUsed || !solution || won}
-            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-neon-cyan transition-colors disabled:opacity-40"
-          >
-            <Lightbulb className="h-5 w-5" />
-            {hintUsed ? t("game.hintUsed") : t("game.hintBtn")}
-          </button>
-          <button
-            onClick={() => {
-              setShowSolution((v) => !v);
-              setHelped(true);
-            }}
-            disabled={!solution}
-            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-neon-yellow transition-colors disabled:opacity-40"
-          >
-            {showSolution ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-            {showSolution ? t("game.hideSolution") : t("game.solution")}
-          </button>
-          <button
-            onClick={newGame}
-            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-neon-pink transition-colors"
-          >
-            <RefreshCw className="h-5 w-5" />
-            {t("game.new")}
-          </button>
-        </div>
-      </nav>
+      <GameNav borderClass="border-neon-pink/40">
+        <GameNavBackLink to="/$lang/the-taber-square" />
+        <GameNavTimer seconds={seconds} />
+        <GameNavButton
+          onClick={giveHint}
+          disabled={hintUsed || !solution || won}
+          colorClass="text-neon-cyan"
+          icon={<Lightbulb className="h-5 w-5" />}
+          label={hintUsed ? t("game.hintUsed") : t("game.hintBtn")}
+        />
+        <GameNavButton
+          onClick={() => {
+            setShowSolution((v) => !v);
+            setHelped(true);
+          }}
+          disabled={!solution}
+          colorClass="text-neon-yellow"
+          icon={showSolution ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          label={showSolution ? t("game.hideSolution") : t("game.solution")}
+        />
+        <GameNavButton
+          onClick={newGame}
+          colorClass="text-neon-pink"
+          icon={<RefreshCw className="h-5 w-5" />}
+          label={t("game.new")}
+        />
+      </GameNav>
 
       {won && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">

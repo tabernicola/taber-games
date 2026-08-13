@@ -1,16 +1,12 @@
+import { getStorageItem, removeStorageItem, setStorageItem } from "@/lib/storage";
 import { SQUARE_LEVELS, type SquareLevelId } from "./levels";
 
 const STORAGE_KEY = "taber-square-unlocked-level";
 
 /** Highest level the player has unlocked (defaults to Starter). */
 export function getUnlockedLevel(): SquareLevelId {
-  if (typeof window === "undefined") return "starter";
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw && SQUARE_LEVELS.some((l) => l.id === raw)) return raw as SquareLevelId;
-  } catch {
-    /* ignore */
-  }
+  const raw = getStorageItem(STORAGE_KEY);
+  if (raw && SQUARE_LEVELS.some((l) => l.id === raw)) return raw as SquareLevelId;
   return "starter";
 }
 
@@ -29,18 +25,10 @@ export function unlockNextLevel(completedLevel: SquareLevelId): SquareLevelId {
   const currentUnlocked = getUnlockedLevelIndex();
   const nextIdx = Math.min(Math.max(completedIdx + 1, currentUnlocked), SQUARE_LEVELS.length - 1);
   const nextId = SQUARE_LEVELS[nextIdx].id;
-  try {
-    localStorage.setItem(STORAGE_KEY, nextId);
-  } catch {
-    /* ignore */
-  }
+  setStorageItem(STORAGE_KEY, nextId);
   return nextId;
 }
 
 export function resetProgress(): void {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch {
-    /* ignore */
-  }
+  removeStorageItem(STORAGE_KEY);
 }
