@@ -5,25 +5,15 @@ import squareLogo from "@/assets/taber-square-logo-v2.png.asset.json";
 import eternityLogo from "@/assets/tabers-eternity-logo.png.asset.json";
 import { SiteHeader } from "@/components/SiteHeader";
 import { useI18n } from "@/lib/i18n";
+import { pageMeta } from "@/lib/seo";
 
 export const Route = createFileRoute("/$lang/")({
   head: () => ({
-    meta: [
-      { title: "The Taber Games — Neon Arcade of Minigames" },
-      {
-        name: "description",
-        content:
-          "Enter The Taber Games arcade: The Taber Square, Taber's Eternity and The Taber Study, with rankings and saved games.",
-      },
-      { property: "og:title", content: "The Taber Games — Neon Arcade of Minigames" },
-      {
-        property: "og:description",
-        content:
-          "Enter The Taber Games arcade: The Taber Square, Taber's Eternity and The Taber Study, with rankings and saved games.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+    meta: pageMeta({
+      title: "The Taber Games — Neon Arcade of Minigames",
+      description:
+        "Enter The Taber Games arcade: The Taber Square, Taber's Eternity and The Taber Study, with rankings and saved games.",
+    }),
   }),
   component: Home,
 });

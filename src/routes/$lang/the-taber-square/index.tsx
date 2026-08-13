@@ -4,25 +4,16 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { GameFooter } from "@/components/GameFooter";
 import { Ranking } from "@/components/Ranking";
 import { useI18n } from "@/lib/i18n";
+import { pageMeta } from "@/lib/seo";
 
 export const Route = createFileRoute("/$lang/the-taber-square/")({
   head: () => ({
-    meta: [
-      { title: "The Taber Square — rules and ranking | The Taber Games" },
-      {
-        name: "description",
-        content:
-          "Learn how to play The Taber Square, check the top 5 fastest solves and start a new 6x6 puzzle.",
-      },
-      { property: "og:title", content: "The Taber Square — rules and ranking" },
-      {
-        property: "og:description",
-        content:
-          "Learn how to play The Taber Square, check the top 5 fastest solves and start a new 6x6 puzzle.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+    meta: pageMeta({
+      title: "The Taber Square — rules and ranking | The Taber Games",
+      ogTitle: "The Taber Square — rules and ranking",
+      description:
+        "Learn how to play The Taber Square, check the top 5 fastest solves and start a new 6x6 puzzle.",
+    }),
   }),
   component: SquareLanding,
 });

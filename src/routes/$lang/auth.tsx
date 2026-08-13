@@ -2,28 +2,18 @@ import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
 import { useI18n } from "@/lib/i18n";
+import { pageMeta } from "@/lib/seo";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 
 export const Route = createFileRoute("/$lang/auth")({
   head: () => ({
-    meta: [
-      { title: "Sign in — The Taber Games" },
-      {
-        name: "description",
-        content:
-          "Sign in to The Taber Games to save your Taber's Eternity progress and continue later.",
-      },
-      { property: "og:title", content: "Sign in — The Taber Games" },
-      {
-        property: "og:description",
-        content:
-          "Sign in to The Taber Games to save your Taber's Eternity progress and continue later.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+    meta: pageMeta({
+      title: "Sign in — The Taber Games",
+      description:
+        "Sign in to The Taber Games to save your Taber's Eternity progress and continue later.",
+    }),
   }),
   component: AuthPage,
 });

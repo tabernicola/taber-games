@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import eternityLogo from "@/assets/tabers-eternity-logo.png.asset.json";
 import { SiteHeader } from "@/components/SiteHeader";
+import { EternityLogo } from "@/components/eternity2/EternityLogo";
 import { GameFooter } from "@/components/GameFooter";
 import { Ranking } from "@/components/Ranking";
 import { useI18n } from "@/lib/i18n";
+import { pageMeta } from "@/lib/seo";
 import { useAuth } from "@/hooks/useAuth";
 import { loadSave } from "@/lib/eternity2/saves";
 import { LEVELS, type LevelSize } from "@/lib/eternity2/game";
@@ -13,22 +14,12 @@ import { formatTime } from "@/lib/scores";
 
 export const Route = createFileRoute("/$lang/eternity-ii/")({
   head: () => ({
-    meta: [
-      { title: "Taber's Eternity — rules, levels and ranking | The Taber Games" },
-      {
-        name: "description",
-        content:
-          "How to play Taber's Eternity, pick a board from 4x4 to the original 256-piece puzzle, check the fastest times and resume a saved game.",
-      },
-      { property: "og:title", content: "Taber's Eternity — rules, levels and ranking" },
-      {
-        property: "og:description",
-        content:
-          "How to play Taber's Eternity, pick a board from 4x4 to the original 256-piece puzzle, check the fastest times and resume a saved game.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+    meta: pageMeta({
+      title: "Taber's Eternity — rules, levels and ranking | The Taber Games",
+      ogTitle: "Taber's Eternity — rules, levels and ranking",
+      description:
+        "How to play Taber's Eternity, pick a board from 4x4 to the original 256-piece puzzle, check the fastest times and resume a saved game.",
+    }),
   }),
   component: EternityLanding,
 });
@@ -49,20 +40,7 @@ function EternityLanding() {
       <SiteHeader />
       <main className="mx-auto max-w-4xl px-4 pb-24 pt-10">
         <header className="text-center">
-          <div className="relative inline-block">
-            <div
-              aria-hidden
-              className="absolute inset-0 -z-10 blur-3xl opacity-70"
-              style={{
-                background: "radial-gradient(closest-side, var(--neon-pink), transparent 70%)",
-              }}
-            />
-            <img
-              src={eternityLogo.url}
-              alt="Taber's Eternity"
-              className="h-32 w-64 drop-shadow-[0_0_40px_oklch(0.72_0.30_350/0.55)]"
-            />
-          </div>
+          <EternityLogo />
           <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">{t("e2.desc")}</p>
         </header>
 
