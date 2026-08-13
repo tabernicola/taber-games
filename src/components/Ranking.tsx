@@ -14,7 +14,7 @@ export function Ranking({
   className?: string;
 }) {
   const { t } = useI18n();
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["scores", game, level],
     queryFn: () => fetchTopScores(game, level),
   });
@@ -28,7 +28,8 @@ export function Ranking({
         {title ?? t("rank.title")}
       </h3>
       {isLoading && <p className="text-xs text-muted-foreground">{t("common.loading")}</p>}
-      {!isLoading && (data?.length ?? 0) === 0 && (
+      {isError && <p className="text-xs text-destructive">{t("rank.error")}</p>}
+      {!isLoading && !isError && (data?.length ?? 0) === 0 && (
         <p className="text-xs text-muted-foreground">{t("rank.empty")}</p>
       )}
       {!!data?.length && (

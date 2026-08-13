@@ -18,18 +18,19 @@ export function ScoreForm({
   const { t } = useI18n();
   const qc = useQueryClient();
   const [name, setName] = useState("");
-  const [state, setState] = useState<"idle" | "sending" | "done">("idle");
+  const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
 
   const send = async () => {
-    if (!name.trim() || state !== "idle") return;
+    if (!name.trim() || state === "sending" || state === "done") return;
     setState("sending");
     try {
       await submitScore(game, level, name, seconds);
       await qc.invalidateQueries({ queryKey: ["scores", game, level] });
       setState("done");
       onDone?.();
-    } catch {
-      setState("idle");
+    } catch (error) {
+      console.error("Failed to submit score:", error);
+      setState("error");
     }
   };
 
@@ -59,6 +60,7 @@ export function ScoreForm({
           </button>
         </div>
       )}
+      {state === "error" && <p className="mt-2 text-sm text-destructive">{t("score.error")}</p>}
     </div>
   );
 }
