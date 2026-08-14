@@ -22,6 +22,7 @@ import {
   placeCells,
   removePiece,
   solveBlockers,
+  pieceNumber,
   type BoardCell,
   type Placement,
 } from "@/lib/tabersquare/game";
@@ -33,6 +34,20 @@ import {
   rotate,
   type Cell,
 } from "@/lib/tabersquare/pieces";
+import {
+  SQUARE_LEVELS,
+  getLevel,
+  levelIndex,
+  nextLevelId,
+  type SquareLevelId,
+} from "@/lib/tabersquare/levels";
+import {
+  getActiveLevel,
+  setActiveLevel,
+  isLevelUnlocked,
+  unlockNextLevel,
+  getUnlockedLevel,
+} from "@/lib/tabersquare/progress";
 
 export const Route = createFileRoute("/$lang/the-taber-square/play")({
   head: () => ({
@@ -57,6 +72,9 @@ function TaberSquarePage() {
   const { t } = useI18n();
   const { playSound } = useSoundEffects();
   const boardContainerRef = useRef<HTMLDivElement>(null);
+  const [activeLevelId, setActiveLevelId] = useState<SquareLevelId>(getActiveLevel);
+  const currentLevelDef = useMemo(() => getLevel(activeLevelId), [activeLevelId]);
+
   const [blockers, setBlockers] = useState<Cell[]>([]);
   const [board, setBoard] = useState<BoardCell[][]>([]);
   const [pieces, setPieces] = useState<PieceState[]>([]);
@@ -71,7 +89,7 @@ function TaberSquarePage() {
   const { seconds, setSeconds } = useTimer(!won && board.length > 0 && !showDiceAnimation);
 
   const newGame = useCallback(() => {
-    const puzzle = generatePuzzle();
+    const puzzle = generatePuzzle(activeLevelId);
     setBlockers(puzzle.blockers);
     setBoard(applyBlockers(puzzle.blockers));
     setPieces(
@@ -80,24 +98,32 @@ function TaberSquarePage() {
     setSelectedId(null);
     setHover(null);
     setWon(false);
-    setSolution(solveBlockers(puzzle.blockers));
+    setSolution(solveBlockers(puzzle.blockers, activeLevelId));
     setShowSolution(false);
     setHintUsed(false);
     setHelped(false);
     setSeconds(0);
     setShowDiceAnimation(true);
-  }, [setSeconds]);
+  }, [activeLevelId, setSeconds]);
 
   useEffect(() => {
     newGame();
   }, [newGame]);
 
   useEffect(() => {
-    if (board.length && isSolved(board)) {
+    if (board.length && isSolved(board, currentLevelDef)) {
       playSound("win");
       setWon(true);
+      unlockNextLevel(activeLevelId);
     }
-  }, [board, playSound]);
+  }, [board, currentLevelDef, activeLevelId, playSound]);
+
+  const handleSelectLevel = useCallback((levelId: SquareLevelId) => {
+    if (isLevelUnlocked(levelId)) {
+      setActiveLevelId(levelId);
+      setActiveLevel(levelId);
+    }
+  }, []);
 
   const giveHint = useCallback(() => {
     if (hintUsed || !solution) return;
@@ -171,7 +197,7 @@ function TaberSquarePage() {
       return;
     }
     if (!selected) return;
-    if (canPlaceAt(board, selected.cells, x, y)) {
+    if (canPlaceAt(board, selected.cells, x, y, currentLevelDef, selected.id)) {
       playSound("place");
       setBoard(placeCells(board, selected.cells, x, y, selected.id));
       const remaining = trayPieces.filter((p) => p.id !== selected.id);
@@ -184,7 +210,7 @@ function TaberSquarePage() {
   const previewCells = useMemo(() => {
     if (!selected || !hover) return null;
     const cells = selected.cells;
-    const valid = canPlaceAt(board, cells, hover.x, hover.y);
+    const valid = canPlaceAt(board, cells, hover.x, hover.y, currentLevelDef, selected.id);
     const set = new Set<string>();
     for (const [dx, dy] of cells) {
       const x = hover.x + dx;
@@ -192,7 +218,7 @@ function TaberSquarePage() {
       if (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE) set.add(`${x},${y}`);
     }
     return { set, valid };
-  }, [selected, hover, board]);
+  }, [selected, hover, board, currentLevelDef]);
 
   const totalOrientations = useMemo(
     () => (selected ? allOrientations(selected.cells).length : 0),
@@ -210,6 +236,72 @@ function TaberSquarePage() {
             className="w-full max-w-md object-contain"
           />
         </header>
+
+        {/* Level Selector */}
+        <div className="my-6 rounded-xl border border-border bg-card p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              {t("game.levelChoose")}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {t("game.level")}:{" "}
+              <span className="font-bold text-neon-pink">{levelIndex(activeLevelId) + 1}/5</span>
+            </span>
+          </div>
+          <div className="grid grid-cols-5 gap-2">
+            {SQUARE_LEVELS.map((lvl) => {
+              const unlocked = isLevelUnlocked(lvl.id);
+              const active = lvl.id === activeLevelId;
+              return (
+                <button
+                  key={lvl.id}
+                  disabled={!unlocked}
+                  onClick={() => handleSelectLevel(lvl.id)}
+                  className={`relative flex flex-col items-center justify-center rounded-lg border py-2.5 px-1 transition-all ${
+                    active
+                      ? "border-neon-pink bg-neon-pink/15 text-neon-pink neon-glow-pink font-bold"
+                      : unlocked
+                        ? "border-border bg-background/40 text-foreground hover:border-neon-pink/50 hover:bg-background/60"
+                        : "border-border/30 bg-background/10 text-muted-foreground/40 cursor-not-allowed"
+                  }`}
+                >
+                  <span className="text-xs font-semibold uppercase tracking-wider">
+                    {t(`game.level.${lvl.id}`)}
+                  </span>
+                  <span
+                    className="mt-1 text-lg font-extrabold"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    {lvl.tier}
+                  </span>
+                  {!unlocked && (
+                    <span className="absolute -right-1 -top-1 rounded-full bg-destructive/90 p-0.5 text-white">
+                      <svg
+                        className="h-3 w-3"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={3}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                        />
+                      </svg>
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-4 rounded-lg border border-border/45 bg-background/40 p-3 text-sm text-muted-foreground">
+            <span className="mb-1 block text-xs font-bold uppercase tracking-wider text-neon-cyan">
+              {t("game.levelInfo")}:
+            </span>
+            {t(`game.level.desc.${activeLevelId}`)}
+          </div>
+        </div>
 
         {showSolution && (
           <div className="my-4 rounded-lg border border-neon-yellow/60 bg-neon-yellow/10 px-4 py-2 text-sm text-neon-yellow">
@@ -325,18 +417,25 @@ function TaberSquarePage() {
                 {pieces.map((p) => {
                   const placed = placedIds.has(p.id);
                   const isSel = p.id === selectedId;
+                  const isRestricted = currentLevelDef.restrictedPieces.includes(pieceNumber(p.id));
                   return (
                     <button
                       key={p.id}
                       onClick={() => !placed && setSelectedId(p.id)}
                       disabled={placed}
-                      className={`flex aspect-square items-center justify-center rounded-lg border p-1 transition-all ${
+                      title={isRestricted ? t("game.levelInfo") : undefined}
+                      className={`relative flex aspect-square items-center justify-center rounded-lg border p-1 transition-all ${
                         isSel
                           ? "border-neon-pink bg-neon-pink/20 neon-glow-pink"
-                          : "border-border bg-background/40 hover:border-neon-pink/60"
+                          : isRestricted
+                            ? "border-amber-500/60 bg-amber-500/5 hover:border-amber-500"
+                            : "border-border bg-background/40 hover:border-neon-pink/60"
                       } ${placed ? "opacity-25" : ""}`}
                     >
                       <PieceShape cells={p.cells} color={p.color} cellSize={9} gap={1} />
+                      {isRestricted && (
+                        <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                      )}
                     </button>
                   );
                 })}

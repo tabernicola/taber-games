@@ -1,6 +1,6 @@
 @import "tailwindcss" source(none);
-@source "../src";
 @import "tw-animate-css";
+@source "../src";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -74,6 +74,17 @@
   --neon-blue: oklch(0.65 0.22 260);
   /* Piece 9 bar — distinct from piece 2 domino orange in Genius Square */
   --piece-orange-bar: oklch(0.78 0.19 65);
+
+  /* Taber Square custom pieces colors */
+  --piece-light-blue: oklch(0.82 0.16 200);
+  --piece-purple: oklch(0.65 0.28 300);
+  --piece-dark-green: oklch(0.42 0.16 145);
+  --piece-brown: oklch(0.48 0.12 55);
+  --piece-orange: oklch(0.75 0.22 50);
+  --piece-red: oklch(0.68 0.27 20);
+  --piece-dark-blue: oklch(0.45 0.22 260);
+  --piece-yellow: oklch(0.9 0.2 100);
+  --piece-light-green: oklch(0.82 0.24 145);
 }
 
 .dark {

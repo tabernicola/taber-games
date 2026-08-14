@@ -14,12 +14,12 @@ export interface PieceDef {
 
 /** Colours aligned with The Genius Square rule sheet (Smart Games). */
 export const PIECES: PieceDef[] = [
-  { id: "p1", number: 1, name: "Mono", color: "var(--neon-yellow)", cells: [[0, 0]] },
+  { id: "p1", number: 1, name: "Mono", color: "var(--piece-light-blue)", cells: [[0, 0]] },
   {
     id: "p2",
     number: 2,
     name: "Duo",
-    color: "var(--neon-orange)",
+    color: "var(--piece-purple)",
     cells: [
       [0, 0],
       [1, 0],
@@ -29,7 +29,7 @@ export const PIECES: PieceDef[] = [
     id: "p3",
     number: 3,
     name: "Tri-I",
-    color: "var(--neon-cyan)",
+    color: "var(--piece-dark-green)",
     cells: [
       [0, 0],
       [1, 0],
@@ -40,7 +40,7 @@ export const PIECES: PieceDef[] = [
     id: "p4",
     number: 4,
     name: "Tri-L",
-    color: "var(--neon-green)",
+    color: "var(--piece-brown)",
     cells: [
       [0, 0],
       [1, 0],
@@ -51,7 +51,7 @@ export const PIECES: PieceDef[] = [
     id: "p5",
     number: 5,
     name: "Square",
-    color: "var(--neon-blue)",
+    color: "var(--piece-orange)",
     cells: [
       [0, 0],
       [1, 0],
@@ -63,7 +63,7 @@ export const PIECES: PieceDef[] = [
     id: "p6",
     number: 6,
     name: "L-4",
-    color: "var(--neon-violet)",
+    color: "var(--piece-red)",
     cells: [
       [0, 0],
       [1, 0],
@@ -75,7 +75,7 @@ export const PIECES: PieceDef[] = [
     id: "p7",
     number: 7,
     name: "T-4",
-    color: "var(--neon-pink)",
+    color: "var(--piece-dark-blue)",
     cells: [
       [0, 0],
       [1, 0],
@@ -87,7 +87,7 @@ export const PIECES: PieceDef[] = [
     id: "p8",
     number: 8,
     name: "S-4",
-    color: "var(--neon-red)",
+    color: "var(--piece-yellow)",
     cells: [
       [0, 0],
       [1, 0],
@@ -99,7 +99,7 @@ export const PIECES: PieceDef[] = [
     id: "p9",
     number: 9,
     name: "I-4",
-    color: "var(--piece-orange-bar)",
+    color: "var(--piece-light-green)",
     cells: [
       [0, 0],
       [1, 0],
