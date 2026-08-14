@@ -34,9 +34,9 @@ export function DiceRollAnimation({
     const updateSize = () => {
       if (overlayRef.current && boardContainerRef?.current) {
         const boardRect = boardContainerRef.current.getBoundingClientRect();
-        overlayRef.current.style.position = "fixed";
-        overlayRef.current.style.top = `${boardRect.top}px`;
-        overlayRef.current.style.left = `${boardRect.left}px`;
+        overlayRef.current.style.position = "absolute";
+        overlayRef.current.style.top = "0";
+        overlayRef.current.style.left = "0";
         overlayRef.current.style.width = `${boardRect.width}px`;
         overlayRef.current.style.height = `${boardRect.height}px`;
         overlayRef.current.style.zIndex = "50";
