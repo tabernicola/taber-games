@@ -158,7 +158,7 @@ export function generatePuzzle(levelId: SquareLevelId = "starter", maxAttempts =
     const blockers = dedupeBlockers(rollDice());
     if (blockers.length !== 7) continue;
     const board = applyBlockers(blockers);
-    if (solveWithPlacements(board, orderedPieces(), 0, [], level)) {
+    if (solveWithPlacements(board, orderedPieces(), [], level)) {
       return { blockers, board };
     }
   }
@@ -185,33 +185,33 @@ export interface Placement {
 function solveWithPlacements(
   board: BoardCell[][],
   pieces: PieceDef[],
-  idx: number,
   acc: Placement[],
   level: SquareLevelDef,
 ): Placement[] | null {
-  if (idx >= pieces.length) {
+  if (pieces.length === 0) {
     return violatesLevelRestrictions(board, level) ? null : acc;
   }
-  const piece = pieces[idx];
-  const orients = allOrientations(piece.cells);
   const first = firstEmptyCell(board);
   if (!first) return null;
   const [firstX, firstY] = first;
 
-  for (const orient of orients) {
-    for (const [dx, dy] of orient) {
-      const ox = firstX - dx;
-      const oy = firstY - dy;
-      if (canPlaceAt(board, orient, ox, oy, level, piece.id)) {
-        const next = placeCells(board, orient, ox, oy, piece.id);
-        const res = solveWithPlacements(
-          next,
-          pieces,
-          idx + 1,
-          [...acc, { id: piece.id, cells: orient, ox, oy }],
-          level,
-        );
-        if (res) return res;
+  for (let i = 0; i < pieces.length; i++) {
+    const piece = pieces[i];
+    const rest = pieces.slice(0, i).concat(pieces.slice(i + 1));
+    for (const orient of allOrientations(piece.cells)) {
+      for (const [dx, dy] of orient) {
+        const ox = firstX - dx;
+        const oy = firstY - dy;
+        if (canPlaceAt(board, orient, ox, oy, level, piece.id)) {
+          const next = placeCells(board, orient, ox, oy, piece.id);
+          const res = solveWithPlacements(
+            next,
+            rest,
+            [...acc, { id: piece.id, cells: orient, ox, oy }],
+            level,
+          );
+          if (res) return res;
+        }
       }
     }
   }
@@ -230,7 +230,7 @@ export function solveBlockers(
 ): Placement[] | null {
   const level = getLevel(levelId);
   const board = applyBlockers(blockers);
-  return solveWithPlacements(board, orderedPieces(), 0, [], level);
+  return solveWithPlacements(board, orderedPieces(), [], level);
 }
 
 export function isSolved(board: BoardCell[][], level?: SquareLevelDef): boolean {
