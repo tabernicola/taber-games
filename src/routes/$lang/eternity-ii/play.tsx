@@ -457,7 +457,7 @@ function EternityPage() {
                 {t("e2.solutionNote")}
               </p>
             ) : (
-              <ScoreForm game="eternity-ii" level={String(level.size)} seconds={seconds} />
+              <ScoreForm game="eternity-ii" level={level.size} seconds={seconds} />
             )}
             <div className="mt-5 flex justify-center gap-2">
               <button

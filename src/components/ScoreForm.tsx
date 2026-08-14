@@ -6,12 +6,12 @@ import { useI18n } from "@/lib/i18n";
 /** Name + submit form shown in a win modal. */
 export function ScoreForm({
   game,
-  level = "",
+  level,
   seconds,
   onDone,
 }: {
   game: GameId;
-  level?: string;
+  level?: number;
   seconds: number;
   onDone?: () => void;
 }) {

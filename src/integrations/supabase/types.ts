@@ -40,7 +40,7 @@ export type Database = {
           created_at: string;
           game: string;
           id: string;
-          level: string;
+          level: number;
           player_name: string;
           seconds: number;
         };
@@ -48,7 +48,7 @@ export type Database = {
           created_at?: string;
           game: string;
           id?: string;
-          level?: string;
+          level?: number;
           player_name: string;
           seconds: number;
         };
@@ -56,7 +56,7 @@ export type Database = {
           created_at?: string;
           game?: string;
           id?: string;
-          level?: string;
+          level?: number;
           player_name?: string;
           seconds?: number;
         };

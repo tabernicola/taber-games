@@ -6,6 +6,7 @@ export type Score = {
   id: string;
   player_name: string;
   seconds: number;
+  level: number;
   created_at: string;
 };
 
@@ -17,21 +18,26 @@ export function formatTime(seconds: number): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-export async function fetchTopScores(game: GameId, level = ""): Promise<Score[]> {
-  const { data, error } = await supabase
+export async function fetchTopScores(game: GameId, level?: number): Promise<Score[]> {
+  let query = supabase
     .from("scores")
-    .select("id, player_name, seconds, created_at")
-    .eq("game", game)
-    .eq("level", level)
-    .order("seconds", { ascending: true })
-    .limit(5);
+    .select("id, player_name, seconds, level, created_at")
+    .eq("game", game);
+
+  if (level !== undefined) {
+    query = query.eq("level", level);
+  }
+
+  query = query.order("level", { ascending: false }).order("seconds", { ascending: true });
+
+  const { data, error } = await query.limit(5);
   if (error) throw error;
   return data ?? [];
 }
 
 export async function submitScore(
   game: GameId,
-  level: string,
+  level: number,
   playerName: string,
   seconds: number,
 ): Promise<void> {

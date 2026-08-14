@@ -486,7 +486,7 @@ function TaberSquarePage() {
             <p className="mt-3 text-sm text-muted-foreground">{t("game.solvedDesc")}</p>
 
             {!helped ? (
-              <ScoreForm game="taber-square" seconds={seconds} />
+              <ScoreForm game="taber-square" level={levelIndex(activeLevelId) + 1} seconds={seconds} />
             ) : (
               <p className="mt-4 text-sm text-neon-yellow">{t("game.solutionShown")}</p>
             )}

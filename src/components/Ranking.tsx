@@ -2,14 +2,32 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchTopScores, formatTime, type GameId } from "@/lib/scores";
 import { useI18n } from "@/lib/i18n";
 
+// Map level numbers to level IDs for Taber Square
+const taberSquareLevelMap: Record<number, string> = {
+  1: "starter",
+  2: "junior",
+  3: "expert",
+  4: "master",
+  5: "wizard",
+};
+
+function getLevelId(game: GameId, levelNumber: number): string {
+  if (game === "taber-square") {
+    return taberSquareLevelMap[levelNumber] || `level-${levelNumber}`;
+  }
+  // For Eternity II, level is the board size (4, 6, 8, 12, 16)
+  // Just return the size as-is for display
+  return `${levelNumber}×${levelNumber}`;
+}
+
 export function Ranking({
   game,
-  level = "",
+  level,
   title,
   className = "",
 }: {
   game: GameId;
-  level?: string;
+  level?: number;
   title?: string;
   className?: string;
 }) {
@@ -34,13 +52,20 @@ export function Ranking({
       )}
       {!!data?.length && (
         <ol className="space-y-1.5">
-          {data.map((s, i) => (
-            <li key={s.id} className="flex items-center gap-3 text-sm">
-              <span className="w-5 text-right text-xs text-neon-yellow">{i + 1}.</span>
-              <span className="flex-1 truncate text-foreground">{s.player_name}</span>
-              <span className="tabular-nums text-muted-foreground">{formatTime(s.seconds)}</span>
-            </li>
-          ))}
+          {data.map((s, i) => {
+            const levelDisplay =
+              game === "taber-square"
+                ? t(`game.level.${getLevelId(game, s.level)}`)
+                : getLevelId(game, s.level);
+            return (
+              <li key={s.id} className="flex items-center gap-3 text-sm">
+                <span className="w-5 text-right text-xs text-neon-yellow">{i + 1}.</span>
+                <span className="flex-1 truncate text-foreground">{s.player_name}</span>
+                <span className="text-xs text-muted-foreground font-medium">{levelDisplay}</span>
+                <span className="tabular-nums text-muted-foreground">{formatTime(s.seconds)}</span>
+              </li>
+            );
+          })}
         </ol>
       )}
     </div>

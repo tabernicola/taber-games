@@ -34,25 +34,27 @@ describe("formatTime", () => {
 
 function selectChain(result: { data: unknown; error: unknown }) {
   const limit = vi.fn().mockResolvedValue(result);
-  const order = vi.fn().mockReturnValue({ limit });
-  const eqLevel = vi.fn().mockReturnValue({ order });
+  const orderSeconds = vi.fn().mockReturnValue({ limit });
+  const orderLevel = vi.fn().mockReturnValue({ order: orderSeconds });
+  const eqLevel = vi.fn().mockReturnValue({ order: orderLevel });
   const eqGame = vi.fn().mockReturnValue({ eq: eqLevel });
   const select = vi.fn().mockReturnValue({ eq: eqGame });
-  return { select, eqGame, eqLevel, order, limit };
+  return { select, eqGame, eqLevel, orderLevel, orderSeconds, limit };
 }
 
 describe("fetchTopScores", () => {
   it("queries the scores table filtered by game and level", async () => {
-    const scores = [{ id: "1", player_name: "Ana", seconds: 42, created_at: "now" }];
+    const scores = [{ id: "1", player_name: "Ana", seconds: 42, level: 2, created_at: "now" }];
     const chain = selectChain({ data: scores, error: null });
     mockFrom.mockReturnValue({ select: chain.select } as never);
 
-    const result = await fetchTopScores("taber-square", "junior");
+    const result = await fetchTopScores("taber-square", 2);
 
     expect(mockFrom).toHaveBeenCalledWith("scores");
     expect(chain.eqGame).toHaveBeenCalledWith("game", "taber-square");
-    expect(chain.eqLevel).toHaveBeenCalledWith("level", "junior");
-    expect(chain.order).toHaveBeenCalledWith("seconds", { ascending: true });
+    expect(chain.eqLevel).toHaveBeenCalledWith("level", 2);
+    expect(chain.orderLevel).toHaveBeenCalledWith("level", { ascending: false });
+    expect(chain.orderSeconds).toHaveBeenCalledWith("seconds", { ascending: true });
     expect(chain.limit).toHaveBeenCalledWith(5);
     expect(result).toEqual(scores);
   });
@@ -79,10 +81,10 @@ describe("submitScore", () => {
 
   it("inserts the trimmed player name", async () => {
     const insert = insertChain({ error: null });
-    await submitScore("taber-square", "junior", "  Ana  ", 42);
+    await submitScore("taber-square", 2, "  Ana  ", 42);
     expect(insert).toHaveBeenCalledWith({
       game: "taber-square",
-      level: "junior",
+      level: 2,
       player_name: "Ana",
       seconds: 42,
     });
@@ -90,18 +92,18 @@ describe("submitScore", () => {
 
   it("truncates names longer than 24 characters", async () => {
     const insert = insertChain({ error: null });
-    await submitScore("taber-square", "", "a".repeat(30), 10);
+    await submitScore("taber-square", 1, "a".repeat(30), 10);
     expect(insert).toHaveBeenCalledWith(expect.objectContaining({ player_name: "a".repeat(24) }));
   });
 
   it("falls back to Anon for a blank name", async () => {
     const insert = insertChain({ error: null });
-    await submitScore("eternity-ii", "4", "   ", 5);
+    await submitScore("eternity-ii", 4, "   ", 5);
     expect(insert).toHaveBeenCalledWith(expect.objectContaining({ player_name: "Anon" }));
   });
 
   it("throws when the insert fails", async () => {
     insertChain({ error: new Error("nope") });
-    await expect(submitScore("eternity-ii", "4", "Ana", 5)).rejects.toThrow("nope");
+    await expect(submitScore("eternity-ii", 4, "Ana", 5)).rejects.toThrow("nope");
   });
 });
