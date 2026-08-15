@@ -40,7 +40,19 @@ function Home() {
             />
           </div>
           <p className="mt-4 max-w-xl text-balance text-sm text-muted-foreground sm:text-base">
-            {t("home.tagline")}
+            {t("home.tagline.part1")}
+            <img
+              src={`/${slug}/AI.png`}
+              alt={t("home.tagline.part2")}
+              className="inline-block h-6 mx-1 align-middle"
+            />
+            {t("home.tagline.part3")}
+            <img
+              src={`/${slug}/AI2.png`}
+              alt={t("home.tagline.part4")}
+              className="inline-block h-6 mx-1 align-middle"
+            />
+            {t("home.tagline.part5")}
           </p>
         </section>
 

@@ -34,8 +34,11 @@ const translations: Record<Lang, Dict> = {
   eu: {
     "nav.home": "Hasiera",
     "nav.play": "Jokatu",
-    "home.tagline":
-      "Jolastu Inteligenzia Artifizialarekin egindako puzzleekin Izaki Adimentsuentzat.",
+    "home.tagline.part1": "Jolastu ",
+    "home.tagline.part2": "Adimen Artifiziala",
+    "home.tagline.part3": "-rekin egindako puzzleekin ",
+    "home.tagline.part4": "Arima Adimendun",
+    "home.tagline.part5": "-entzat.",
     "home.games": "JOKOAK",
     "home.available": "{n} eskuragarri",
     "home.card.tag": "Puzzlea · Jokalari bakarra",
@@ -176,7 +179,11 @@ const translations: Record<Lang, Dict> = {
   es: {
     "nav.home": "Inicio",
     "nav.play": "Jugar",
-    "home.tagline": "Juega con puzzles hechos con Inteligencia Artificial para Almas Inteligentes.",
+    "home.tagline.part1": "Juega con puzzles hechos con ",
+    "home.tagline.part2": "Artificial Inteligence",
+    "home.tagline.part3": " para ",
+    "home.tagline.part4": "Almas Inteligentes",
+    "home.tagline.part5": ".",
     "home.games": "JUEGOS",
     "home.available": "{n} disponible",
     "home.card.tag": "Puzle · 1 jugador",
@@ -319,8 +326,11 @@ const translations: Record<Lang, Dict> = {
   en: {
     "nav.home": "Home",
     "nav.play": "Play",
-    "home.tagline":
-      "Play with puzzles created with Artificial Intelligence for Inquisitive Aminds.",
+    "home.tagline.part1": "Play with puzzles created with ",
+    "home.tagline.part2": "Artificial Intelligence",
+    "home.tagline.part3": " for ",
+    "home.tagline.part4": "Active Intellects",
+    "home.tagline.part5": ".",
     "home.games": "GAMES",
     "home.available": "{n} available",
     "home.card.tag": "Puzzle · 1  player",
