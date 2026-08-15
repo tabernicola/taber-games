@@ -34,7 +34,8 @@ const translations: Record<Lang, Dict> = {
   eu: {
     "nav.home": "Hasiera",
     "nav.play": "Jokatu",
-    "home.tagline": "IA egindako minijokoen aretoa. Sarrera bakarra oraingoz — laster gehiago.",
+    "home.tagline":
+      "Jolastu Inteligenzia Artifizialarekin egindako puzzleekin Izaki Adimentsuentzat.",
     "home.games": "JOKOAK",
     "home.available": "{n} eskuragarri",
     "home.card.tag": "Puzzlea · Jokalari bakarra",
@@ -74,10 +75,14 @@ const translations: Record<Lang, Dict> = {
     "game.level.master": "Master",
     "game.level.wizard": "Wizard",
     "game.level.desc.starter": "Pieza guztiak edozein lekutan jar daitezke (mugarik gabe).",
-    "game.level.desc.junior": "1 (Mono, urdin argia) eta 2 (Duo, morea) piezek ezin dute elkarren artean alde bat partekatu (ertzak ukitu).",
-    "game.level.desc.expert": "1 (Mono, urdin argia), 2 (Duo, morea) eta 3 (Tri-I, berde iluna) piezek ezin dute elkarren artean alde bat partekatu (ertzak ukitu).",
-    "game.level.desc.master": "2 (Duo, morea), 3 (Tri-I, berde iluna) eta 4 (Tri-L, marroia) piezek ezin dute elkarren artean alde bat partekatu (ertzak ukitu).",
-    "game.level.desc.wizard": "1 (Mono, urdin argia), 2 (Duo, morea), 3 (Tri-I, berde iluna) eta 4 (Tri-L, marroia) piezek ezin dute elkarren artean alde bat partekatu (ertzak ukitu).",
+    "game.level.desc.junior":
+      "1 (Mono, urdin argia) eta 2 (Duo, morea) piezek ezin dute elkarren artean alde bat partekatu (ertzak ukitu).",
+    "game.level.desc.expert":
+      "1 (Mono, urdin argia), 2 (Duo, morea) eta 3 (Tri-I, berde iluna) piezek ezin dute elkarren artean alde bat partekatu (ertzak ukitu).",
+    "game.level.desc.master":
+      "2 (Duo, morea), 3 (Tri-I, berde iluna) eta 4 (Tri-L, marroia) piezek ezin dute elkarren artean alde bat partekatu (ertzak ukitu).",
+    "game.level.desc.wizard":
+      "1 (Mono, urdin argia), 2 (Duo, morea), 3 (Tri-I, berde iluna) eta 4 (Tri-L, marroia) piezek ezin dute elkarren artean alde bat partekatu (ertzak ukitu).",
     "game.levelInfo": "Mailaren araua",
     "game.unlockedNextLevel": "Maila gaindituta! Hurrengo maila desblokeatuta.",
     "game.levelLocked": "Maila hau blokeatuta dago.",
@@ -171,7 +176,7 @@ const translations: Record<Lang, Dict> = {
   es: {
     "nav.home": "Inicio",
     "nav.play": "Jugar",
-    "home.tagline": "Un salón de minijuegos hechos con la IA. Solo uno por ahora — vendrán más.",
+    "home.tagline": "Juega con puzzles hechos con Inteligencia Artificial para Almas Inteligentes.",
     "home.games": "JUEGOS",
     "home.available": "{n} disponible",
     "home.card.tag": "Puzle · 1 jugador",
@@ -210,11 +215,16 @@ const translations: Record<Lang, Dict> = {
     "game.level.expert": "Experto",
     "game.level.master": "Maestro",
     "game.level.wizard": "Mago",
-    "game.level.desc.starter": "Todas las piezas se pueden colocar en cualquier lugar (sin restricciones).",
-    "game.level.desc.junior": "Las piezas 1 (Mono, azul claro) y 2 (Duo, morado) no pueden compartir un lado entre sí (tocar bordes).",
-    "game.level.desc.expert": "Las piezas 1 (Mono, azul claro), 2 (Duo, morado) y 3 (Tri-I, verde oscuro) no pueden compartir un lado entre sí (tocar bordes).",
-    "game.level.desc.master": "Las piezas 2 (Duo, morado), 3 (Tri-I, verde oscuro) y 4 (Tri-L, marrón) no pueden compartir un lado entre sí (tocar bordes).",
-    "game.level.desc.wizard": "Las piezas 1 (Mono, azul claro), 2 (Duo, morado), 3 (Tri-I, verde oscuro) y 4 (Tri-L, marrón) no pueden compartir un lado entre sí (tocar bordes).",
+    "game.level.desc.starter":
+      "Todas las piezas se pueden colocar en cualquier lugar (sin restricciones).",
+    "game.level.desc.junior":
+      "Las piezas 1 (Mono, azul claro) y 2 (Duo, morado) no pueden compartir un lado entre sí (tocar bordes).",
+    "game.level.desc.expert":
+      "Las piezas 1 (Mono, azul claro), 2 (Duo, morado) y 3 (Tri-I, verde oscuro) no pueden compartir un lado entre sí (tocar bordes).",
+    "game.level.desc.master":
+      "Las piezas 2 (Duo, morado), 3 (Tri-I, verde oscuro) y 4 (Tri-L, marrón) no pueden compartir un lado entre sí (tocar bordes).",
+    "game.level.desc.wizard":
+      "Las piezas 1 (Mono, azul claro), 2 (Duo, morado), 3 (Tri-I, verde oscuro) y 4 (Tri-L, marrón) no pueden compartir un lado entre sí (tocar bordes).",
     "game.levelInfo": "Regla del nivel",
     "game.unlockedNextLevel": "¡Nivel superado! Siguiente nivel desbloqueado.",
     "game.levelLocked": "Este nivel todavía está bloqueado.",
@@ -309,7 +319,8 @@ const translations: Record<Lang, Dict> = {
   en: {
     "nav.home": "Home",
     "nav.play": "Play",
-    "home.tagline": "A arcade of AI-crafted minigames. One entry so far — more drops incoming.",
+    "home.tagline":
+      "Play with puzzles created with Artificial Intelligence for Inquisitive Aminds.",
     "home.games": "GAMES",
     "home.available": "{n} available",
     "home.card.tag": "Puzzle · 1  player",
@@ -349,10 +360,14 @@ const translations: Record<Lang, Dict> = {
     "game.level.master": "Master",
     "game.level.wizard": "Wizard",
     "game.level.desc.starter": "All pieces can be placed anywhere (no restrictions).",
-    "game.level.desc.junior": "Pieces 1 (Mono, light blue) and 2 (Duo, purple) may not share a side with each other (touch edges).",
-    "game.level.desc.expert": "Pieces 1 (Mono, light blue), 2 (Duo, purple), and 3 (Tri-I, dark green) may not share a side with each other (touch edges).",
-    "game.level.desc.master": "Pieces 2 (Duo, purple), 3 (Tri-I, dark green), and 4 (Tri-L, brown) may not share a side with each other (touch edges).",
-    "game.level.desc.wizard": "Pieces 1 (Mono, light blue), 2 (Duo, purple), 3 (Tri-I, dark green), and 4 (Tri-L, brown) may not share a side with each other (touch edges).",
+    "game.level.desc.junior":
+      "Pieces 1 (Mono, light blue) and 2 (Duo, purple) may not share a side with each other (touch edges).",
+    "game.level.desc.expert":
+      "Pieces 1 (Mono, light blue), 2 (Duo, purple), and 3 (Tri-I, dark green) may not share a side with each other (touch edges).",
+    "game.level.desc.master":
+      "Pieces 2 (Duo, purple), 3 (Tri-I, dark green), and 4 (Tri-L, brown) may not share a side with each other (touch edges).",
+    "game.level.desc.wizard":
+      "Pieces 1 (Mono, light blue), 2 (Duo, purple), 3 (Tri-I, dark green), and 4 (Tri-L, brown) may not share a side with each other (touch edges).",
     "game.levelInfo": "Level rule",
     "game.unlockedNextLevel": "Level completed! Next level unlocked.",
     "game.levelLocked": "This level is locked.",
