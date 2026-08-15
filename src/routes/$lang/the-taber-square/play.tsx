@@ -86,7 +86,20 @@ function TaberSquarePage() {
   const [hintUsed, setHintUsed] = useState(false);
   const [helped, setHelped] = useState(false);
   const [showDiceAnimation, setShowDiceAnimation] = useState(true);
+  const [drag, setDrag] = useState<{ id: string; x: number; y: number } | null>(null);
+  const dragRef = useRef<{
+    id: string;
+    startX: number;
+    startY: number;
+    moved: boolean;
+    fromBoard: boolean;
+  } | null>(null);
+  const suppressClickRef = useRef(false);
   const { seconds, setSeconds } = useTimer(!won && board.length > 0 && !showDiceAnimation);
+
+  // Latest state for pointer-event handlers attached to window.
+  const stateRef = useRef({ board, pieces, currentLevelDef });
+  stateRef.current = { board, pieces, currentLevelDef };
 
   const newGame = useCallback(() => {
     const puzzle = generatePuzzle(activeLevelId);
@@ -188,7 +201,102 @@ function TaberSquarePage() {
     Escape: () => setSelectedId(null),
   });
 
+  /** Board cell under a client point, or null when outside the grid. */
+  const cellFromPoint = useCallback((clientX: number, clientY: number) => {
+    const el = document.elementFromPoint(clientX, clientY);
+    const cellEl = el?.closest?.("[data-cell]") as HTMLElement | null;
+    if (!cellEl || !boardContainerRef.current?.contains(cellEl)) return null;
+    const [cx, cy] = cellEl.dataset.cell!.split(",").map(Number);
+    return { x: cx, y: cy };
+  }, []);
+
+  const startDrag = useCallback(
+    (e: React.PointerEvent, pieceId: string, fromBoard: boolean) => {
+      if (showSolution || showDiceAnimation || won) return;
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      dragRef.current = {
+        id: pieceId,
+        startX: e.clientX,
+        startY: e.clientY,
+        moved: false,
+        fromBoard,
+      };
+    },
+    [showSolution, showDiceAnimation, won],
+  );
+
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      const d = dragRef.current;
+      if (!d) return;
+      if (!d.moved) {
+        const dist = Math.hypot(e.clientX - d.startX, e.clientY - d.startY);
+        if (dist < 6) return;
+        d.moved = true;
+        suppressClickRef.current = true;
+        setSelectedId(d.id);
+        if (d.fromBoard) {
+          playSound("click");
+          setBoard((prev) => removePiece(prev, d.id));
+        }
+      }
+      setDrag({ id: d.id, x: e.clientX, y: e.clientY });
+      const cell = cellFromPoint(e.clientX, e.clientY);
+      setHover(cell);
+    };
+
+    const onUp = (e: PointerEvent) => {
+      const d = dragRef.current;
+      if (!d) return;
+      dragRef.current = null;
+      if (!d.moved) return; // treat as a plain click
+      setDrag(null);
+      setHover(null);
+      const { board: b, pieces: ps, currentLevelDef: lvl } = stateRef.current;
+      const piece = ps.find((p) => p.id === d.id);
+      const cell = cellFromPoint(e.clientX, e.clientY);
+      if (piece && cell && canPlaceAt(b, piece.cells, cell.x, cell.y, lvl, piece.id)) {
+        playSound("place");
+        setBoard(placeCells(b, piece.cells, cell.x, cell.y, piece.id));
+        const placed = new Set<string>();
+        for (const row of b) for (const c of row) if (c && c !== BLOCKER) placed.add(c);
+        const remaining = ps.filter((p) => p.id !== piece.id && !placed.has(p.id));
+        setSelectedId(remaining[0]?.id ?? null);
+      } else {
+        // Dropped outside or in an invalid spot: the piece returns to the tray.
+        playSound("click");
+        setSelectedId(piece?.id ?? null);
+      }
+      // Swallow the click event that follows pointerup so it doesn't re-trigger.
+      setTimeout(() => {
+        suppressClickRef.current = false;
+      }, 0);
+    };
+
+    const onCancel = () => {
+      const d = dragRef.current;
+      dragRef.current = null;
+      setDrag(null);
+      setHover(null);
+      if (d?.moved) {
+        setTimeout(() => {
+          suppressClickRef.current = false;
+        }, 0);
+      }
+    };
+
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onCancel);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onCancel);
+    };
+  }, [cellFromPoint, playSound]);
+
   const handleCellClick = (x: number, y: number) => {
+    if (suppressClickRef.current) return;
     const cell = board[y]?.[x];
     if (cell && cell !== BLOCKER) {
       playSound("click");
@@ -223,6 +331,11 @@ function TaberSquarePage() {
   const totalOrientations = useMemo(
     () => (selected ? allOrientations(selected.cells).length : 0),
     [selected],
+  );
+
+  const dragPiece = useMemo(
+    () => (drag ? (pieces.find((p) => p.id === drag.id) ?? null) : null),
+    [drag, pieces],
   );
 
   return (
@@ -339,10 +452,14 @@ function TaberSquarePage() {
                   return (
                     <button
                       key={`${x}-${y}`}
+                      data-cell={`${x},${y}`}
                       onClick={() => !showSolution && handleCellClick(x, y)}
+                      onPointerDown={(e) =>
+                        pieceIdHere && !showSolution && startDrag(e, pieceIdHere, true)
+                      }
                       onMouseEnter={() => setHover({ x, y })}
                       onMouseLeave={() => setHover(null)}
-                      className="relative aspect-square w-11 rounded-md transition-colors sm:w-14"
+                      className="relative aspect-square w-11 touch-none rounded-md transition-colors sm:w-14"
                       style={{
                         background: isBlocker
                           ? "oklch(0.25 0.03 40)"
@@ -421,10 +538,14 @@ function TaberSquarePage() {
                   return (
                     <button
                       key={p.id}
-                      onClick={() => !placed && setSelectedId(p.id)}
+                      onClick={() => {
+                        if (suppressClickRef.current) return;
+                        if (!placed) setSelectedId(p.id);
+                      }}
+                      onPointerDown={(e) => !placed && startDrag(e, p.id, false)}
                       disabled={placed}
                       title={isRestricted ? t("game.levelInfo") : undefined}
-                      className={`relative flex aspect-square items-center justify-center rounded-lg border p-1 transition-all ${
+                      className={`relative flex aspect-square touch-none items-center justify-center rounded-lg border p-1 transition-all ${
                         isSel
                           ? "border-neon-pink bg-neon-pink/20 neon-glow-pink"
                           : isRestricted
@@ -474,6 +595,15 @@ function TaberSquarePage() {
         />
       </GameNav>
 
+      {drag && dragPiece && (
+        <div
+          className="pointer-events-none fixed z-50"
+          style={{ left: drag.x, top: drag.y, transform: "translate(-50%, -50%)" }}
+        >
+          <PieceShape cells={dragPiece.cells} color={dragPiece.color} cellSize={26} gap={3} />
+        </div>
+      )}
+
       {won && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
           <div className="w-full max-w-sm rounded-2xl border border-neon-pink bg-card p-8 text-center neon-glow-pink">
@@ -486,7 +616,11 @@ function TaberSquarePage() {
             <p className="mt-3 text-sm text-muted-foreground">{t("game.solvedDesc")}</p>
 
             {!helped ? (
-              <ScoreForm game="taber-square" level={levelIndex(activeLevelId) + 1} seconds={seconds} />
+              <ScoreForm
+                game="taber-square"
+                level={levelIndex(activeLevelId) + 1}
+                seconds={seconds}
+              />
             ) : (
               <p className="mt-4 text-sm text-neon-yellow">{t("game.solutionShown")}</p>
             )}
