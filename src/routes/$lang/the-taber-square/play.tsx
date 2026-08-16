@@ -531,8 +531,7 @@ function TaberSquarePage() {
                 </div>
               </div>
               <div className="grid grid-cols-5 gap-2 sm:grid-cols-6 md:grid-cols-9">
-                {pieces.map((p) => {
-                  const placed = placedIds.has(p.id);
+                {trayPieces.map((p) => {
                   const isSel = p.id === selectedId;
                   const isRestricted = currentLevelDef.restrictedPieces.includes(pieceNumber(p.id));
                   return (
@@ -540,10 +539,9 @@ function TaberSquarePage() {
                       key={p.id}
                       onClick={() => {
                         if (suppressClickRef.current) return;
-                        if (!placed) setSelectedId(p.id);
+                        setSelectedId(p.id);
                       }}
-                      onPointerDown={(e) => !placed && startDrag(e, p.id, false)}
-                      disabled={placed}
+                      onPointerDown={(e) => startDrag(e, p.id, false)}
                       title={isRestricted ? t("game.levelInfo") : undefined}
                       className={`relative flex aspect-square touch-none items-center justify-center rounded-lg border p-1 transition-all ${
                         isSel
@@ -551,7 +549,7 @@ function TaberSquarePage() {
                           : isRestricted
                             ? "border-amber-500/60 bg-amber-500/5 hover:border-amber-500"
                             : "border-border bg-background/40 hover:border-neon-pink/60"
-                      } ${placed ? "opacity-25" : ""}`}
+                      }`}
                     >
                       <PieceShape cells={p.cells} color={p.color} cellSize={9} gap={1} />
                       {isRestricted && (
@@ -626,6 +624,19 @@ function TaberSquarePage() {
             )}
 
             <div className="mt-6 flex justify-center gap-2">
+              {nextLevelId(activeLevelId) && (
+                <button
+                  onClick={() => {
+                    const next = nextLevelId(activeLevelId);
+                    if (next) {
+                      handleSelectLevel(next);
+                    }
+                  }}
+                  className="rounded-lg border border-neon-cyan bg-neon-cyan/20 px-4 py-2 text-sm font-semibold text-neon-cyan transition-all hover:bg-neon-cyan/30"
+                >
+                  {t("game.nextLevel")}
+                </button>
+              )}
               <button
                 onClick={newGame}
                 className="rounded-lg border border-neon-pink bg-neon-pink/20 px-4 py-2 text-sm font-semibold text-neon-pink transition-all hover:bg-neon-pink/30"

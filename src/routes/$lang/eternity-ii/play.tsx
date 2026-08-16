@@ -68,6 +68,7 @@ function EternityPage() {
   const [showSolution, setShowSolution] = useState(false);
   const [prevBoard, setPrevBoard] = useState<Placement[] | null>(null);
   const [helped, setHelped] = useState(false);
+  const [priorityTileIds, setPriorityTileIds] = useState<number[]>([]);
   const { seconds, setSeconds } = useTimer(ready && !showWin);
 
   const startLevel = useCallback(
@@ -81,6 +82,7 @@ function EternityPage() {
       setShowSolution(false);
       setPrevBoard(null);
       setHelped(false);
+      setPriorityTileIds([]);
       setSeconds(0);
       setReady(true);
     },
@@ -137,8 +139,14 @@ function EternityPage() {
   }, [board]);
 
   const tray = useMemo(
-    () => level.tiles.filter((tile) => !placedIds.has(tile.id)),
-    [level, placedIds],
+    () => {
+      const unplaced = level.tiles.filter((tile) => !placedIds.has(tile.id));
+      const prioritySet = new Set(priorityTileIds);
+      const priorityTiles = unplaced.filter((tile) => prioritySet.has(tile.id));
+      const otherTiles = unplaced.filter((tile) => !prioritySet.has(tile.id));
+      return [...priorityTiles, ...otherTiles];
+    },
+    [level, placedIds, priorityTileIds],
   );
 
   const candidates = useMemo(
@@ -168,6 +176,7 @@ function EternityPage() {
     setBoard(next);
     setSelected(null);
     setFocus(null);
+    setPriorityTileIds([]);
     if (isSolved(level, next)) {
       playSound("win");
       setShowWin(true);
@@ -180,7 +189,8 @@ function EternityPage() {
     if (current) {
       playSound("click");
       setBoard((b) => b.map((p, i) => (i === index ? null : p)));
-      setSelected({ tileId: current.tileId, rotation: current.rotation });
+      setSelected(null);
+      setPriorityTileIds([current.tileId]);
       setFocus(null);
       return;
     }
@@ -189,7 +199,14 @@ function EternityPage() {
       return;
     }
     playSound("click");
-    setFocus((f) => (f === index ? null : index));
+    const newFocus = focus === index ? null : index;
+    setFocus(newFocus);
+    if (newFocus !== null) {
+      const candidateIds = candidatesAt(level, board, newFocus, tray);
+      setPriorityTileIds(Array.from(candidateIds.keys()));
+    } else {
+      setPriorityTileIds([]);
+    }
   };
 
   const toggleSolution = () => {
