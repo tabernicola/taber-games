@@ -52,13 +52,32 @@ describe("createLevel", () => {
     const level = createLevel(size);
     expect(level.size).toBe(size);
     expect(level.original).toBe(false);
-    expect(level.fixed).toEqual([]);
     expect(level.tiles).toHaveLength(size * size);
     expect(level.solution).toHaveLength(size * size);
 
     const board = solvedBoard(level);
     expect(isSolved(level, board)).toBe(true);
     expect(totalConflicts(level, board)).toBe(0);
+  });
+
+  it.each([
+    [4, 5], // 4 corners + center = 5 hints
+    [6, 4], // 3 corners + center = 4 hints
+    [8, 3], // 2 corners + center = 3 hints
+    [12, 2], // 1 corner + center = 2 hints
+  ] as const)("provides progressive hints for %ix%i level", (size, expectedHints) => {
+    const level = createLevel(size);
+    expect(level.fixed).toHaveLength(expectedHints);
+
+    // Check that the center piece is always fixed
+    const centerPos = Math.floor(size / 2) * size + Math.floor(size / 2);
+    expect(level.fixed.some((f) => f.index === centerPos)).toBe(true);
+
+    // Check that fixed pieces are valid and don't conflict
+    const board = emptyBoard(level);
+    for (const fixed of level.fixed) {
+      expect(conflictsAt(level, board, fixed.index)).toBe(0);
+    }
   });
 
   it("random levels use each tile exactly once in the solution", () => {
@@ -87,11 +106,21 @@ describe("createLevel", () => {
 });
 
 describe("emptyBoard", () => {
-  it("creates an all-null board when nothing is fixed", () => {
+  it("creates a board with fixed pieces pre-placed and locked", () => {
     const level = createLevel(4);
     const board = emptyBoard(level);
     expect(board).toHaveLength(16);
-    expect(board.every((p) => p === null)).toBe(true);
+
+    // Count non-null (fixed) pieces
+    const fixedCount = board.filter((p) => p !== null).length;
+    expect(fixedCount).toBe(level.fixed.length);
+
+    // All fixed pieces should be locked
+    for (let i = 0; i < board.length; i++) {
+      if (board[i] !== null) {
+        expect(board[i]!.locked).toBe(true);
+      }
+    }
   });
 });
 

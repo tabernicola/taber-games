@@ -81,7 +81,50 @@ function generateRandomLevel(size: number): Level {
     solution[s.cell] = { tileId: i, rotation: ((4 - s.r) % 4) as Rotation };
   });
 
-  return { size, tiles, fixed: [], original: false, solution };
+  // Calculate progressive hints based on level difficulty
+  const levelIndex = LEVELS.indexOf(size as LevelSize);
+  const cornersCount = Math.max(0, 4 - levelIndex); // 4, 3, 2, 1, 0 corners for levels 0-4
+
+  // Corner positions: top-left, top-right, bottom-left, bottom-right
+  const cornerPositions = [
+    0, // top-left
+    size - 1, // top-right
+    size * (size - 1), // bottom-left
+    size * size - 1, // bottom-right
+  ];
+
+  // Center position
+  const centerPos = Math.floor(size / 2) * size + Math.floor(size / 2);
+
+  // Build fixed pieces array
+  const fixed: { index: number; tileId: number; rotation: Rotation }[] = [];
+
+  // Add center piece as hint
+  const centerTile = shuffled.find((s) => s.cell === centerPos);
+  if (centerTile) {
+    const tileId = shuffled.indexOf(centerTile);
+    fixed.push({
+      index: centerPos,
+      tileId,
+      rotation: ((4 - centerTile.r) % 4) as Rotation,
+    });
+  }
+
+  // Add corners as hints (progressive reduction)
+  for (let i = 0; i < cornersCount; i++) {
+    const cornerPos = cornerPositions[i];
+    const cornerTile = shuffled.find((s) => s.cell === cornerPos);
+    if (cornerTile) {
+      const tileId = shuffled.indexOf(cornerTile);
+      fixed.push({
+        index: cornerPos,
+        tileId,
+        rotation: ((4 - cornerTile.r) % 4) as Rotation,
+      });
+    }
+  }
+
+  return { size, tiles, fixed, original: false, solution };
 }
 
 /** The one and only original Eternity II board: fixed 256-piece set + published clue. */
