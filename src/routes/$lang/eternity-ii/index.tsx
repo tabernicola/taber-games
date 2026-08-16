@@ -101,7 +101,10 @@ function EternityLanding() {
                 className="inline-block rounded-lg border border-neon-cyan bg-neon-cyan/10 px-5 py-2.5 text-sm font-semibold text-neon-cyan transition-colors hover:bg-neon-cyan/20"
               >
                 {t("e2.continue")} —{" "}
-                {t("e2.savedInfo", { size: save.level, t: formatTime(save.seconds) })}
+                {t("e2.savedInfo", {
+                  size: save.level + "x" + save.level,
+                  time: formatTime(save.seconds),
+                })}
               </Link>
             )}
             {user && saveError && <p className="text-destructive">{t("e2.loadError")}</p>}
@@ -129,7 +132,7 @@ function EternityLanding() {
 
           <Ranking
             game="eternity-ii"
-            level={String(level)}
+            level={level}
             title={`${t("landing.ranking")} · ${level}×${level}`}
           />
         </div>

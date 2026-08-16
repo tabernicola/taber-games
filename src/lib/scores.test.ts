@@ -37,8 +37,8 @@ function selectChain(result: { data: unknown; error: unknown }) {
   const orderSeconds = vi.fn().mockReturnValue({ limit });
   const orderLevel = vi.fn().mockReturnValue({ order: orderSeconds });
   const eqLevel = vi.fn().mockReturnValue({ order: orderLevel });
-  const eqGame = vi.fn().mockReturnValue({ eq: eqLevel });
-  const select = vi.fn().mockReturnValue({ eq: eqGame });
+  const eqGame = vi.fn().mockReturnValue({ eq: eqLevel, order: orderLevel });
+  const select = vi.fn().mockReturnValue({ eq: eqGame, order: orderLevel });
   return { select, eqGame, eqLevel, orderLevel, orderSeconds, limit };
 }
 
