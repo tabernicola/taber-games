@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Eye, EyeOff, RefreshCw, RotateCw, Save } from "lucide-react";
+import { Eye, EyeOff, Lightbulb, RefreshCw, RotateCw, Save } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import {
   GameNav,
@@ -28,6 +28,7 @@ import {
   isSolved,
   matchedSeams,
   rotate,
+  getCornerHints,
   type Level,
   type LevelSize,
   type Placement,
@@ -70,6 +71,7 @@ function EternityPage() {
   const [helped, setHelped] = useState(false);
   const [priorityTileIds, setPriorityTileIds] = useState<number[]>([]);
   const { seconds, setSeconds } = useTimer(ready && !showWin);
+  const [hintedCorners, setHintedCorners] = useState<number[]>([]);
 
   const startLevel = useCallback(
     (s: LevelSize) => {
@@ -83,6 +85,7 @@ function EternityPage() {
       setPrevBoard(null);
       setHelped(false);
       setPriorityTileIds([]);
+      setHintedCorners([]);
       setSeconds(0);
       setReady(true);
     },
@@ -116,6 +119,7 @@ function EternityPage() {
           setLevel(lv);
           setBoard(save.board);
           setHelped(save.helped ?? false);
+          setHintedCorners(save.hintedCorners ?? []);
           setSeconds(save.seconds);
           setReady(true);
         })
@@ -224,6 +228,28 @@ function EternityPage() {
     setHelped(true);
   };
 
+  const requestCornerHint = () => {
+    if (level.size === 16 || !level.solution) return;
+    
+    const availableCorners = getCornerHints(level);
+    if (availableCorners.length === 0) return;
+    
+    const corner = availableCorners[0];
+    const penaltySeconds = level.size * 60; // 1 minute per level size
+    
+    setBoard((prev) => {
+      const next = prev.slice();
+      next[corner.index] = { tileId: corner.tileId, rotation: corner.rotation, locked: true };
+      return next;
+    });
+    
+    setHintedCorners((prev) => [...prev, corner.index]);
+    setLevel((prev) => ({ ...prev, hintedCorners: [...(prev.hintedCorners || []), corner.index] }));
+    setSeconds((prev) => prev + penaltySeconds);
+    setHelped(true);
+    playSound("place");
+  };
+
   const save = async () => {
     if (!user) return;
     setSaveState("saving");
@@ -239,6 +265,7 @@ function EternityPage() {
         level.tiles.map((tl) => tl.edges),
         level.solution,
         helped,
+        hintedCorners,
       );
       setSaveState("done");
       window.setTimeout(() => setSaveState("idle"), 2500);
@@ -449,13 +476,22 @@ function EternityPage() {
           />
         )}
         {!level.original && (
-          <GameNavButton
-            onClick={toggleSolution}
-            disabled={!level.solution}
-            colorClass="text-neon-yellow"
-            icon={showSolution ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-            label={showSolution ? t("e2.hideSolution") : t("e2.solution")}
-          />
+          <>
+            <GameNavButton
+              onClick={requestCornerHint}
+              disabled={level.size === 16 || getCornerHints(level).length === 0}
+              colorClass="text-neon-yellow"
+              icon={<Lightbulb className="h-5 w-5" />}
+              label={t("e2.hint")}
+            />
+            <GameNavButton
+              onClick={toggleSolution}
+              disabled={!level.solution}
+              colorClass="text-neon-yellow"
+              icon={showSolution ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              label={showSolution ? t("e2.hideSolution") : t("e2.solution")}
+            />
+          </>
         )}
       </GameNav>
 

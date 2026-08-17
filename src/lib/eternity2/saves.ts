@@ -8,6 +8,7 @@ export type SavedGame = {
   tiles: Edges[];
   solution?: { tileId: number; rotation: Rotation }[];
   helped?: boolean;
+  hintedCorners?: number[];
   updated_at: string;
 };
 
@@ -23,6 +24,7 @@ export async function loadSave(): Promise<SavedGame | null> {
     tiles: Edges[];
     solution?: { tileId: number; rotation: Rotation }[];
     helped?: boolean;
+    hintedCorners?: number[];
   };
   return {
     level: data.level,
@@ -31,6 +33,7 @@ export async function loadSave(): Promise<SavedGame | null> {
     tiles: state.tiles,
     solution: state.solution,
     helped: state.helped,
+    hintedCorners: state.hintedCorners,
     updated_at: data.updated_at,
   };
 }
@@ -43,13 +46,14 @@ export async function storeSave(
   tiles: Edges[],
   solution?: { tileId: number; rotation: Rotation }[],
   helped?: boolean,
+  hintedCorners?: number[],
 ): Promise<void> {
   const { error } = await supabase.from("eternity_saves").upsert(
     {
       user_id: userId,
       level,
       seconds,
-      state: { board, tiles, solution, helped } as unknown as never,
+      state: { board, tiles, solution, helped, hintedCorners } as unknown as never,
     },
     { onConflict: "user_id" },
   );

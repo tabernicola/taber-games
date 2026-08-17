@@ -23,12 +23,14 @@ export type Level = {
   original: boolean;
   /** known solution per cell (absent for the original 16x16 board) */
   solution?: { tileId: number; rotation: Rotation }[];
+  /** corners that have been hinted by the user (for tracking penalties) */
+  hintedCorners?: number[];
 };
 
 export const LEVELS = [4, 6, 8, 12, 16] as const;
 export type LevelSize = (typeof LEVELS)[number];
 
-/** Edges of a tile after rotating it `r` quarter turns clockwise. */
+/** Edges of a tile after rotating it "r" quarter turns clockwise. */
 export function rotate(edges: Edges, r: Rotation): Edges {
   return [
     edges[(0 - r + 4) % 4],
@@ -81,25 +83,13 @@ function generateRandomLevel(size: number): Level {
     solution[s.cell] = { tileId: i, rotation: ((4 - s.r) % 4) as Rotation };
   });
 
-  // Calculate progressive hints based on level difficulty
-  const levelIndex = LEVELS.indexOf(size as LevelSize);
-  const cornersCount = Math.max(0, 4 - levelIndex); // 4, 3, 2, 1, 0 corners for levels 0-4
-
-  // Corner positions: top-left, top-right, bottom-left, bottom-right
-  const cornerPositions = [
-    0, // top-left
-    size - 1, // top-right
-    size * (size - 1), // bottom-left
-    size * size - 1, // bottom-right
-  ];
-
   // Center position
   const centerPos = Math.floor(size / 2) * size + Math.floor(size / 2);
 
-  // Build fixed pieces array
+  // Build fixed pieces array - only center piece as initial hint
   const fixed: { index: number; tileId: number; rotation: Rotation }[] = [];
 
-  // Add center piece as hint
+  // Add centerpiece as hint
   const centerTile = shuffled.find((s) => s.cell === centerPos);
   if (centerTile) {
     const tileId = shuffled.indexOf(centerTile);
@@ -110,21 +100,7 @@ function generateRandomLevel(size: number): Level {
     });
   }
 
-  // Add corners as hints (progressive reduction)
-  for (let i = 0; i < cornersCount; i++) {
-    const cornerPos = cornerPositions[i];
-    const cornerTile = shuffled.find((s) => s.cell === cornerPos);
-    if (cornerTile) {
-      const tileId = shuffled.indexOf(cornerTile);
-      fixed.push({
-        index: cornerPos,
-        tileId,
-        rotation: ((4 - cornerTile.r) % 4) as Rotation,
-      });
-    }
-  }
-
-  return { size, tiles, fixed, original: false, solution };
+  return { size, tiles, fixed, original: false, solution, hintedCorners: [] };
 }
 
 /** The one and only original Eternity II board: fixed 256-piece set + published clue. */
@@ -144,11 +120,35 @@ function originalLevel(): Level {
       },
     ],
     original: true,
+    hintedCorners: [],
   };
 }
 
 export function createLevel(size: LevelSize): Level {
   return size === 16 ? originalLevel() : generateRandomLevel(size);
+}
+
+/** Get corner positions and their solution for hint system */
+export function getCornerHints(level: Level): { index: number; tileId: number; rotation: Rotation }[] {
+  if (!level.solution || level.size === 16) return [];
+  
+  const size = level.size;
+  const cornerPositions = [
+    0, // top-left
+    size - 1, // top-right
+    size * (size - 1), // bottom-left
+    size * size - 1, // bottom-right
+  ];
+  
+  const hintedSet = new Set(level.hintedCorners || []);
+  
+  return cornerPositions
+    .filter(pos => !hintedSet.has(pos))
+    .map(pos => ({
+      index: pos,
+      tileId: level.solution![pos].tileId,
+      rotation: level.solution![pos].rotation,
+    }));
 }
 
 export function emptyBoard(level: Level): Placement[] {
@@ -171,7 +171,7 @@ function edgeConflicts(level: Level, board: Placement[], index: number, e: Edges
   const c = index % n;
   let bad = 0;
 
-  // outer frame: edge facing outside must be the grey border pattern (0)
+  // outer frame: edge facing outside must be the gray border pattern (0)
   if ((r === 0) !== (e[0] === 0)) bad++;
   if ((c === n - 1) !== (e[1] === 0)) bad++;
   if ((r === n - 1) !== (e[2] === 0)) bad++;
@@ -190,7 +190,7 @@ function edgeConflicts(level: Level, board: Placement[], index: number, e: Edges
 }
 
 /**
- * Number of seams around a cell that clash with an already placed neighbour
+ * Number of seams around a cell that clash with an already placed neighbor
  * (or with the outer frame). 0 means the tile sits legally where it is.
  */
 export function conflictsAt(level: Level, board: Placement[], index: number): number {
