@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 ">
+  <!-- Home pages -->
+  <url>
+    <loc>https://taber-games.lovable.app/eus</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en"/>
+  </url>
+  <url>
+    <loc>https://taber-games.lovable.app/es</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en"/>
+  </url>
+  <url>
+    <loc>https://taber-games.lovable.app/en</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en"/>
+  </url>
+
+  <!-- The Taber Square game pages -->
+  <url>
+    <loc>https://taber-games.lovable.app/eus/the-taber-square</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/the-taber-square"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/the-taber-square"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/the-taber-square"/>
+  </url>
+  <url>
+    <loc>https://taber-games.lovable.app/es/the-taber-square</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/the-taber-square"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/the-taber-square"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/the-taber-square"/>
+  </url>
+  <url>
+    <loc>https://taber-games.lovable.app/en/the-taber-square</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/the-taber-square"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/the-taber-square"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/the-taber-square"/>
+  </url>
+
+  <url>
+    <loc>https://taber-games.lovable.app/eus/the-taber-square/play</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/the-taber-square/play"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/the-taber-square/play"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/the-taber-square/play"/>
+  </url>
+  <url>
+    <loc>https://taber-games.lovable.app/es/the-taber-square/play</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/the-taber-square/play"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/the-taber-square/play"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/the-taber-square/play"/>
+  </url>
+  <url>
+    <loc>https://taber-games.lovable.app/en/the-taber-square/play</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/the-taber-square/play"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/the-taber-square/play"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/the-taber-square/play"/>
+  </url>
+
+  <!-- Eternity II game pages -->
+  <url>
+    <loc>https://taber-games.lovable.app/eus/eternity-ii</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/eternity-ii"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/eternity-ii"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/eternity-ii"/>
+  </url>
+  <url>
+    <loc>https://taber-games.lovable.app/es/eternity-ii</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/eternity-ii"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/eternity-ii"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/eternity-ii"/>
+  </url>
+  <url>
+    <loc>https://taber-games.lovable.app/en/eternity-ii</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/eternity-ii"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/eternity-ii"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/eternity-ii"/>
+  </url>
+
+  <url>
+    <loc>https://taber-games.lovable.app/eus/eternity-ii/play</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/eternity-ii/play"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/eternity-ii/play"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/eternity-ii/play"/>
+  </url>
+  <url>
+    <loc>https://taber-games.lovable.app/es/eternity-ii/play</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/eternity-ii/play"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/eternity-ii/play"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/eternity-ii/play"/>
+  </url>
+  <url>
+    <loc>https://taber-games.lovable.app/en/eternity-ii/play</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/eternity-ii/play"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/eternity-ii/play"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/eternity-ii/play"/>
+  </url>
+
+  <!-- Authentication page -->
+  <url>
+    <loc>https://taber-games.lovable.app/eus/auth</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/auth"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/auth"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/auth"/>
+  </url>
+  <url>
+    <loc>https://taber-games.lovable.app/es/auth</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/auth"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/auth"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/auth"/>
+  </url>
+  <url>
+    <loc>https://taber-games.lovable.app/en/auth</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/auth"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/auth"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/auth"/>
+  </url>
+</urlset>
