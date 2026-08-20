@@ -41,10 +41,10 @@ const translations: Record<Lang, Dict> = {
     "home.tagline.part5": "-entzat.",
     "home.games": "JOKOAK",
     "home.available": "{n} eskuragarri",
-    "home.card.tag": "Puzzlea · Jokalari bakarra",
+    "home.card.tag": "Puzzlea · Sareta eta Poliominoak",
     "home.card.desc":
       "Bota zazpi blokeatzaile eta sartu bederatzi piezak 6×6ko taulan. Beti askagarria, inoiz ez berdina.",
-    "home.card.study.tag": "Puzzle · Jokalari bakarra",
+    "home.card.study.tag": "Puzzle · Lógica espacial",
     "home.card.study.desc":
       "3x3ko taula trinko batean jokatzen den xake logika joko erronka bat, non pieza gakoak kokatu behar dituzun puzzle estrategikoak konpontzeko.",
     "home.external": "Jolastu",
@@ -91,7 +91,7 @@ const translations: Record<Lang, Dict> = {
     "game.unlockedNextLevel": "Maila gaindituta! Hurrengo maila desblokeatuta.",
     "game.levelLocked": "Maila hau blokeatuta dago.",
     "game.levelChoose": "Aukeratu maila",
-    "home.card.e2.tag": "Puzzlea · Ertzak lotu",
+    "home.card.e2.tag": "Puzzlea · Ertzak eta ereduak lotu",
     "home.card.e2.desc":
       "Lotu animalien ertzak. Taula txikietatik hasi eta jatorrizko 256 piezetako puzzlera iritsi.",
     "e2.desc":
@@ -188,10 +188,10 @@ const translations: Record<Lang, Dict> = {
     "home.tagline.part5": ".",
     "home.games": "JUEGOS",
     "home.available": "{n} disponible",
-    "home.card.tag": "Puzle · 1 jugador",
+    "home.card.tag": "Puzle · Cuadrícula y Poliominós",
     "home.card.desc":
       "Tira los siete bloqueadores y encaja las nueve piezas en el tablero 6×6. Siempre resoluble, nunca igual.",
-    "home.card.study.tag": "Puzle · 1 jugador",
+    "home.card.study.tag": "Puzle · Lógica Espacial",
     "home.card.study.desc":
       "Un desafiante juego de lógica de ajedrez en un tablero compacto de 3x3, donde debes colocar piezas clave para resolver acertijos estratégicos.",
     "home.external": "Jugar",
@@ -239,7 +239,7 @@ const translations: Record<Lang, Dict> = {
     "game.unlockedNextLevel": "¡Nivel superado! Siguiente nivel desbloqueado.",
     "game.levelLocked": "Este nivel todavía está bloqueado.",
     "game.levelChoose": "Elige nivel",
-    "home.card.e2.tag": "Puzle · Encaje de bordes",
+    "home.card.e2.tag": "Puzle · Conexión de Bordes y Patrones",
     "home.card.e2.desc":
       "Haz coincidir los bordes de animales. Empieza en tableros pequeños y llega al puzle original de 256 piezas.",
     "e2.desc":
@@ -337,10 +337,10 @@ const translations: Record<Lang, Dict> = {
     "home.tagline.part5": ".",
     "home.games": "GAMES",
     "home.available": "{n} available",
-    "home.card.tag": "Puzzle · 1  player",
+    "home.card.tag": "Puzzle · Grid and Polyominoes",
     "home.card.desc":
       "Roll seven blockers, then squeeze all nine pieces onto the 6×6 grid. Every game solvable, none the same.",
-    "home.card.study.tag": "Puzzle · 1 player",
+    "home.card.study.tag": "Puzzle · Spatial Logic",
     "home.card.study.desc":
       "A challenging chess logic game on a compact 3x3 board, where you must position key pieces to solve strategic puzzles.",
     "home.external": "Play",
@@ -387,7 +387,7 @@ const translations: Record<Lang, Dict> = {
     "game.unlockedNextLevel": "Level completed! Next level unlocked.",
     "game.levelLocked": "This level is locked.",
     "game.levelChoose": "Choose level",
-    "home.card.e2.tag": "Puzzle · Edge matching",
+    "home.card.e2.tag": "Puzzle · Edge and patterns matching",
     "home.card.e2.desc":
       "Match the animal edges. Start on small boards and work up to the original 256-piece puzzle.",
     "e2.desc":
