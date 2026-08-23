@@ -5,6 +5,7 @@ import { GameNav, GameNavBackLink, GameNavButton, GameNavTimer } from "@/compone
 import { PieceShape } from "@/components/tabersquare/PieceShape";
 import { DiceRollAnimation } from "@/components/tabersquare/DiceRollAnimation";
 import { ScoreForm } from "@/components/ScoreForm";
+import { Tutorial } from "@/components/tabersquare/Tutorial";
 import { useI18n } from "@/lib/i18n";
 import { pageMeta } from "@/lib/seo";
 import { useTimer } from "@/hooks/useTimer";
@@ -47,6 +48,8 @@ import {
   isLevelUnlocked,
   unlockNextLevel,
   getUnlockedLevel,
+  isTutorialCompleted,
+  markTutorialCompleted,
 } from "@/lib/tabersquare/progress";
 
 export const Route = createFileRoute("/$lang/the-taber-square/play")({
@@ -61,7 +64,7 @@ export const Route = createFileRoute("/$lang/the-taber-square/play")({
   component: TaberSquarePage,
 });
 
-type PieceState = {
+export type PieceState = {
   id: string;
   name: string;
   color: string;
@@ -86,6 +89,9 @@ function TaberSquarePage() {
   const [hintUsed, setHintUsed] = useState(false);
   const [helped, setHelped] = useState(false);
   const [showDiceAnimation, setShowDiceAnimation] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [hasRotated, setHasRotated] = useState(false);
+  const [hasFlipped, setHasFlipped] = useState(false);
   const [drag, setDrag] = useState<{ id: string; x: number; y: number } | null>(null);
   const dragRef = useRef<{
     id: string;
@@ -115,6 +121,8 @@ function TaberSquarePage() {
     setShowSolution(false);
     setHintUsed(false);
     setHelped(false);
+    setHasRotated(false);
+    setHasFlipped(false);
     setSeconds(0);
     setShowDiceAnimation(true);
   }, [activeLevelId, setSeconds]);
@@ -122,6 +130,20 @@ function TaberSquarePage() {
   useEffect(() => {
     newGame();
   }, [newGame]);
+  
+  // Auto-scroll to level info/rules when page loads
+  useEffect(() => {
+    // Wait for DOM to be fully rendered
+    setTimeout(() => {
+      const levelInfoElement = document.querySelector('[data-level-info]');
+      //if (levelInfoElement) {
+        levelInfoElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Additional small scroll up to leave some space at top
+        window.scrollBy({ top: 300, behavior: 'smooth' });
+      //}
+      console.log('Auto-scrolled to level info/rules section');
+    }, 100);
+  }, []);
 
   useEffect(() => {
     if (board.length && isSolved(board, currentLevelDef)) {
@@ -130,6 +152,15 @@ function TaberSquarePage() {
       unlockNextLevel(activeLevelId);
     }
   }, [board, currentLevelDef, activeLevelId, playSound]);
+  
+  // Show tutorial on first play (before animation)
+  useEffect(() => {
+    if (!isTutorialCompleted()) {
+      setHasRotated(false);
+      setHasFlipped(false);
+      setShowTutorial(true);
+    }
+  }, []);
 
   const handleSelectLevel = useCallback((levelId: SquareLevelId) => {
     if (isLevelUnlocked(levelId)) {
@@ -158,6 +189,22 @@ function TaberSquarePage() {
     setHintUsed(true);
     setHelped(true);
   }, [board, hintUsed, solution]);
+  
+  const handleTutorialComplete = useCallback(() => {
+    markTutorialCompleted();
+    setShowTutorial(false);
+  }, []);
+  
+  const handleTutorialSkip = useCallback(() => {
+    markTutorialCompleted();
+    setShowTutorial(false);
+  }, []);
+  
+  const handleShowTutorial = useCallback(() => {
+    setHasRotated(false);
+    setHasFlipped(false);
+    setShowTutorial(true);
+  }, []);
 
   const solutionBoard = useMemo(() => {
     if (!showSolution || !solution) return null;
@@ -182,6 +229,7 @@ function TaberSquarePage() {
   const rotateSelected = useCallback(() => {
     if (!selected) return;
     playSound("rotate");
+    setHasRotated(true);
     setPieces((prev) =>
       prev.map((p) => (p.id === selected.id ? { ...p, cells: rotate(p.cells) } : p)),
     );
@@ -190,6 +238,7 @@ function TaberSquarePage() {
   const flipSelected = useCallback(() => {
     if (!selected) return;
     playSound("rotate");
+    setHasFlipped(true);
     setPieces((prev) =>
       prev.map((p) => (p.id === selected.id ? { ...p, cells: flip(p.cells) } : p)),
     );
@@ -408,11 +457,20 @@ function TaberSquarePage() {
               );
             })}
           </div>
-          <div className="mt-4 rounded-lg border border-border/45 bg-background/40 p-3 text-sm text-muted-foreground">
+          <div data-level-info className="mt-4 rounded-lg border border-border/45 bg-background/40 p-3 text-sm text-muted-foreground">
             <span className="mb-1 block text-xs font-bold uppercase tracking-wider text-neon-cyan">
               {t("game.levelInfo")}:
             </span>
             {t(`game.level.desc.${activeLevelId}`)}
+          </div>
+          
+          <div className="mt-2 text-center">
+            <button
+              onClick={handleShowTutorial}
+              className="text-xs text-muted-foreground hover:text-neon-pink transition-colors underline decoration-dotted"
+            >
+              {t("tutorial.showAgain")}
+            </button>
           </div>
         </div>
 
@@ -420,6 +478,24 @@ function TaberSquarePage() {
           <div className="my-4 rounded-lg border border-neon-yellow/60 bg-neon-yellow/10 px-4 py-2 text-sm text-neon-yellow">
             {t("game.solutionShown")}
           </div>
+        )}
+        
+        {showTutorial && (
+          <Tutorial
+            levelId={activeLevelId}
+            board={board}
+            pieces={pieces}
+            selectedId={selectedId}
+            selectedPiece={selected}
+            hasRotated={hasRotated}
+            hasFlipped={hasFlipped}
+            onComplete={handleTutorialComplete}
+            onSkip={handleTutorialSkip}
+            onResetTutorial={() => {
+              setHasRotated(false);
+              setHasFlipped(false);
+            }}
+          />
         )}
 
         <div className="grid gap-6 lg:grid-cols-[auto,1fr]">

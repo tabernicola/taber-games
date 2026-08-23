@@ -3,6 +3,7 @@ import { SQUARE_LEVELS, type SquareLevelId } from "./levels";
 
 const STORAGE_KEY = "taber-square-unlocked-level";
 const ACTIVE_STORAGE_KEY = "taber-square-active-level";
+const TUTORIAL_KEY = "taber-square-tutorial-completed";
 
 /** Highest level the player has unlocked (defaults to Starter). */
 export function getUnlockedLevel(): SquareLevelId {
@@ -44,4 +45,19 @@ export function unlockNextLevel(completedLevel: SquareLevelId): SquareLevelId {
 export function resetProgress(): void {
   removeStorageItem(STORAGE_KEY);
   removeStorageItem(ACTIVE_STORAGE_KEY);
+}
+
+/** Check if the tutorial has been completed. */
+export function isTutorialCompleted(): boolean {
+  return getStorageItem(TUTORIAL_KEY) === "true";
+}
+
+/** Mark the tutorial as completed. */
+export function markTutorialCompleted(): void {
+  setStorageItem(TUTORIAL_KEY, "true");
+}
+
+/** Reset tutorial completion (for testing). */
+export function resetTutorial(): void {
+  removeStorageItem(TUTORIAL_KEY);
 }

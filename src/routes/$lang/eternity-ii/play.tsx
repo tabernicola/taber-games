@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Eye, EyeOff, Lightbulb, RefreshCw, RotateCw, Save } from "lucide-react";
+import { Cpu, Eye, EyeOff, Lightbulb, RefreshCw, RotateCw, Save } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import {
   GameNav,
@@ -29,6 +29,7 @@ import {
   matchedSeams,
   rotate,
   getCornerHints,
+  bruteForceSolver,
   type Level,
   type LevelSize,
   type Placement,
@@ -72,6 +73,8 @@ function EternityPage() {
   const [priorityTileIds, setPriorityTileIds] = useState<number[]>([]);
   const { seconds, setSeconds } = useTimer(ready && !showWin);
   const [hintedCorners, setHintedCorners] = useState<number[]>([]);
+  const [isBruteForcing, setIsBruteForcing] = useState(false);
+  const [bruteForceProgress, setBruteForceProgress] = useState(0);
 
   const startLevel = useCallback(
     (s: LevelSize) => {
@@ -248,6 +251,43 @@ function EternityPage() {
     setSeconds((prev) => prev + penaltySeconds);
     setHelped(true);
     playSound("place");
+  };
+
+  const runBruteForce = async () => {
+    if (isBruteForcing) return;
+    
+    setIsBruteForcing(true);
+    setHelped(true);
+    
+    const generator = bruteForceSolver(level, board);
+    let placedCount = 0;
+    const totalCells = level.size * level.size - level.fixed.length;
+    
+    try {
+      for (const result of generator) {
+        if (result.placed) {
+          setBoard(result.board);
+          placedCount++;
+          setBruteForceProgress(placedCount);
+          playSound("place");
+          
+          // Small delay to visualize the process
+          await new Promise(resolve => setTimeout(resolve, 50));
+          
+          // Check if solved
+          if (isSolved(level, result.board)) {
+            playSound("win");
+            setShowWin(true);
+            break;
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Brute force error:", error);
+    } finally {
+      setIsBruteForcing(false);
+      setBruteForceProgress(0);
+    }
   };
 
   const save = async () => {
@@ -483,6 +523,13 @@ function EternityPage() {
               colorClass="text-neon-yellow"
               icon={<Lightbulb className="h-5 w-5" />}
               label={t("e2.hint")}
+            />
+            <GameNavButton
+              onClick={runBruteForce}
+              disabled={isBruteForcing}
+              colorClass="text-neon-purple"
+              icon={<Cpu className="h-5 w-5" />}
+              label={isBruteForcing ? `${t("e2.bruteForce")} (${bruteForceProgress})` : t("e2.bruteForce")}
             />
             <GameNavButton
               onClick={toggleSolution}
