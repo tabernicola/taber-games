@@ -143,7 +143,7 @@ function TaberSquarePage() {
       if (levelInfoElement) {
         levelInfoElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         // Additional small scroll up to leave some space at top
-        window.scrollBy({ top: 300, behavior: 'smooth' });
+        window.scrollBy({ top: 250, behavior: 'smooth' });
       }
     }, 100);
   }, []);
