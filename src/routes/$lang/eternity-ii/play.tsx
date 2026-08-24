@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Cpu, Eye, EyeOff, Lightbulb, RefreshCw, RotateCw, Save } from "lucide-react";
+import { Cpu, Eye, EyeOff, HelpCircle, Lightbulb, RefreshCw, RotateCw, Save } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import {
   GameNav,
@@ -11,6 +11,7 @@ import {
 } from "@/components/GameNav";
 import { Tile } from "@/components/eternity2/Tile";
 import { EternityLogo } from "@/components/eternity2/EternityLogo";
+import { Tutorial, type HighlightTarget } from "@/components/eternity2/Tutorial";
 import { ScoreForm } from "@/components/ScoreForm";
 import { useI18n } from "@/lib/i18n";
 import { pageMeta } from "@/lib/seo";
@@ -19,6 +20,7 @@ import { useTimer } from "@/hooks/useTimer";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { loadSave, storeSave } from "@/lib/eternity2/saves";
+import { isTutorialCompleted, markTutorialCompleted } from "@/lib/eternity2/progress";
 import { ETERNITY2_CLUE } from "@/lib/eternity2/pieces-original";
 import {
   createLevel,
@@ -75,6 +77,34 @@ function EternityPage() {
   const [hintedCorners, setHintedCorners] = useState<number[]>([]);
   const [isBruteForcing, setIsBruteForcing] = useState(false);
   const [bruteForceProgress, setBruteForceProgress] = useState(0);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [hasRotated, setHasRotated] = useState(false);
+  const [highlightedElement, setHighlightedElement] = useState<HighlightTarget>(null);
+
+  useEffect(() => {
+    if (!isTutorialCompleted() && !resume) {
+      setShowTutorial(true);
+    }
+  }, [resume]);
+
+  const handleTutorialComplete = useCallback(() => {
+    markTutorialCompleted();
+    setShowTutorial(false);
+  }, []);
+
+  const handleTutorialSkip = useCallback(() => {
+    markTutorialCompleted();
+    setShowTutorial(false);
+  }, []);
+
+  const handleShowTutorial = useCallback(() => {
+    setHasRotated(false);
+    setShowTutorial(true);
+  }, []);
+
+  const handleHighlightElement = useCallback((element: HighlightTarget) => {
+    setHighlightedElement(element);
+  }, []);
 
   const startLevel = useCallback(
     (s: LevelSize) => {
@@ -165,6 +195,7 @@ function EternityPage() {
 
   const rotateSelection = useCallback(() => {
     setSelected((s) => (s ? { ...s, rotation: ((s.rotation + 1) % 4) as Rotation } : s));
+    setHasRotated(true);
     playSound("rotate");
   }, [playSound]);
 
@@ -354,7 +385,35 @@ function EternityPage() {
               {t("e2.level")}: {level.size}×{level.size}
             </span>
           </p>
+          <div className="mt-2 flex justify-center">
+            <button
+              type="button"
+              onClick={handleShowTutorial}
+              className="inline-flex items-center gap-1.5 text-xs transition-colors hover:underline cursor-pointer rounded-full px-3 py-1"
+              style={{
+                color: "var(--e2-ink)",
+                background: "rgba(255, 138, 61, 0.15)",
+                border: "1px solid rgba(255, 138, 61, 0.3)",
+              }}
+            >
+              <HelpCircle className="h-3.5 w-3.5 text-[var(--e2-accent)]" />
+              <span>{t("tutorial.showAgain")}</span>
+            </button>
+          </div>
         </header>
+
+        {showTutorial && (
+          <Tutorial
+            board={board}
+            selected={selected}
+            focus={focus}
+            hasRotated={hasRotated}
+            onComplete={handleTutorialComplete}
+            onSkip={handleTutorialSkip}
+            onResetTutorial={() => setHasRotated(false)}
+            onHighlightElement={handleHighlightElement}
+          />
+        )}
 
         {level.original && (
           <p
@@ -380,13 +439,17 @@ function EternityPage() {
               >
                 {board.map((p, i) => {
                   if (!p) {
+                    const isCellHighlighted =
+                      highlightedElement === "empty-cell" || highlightedElement === "board";
                     return (
                       <button
                         key={i}
                         type="button"
                         aria-label={`cell ${i}`}
                         onClick={() => handleCell(i)}
-                        className="e2-cell"
+                        className={`e2-cell transition-all ${
+                          isCellHighlighted ? "ring-2 ring-[var(--e2-accent)] animate-pulse" : ""
+                        }`}
                         data-focus={focus === i ? "" : undefined}
                         style={{ width: tilePx, height: tilePx }}
                       />
@@ -421,8 +484,14 @@ function EternityPage() {
           </div>
 
           <section
-            className="rounded-2xl p-4"
-            style={{ background: "var(--e2-panel)", boxShadow: "0 6px 18px rgba(60,35,10,0.18)" }}
+            className="rounded-2xl p-4 transition-all"
+            style={{
+              background: "var(--e2-panel)",
+              boxShadow:
+                highlightedElement === "tray"
+                  ? "0 0 0 3px var(--e2-accent), 0 8px 24px rgba(60,35,10,0.25)"
+                  : "0 6px 18px rgba(60,35,10,0.18)",
+            }}
           >
             <div className="mb-3 flex items-baseline justify-between">
               <h2 className="e2-title text-lg">{t("e2.pieces")}</h2>
@@ -432,7 +501,9 @@ function EternityPage() {
                 </span>
                 <button
                   type="button"
-                  className="e2-btn inline-flex items-center gap-1.5"
+                  className={`e2-btn inline-flex items-center gap-1.5 ${
+                    highlightedElement === "rotate" ? "ring-4 ring-[var(--e2-accent)] animate-pulse" : ""
+                  }`}
                   onClick={rotateSelection}
                   disabled={!selected}
                   aria-label={t("e2.rotate")}
@@ -463,11 +534,13 @@ function EternityPage() {
                         place(focus, tile.id, fitRot);
                         return;
                       }
-                      setSelected((s) =>
-                        s?.tileId === tile.id
-                          ? { tileId: tile.id, rotation: ((s.rotation + 1) % 4) as Rotation }
-                          : { tileId: tile.id, rotation: 0 },
-                      );
+                      setSelected((s) => {
+                        if (s?.tileId === tile.id) {
+                          setHasRotated(true);
+                          return { tileId: tile.id, rotation: ((s.rotation + 1) % 4) as Rotation };
+                        }
+                        return { tileId: tile.id, rotation: 0 };
+                      });
                     }}
                   />
                 );

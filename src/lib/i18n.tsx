@@ -143,6 +143,11 @@ const translations: Record<Lang, Dict> = {
     "e2.close": "Itxi",
     "e2.originalNote":
       "Hau da jatorrizko Eternity II puzzlea: 256 pieza finko eta argibide-pieza ofiziala. Inork ez du ebatzi; ez dago pistarik ez soluziorik.",
+    "e2.tutorial.interactive.step1": "Aukeratu pieza bat paneletik bere gainean klik eginez.",
+    "e2.tutorial.interactive.step2": "Biratu aukeratutako pieza berriz bere gainean klik eginez, 'Biratu' botoiarekin edo 'R' teklarekin.",
+    "e2.tutorial.interactive.step3": "Jarri pieza taulako gelaxka huts batean bere gainean klik eginez.",
+    "e2.tutorial.interactive.step4": "Egin klik taulako gelaxka huts batean bertan sartzen diren pieza hautagaiak ikusteko (berdez nabarmenduko dira).",
+    "e2.tutorial.interactive.step5": "Bikain! Orain badakizu nola jokatu, nola biratu eta nola aurkitu pieza hautagaiak. Gozatu!",
 
     "common.back": "Atzera",
     "common.time": "Denbora",
@@ -316,6 +321,11 @@ const translations: Record<Lang, Dict> = {
     "e2.close": "Cerrar",
     "e2.originalNote":
       "Este es el puzle Eternity II original: las 256 piezas reales y la pieza pista oficial. Nadie lo ha resuelto todavía, así que no hay pistas ni solución.",
+    "e2.tutorial.interactive.step1": "Selecciona una pieza del panel haciendo clic sobre ella.",
+    "e2.tutorial.interactive.step2": "Rota la pieza seleccionada haciendo clic sobre ella de nuevo, pulsando el botón 'Rotar' o con la tecla 'R'.",
+    "e2.tutorial.interactive.step3": "Coloca la pieza en una casilla vacía del tablero haciendo clic sobre ella.",
+    "e2.tutorial.interactive.step4": "Pulsa en una casilla vacía del tablero para ver qué piezas encajan (se resaltarán en verde en el panel).",
+    "e2.tutorial.interactive.step5": "¡Excelente! Ya sabes seleccionar, rotar, colocar piezas y buscar candidatas. ¡Disfruta del desafío!",
 
     "common.back": "Volver",
     "common.time": "Tiempo",
@@ -494,6 +504,11 @@ const translations: Record<Lang, Dict> = {
     "e2.close": "Close",
     "e2.originalNote":
       "This is the original Eternity II puzzle: the real 256 pieces and the official clue piece. Nobody has solved it, so there is no hint and no solution.",
+    "e2.tutorial.interactive.step1": "Select a piece from the pieces tray by clicking on it.",
+    "e2.tutorial.interactive.step2": "Rotate the selected piece by clicking it again, using the 'Rotate' button, or pressing 'R'.",
+    "e2.tutorial.interactive.step3": "Place the piece on an empty cell on the board by clicking on it.",
+    "e2.tutorial.interactive.step4": "Click on any empty cell on the board to see candidate matching pieces (they will highlight in green in the tray).",
+    "e2.tutorial.interactive.step5": "Great! You now know how to select, rotate, place pieces, and find matching candidates. Enjoy the challenge!",
 
     "common.back": "Back",
     "common.time": "Time",
