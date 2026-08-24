@@ -16,6 +16,7 @@ interface TutorialProps {
   onComplete: () => void;
   onSkip: () => void;
   onResetTutorial?: () => void;
+  onHighlightElement?: (element: 'piece' | 'rotate' | 'flip' | 'board' | 'placed-piece' | null, pieceId?: string) => void;
 }
 
 export function Tutorial({ 
@@ -28,7 +29,8 @@ export function Tutorial({
   hasFlipped,
   onComplete, 
   onSkip,
-  onResetTutorial 
+  onResetTutorial,
+  onHighlightElement 
 }: TutorialProps) {
   const { t } = useI18n();
   const [currentStep, setCurrentStep] = useState(0);
@@ -41,6 +43,36 @@ export function Tutorial({
   const currentStepData = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
   
+  // Highlight elements based on current step
+  useEffect(() => {
+    let elementToHighlight: 'piece' | 'rotate' | 'flip' | 'board' | 'placed-piece' | null = null;
+    let pieceId: string | undefined = undefined;
+    
+    switch (currentStepData.action) {
+      case 'select':
+        elementToHighlight = 'piece';
+        pieceId = 'p6'; // L-4 piece
+        break;
+      case 'rotate':
+        elementToHighlight = 'rotate';
+        break;
+      case 'flip':
+        elementToHighlight = 'flip';
+        break;
+      case 'place':
+        elementToHighlight = 'board';
+        break;
+      case 'remove':
+        elementToHighlight = 'placed-piece';
+        pieceId = 'p6'; // L-4 piece
+        break;
+    }
+    
+    if (onHighlightElement) {
+      onHighlightElement(elementToHighlight, pieceId);
+    }
+  }, [currentStepData.action, onHighlightElement]);
+  
   // Auto-advance when conditions are met (except for last step)
   useEffect(() => {
     const isComplete = checkStepComplete(currentStepData, board, pieces, selectedId, selectedPiece, hasRotated, hasFlipped);
@@ -52,25 +84,6 @@ export function Tutorial({
           playSound('success');
           setCountdown(5);
           setTimerStartedForStep(currentStepData.step);
-          
-          // Auto-close timer
-          const autoCloseTimer = window.setTimeout(() => {
-            onComplete();
-          }, 5000);
-          autoCloseTimerRef.current = autoCloseTimer;
-          
-          // Countdown timer
-          const countdownTimer = window.setInterval(() => {
-            setCountdown((prev) => {
-              console.log('Countdown:', prev);
-              if (prev === null || prev <= 1) {
-                clearInterval(countdownTimer);
-                return null;
-              }
-              return prev - 1;
-            });
-          }, 1000);
-          countdownTimerRef.current = countdownTimer;
         }
       } else { 
         // Auto-advance to next step
@@ -82,19 +95,42 @@ export function Tutorial({
         }
       }
     }
-    
-    // Only cleanup if step changed (not on every re-render)
-    return () => {
-      if (autoCloseTimerRef.current) {
-        clearTimeout(autoCloseTimerRef.current);
-        autoCloseTimerRef.current = null;
-      }
-      if (countdownTimerRef.current) {
-        clearInterval(countdownTimerRef.current);
-        countdownTimerRef.current = null;
-      }
-    };
-  }, [currentStepData.step, board, pieces, selectedId, selectedPiece, hasRotated, hasFlipped, isLastStep, onComplete, onResetTutorial]);
+  }, [currentStepData.step, board, pieces, selectedId, selectedPiece, hasRotated, hasFlipped, isLastStep, onResetTutorial]);
+  
+  // Separate effect for timer setup - only depends on timerStartedForStep
+  useEffect(() => {
+    if (timerStartedForStep !== null && timerStartedForStep === currentStepData.step) {
+      // Auto-close timer
+      const autoCloseTimer = window.setTimeout(() => {
+        onComplete();
+      }, 5000);
+      autoCloseTimerRef.current = autoCloseTimer;
+      
+      // Countdown timer
+      const countdownTimer = window.setInterval(() => {
+        setCountdown((prev) => {
+          if (prev === null || prev <= 1) {
+            clearInterval(countdownTimer);
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      countdownTimerRef.current = countdownTimer;
+      
+      // Cleanup only on unmount or when timerStartedForStep changes
+      return () => {
+        if (autoCloseTimerRef.current) {
+          clearTimeout(autoCloseTimerRef.current);
+          autoCloseTimerRef.current = null;
+        }
+        if (countdownTimerRef.current) {
+          clearInterval(countdownTimerRef.current);
+          countdownTimerRef.current = null;
+        }
+      };
+    }
+  }, [timerStartedForStep, currentStepData.step, onComplete]);
   
   const handleClose = () => {
     if (autoCloseTimerRef.current) {
@@ -177,7 +213,7 @@ export function Tutorial({
             {currentStepData.instruction}
           </p>
           
-          {isLastStep && (
+          {isLastStep && countdown !== null && (
             <div className="mt-3 space-y-2">
               <div className="rounded-lg bg-green-500/20 border border-green-500/60 px-3 py-2 text-sm text-green-400">
                 ✓ {t("tutorial.interactive.correct")}
@@ -209,6 +245,7 @@ function getTutorialSteps(levelId: SquareLevelId) {
     { step: 2, action: 'rotate', instruction: t('tutorial.interactive.step4') },
     { step: 3, action: 'flip', instruction: t('tutorial.interactive.step5') },
     { step: 4, action: 'place', instruction: t('tutorial.interactive.step3') },
+    { step: 5, action: 'remove', instruction: t('tutorial.interactive.step7') },
   ];
   
   return baseSteps;
@@ -225,20 +262,28 @@ function checkStepComplete(
 ): boolean {
   switch (step.step) {
     case 1: // select
-      // Only complete if selected piece is L (p4)
-      return selectedId !== null && selectedPiece !== null && selectedPiece.id === 'p4';
+      // Only complete if selected piece is L-4 (p6)
+      return selectedId !== null && selectedPiece !== null && selectedPiece.id === 'p6';
     case 2: // rotate
       return hasRotated;
     case 3: // flip
       return hasFlipped;
     case 4: // place
-      // Check if the L piece (p4) is specifically placed on board
+      // Check if the L-4 piece (p6) is specifically placed on board
       for (const row of board) {
         for (const cell of row) {
-          if (cell === 'p4') return true;
+          if (cell === 'p6') return true;
         }
       }
       return false;
+    case 5: // remove
+      // Check if L-4 piece (p6) is removed from board
+      for (const row of board) {
+        for (const cell of row) {
+          if (cell === 'p6') return false;
+        }
+      }
+      return true;
     default:
       return false;
   }

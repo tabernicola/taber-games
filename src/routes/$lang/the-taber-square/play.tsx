@@ -101,6 +101,8 @@ function TaberSquarePage() {
     fromBoard: boolean;
   } | null>(null);
   const suppressClickRef = useRef(false);
+  const [highlightedElement, setHighlightedElement] = useState<'piece' | 'rotate' | 'flip' | 'board' | 'placed-piece' | null>(null);
+  const [highlightedPieceId, setHighlightedPieceId] = useState<string | undefined>(undefined);
   const { seconds, setSeconds } = useTimer(!won && board.length > 0 && !showDiceAnimation);
 
   // Latest state for pointer-event handlers attached to window.
@@ -136,12 +138,11 @@ function TaberSquarePage() {
     // Wait for DOM to be fully rendered
     setTimeout(() => {
       const levelInfoElement = document.querySelector('[data-level-info]');
-      //if (levelInfoElement) {
+      if (levelInfoElement) {
         levelInfoElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         // Additional small scroll up to leave some space at top
         window.scrollBy({ top: 300, behavior: 'smooth' });
-      //}
-      console.log('Auto-scrolled to level info/rules section');
+      }
     }, 100);
   }, []);
 
@@ -204,6 +205,11 @@ function TaberSquarePage() {
     setHasRotated(false);
     setHasFlipped(false);
     setShowTutorial(true);
+  }, []);
+  
+  const handleHighlightElement = useCallback((element: 'piece' | 'rotate' | 'flip' | 'board' | 'placed-piece' | null, pieceId?: string) => {
+    setHighlightedElement(element);
+    setHighlightedPieceId(pieceId);
   }, []);
 
   const solutionBoard = useMemo(() => {
@@ -495,6 +501,7 @@ function TaberSquarePage() {
               setHasRotated(false);
               setHasFlipped(false);
             }}
+            onHighlightElement={handleHighlightElement}
           />
         )}
 
@@ -502,7 +509,11 @@ function TaberSquarePage() {
           <div className="flex justify-center">
             <div
               ref={boardContainerRef}
-              className="relative grid rounded-xl border-2 border-neon-pink/60 p-3 shadow-[0_0_30px_oklch(0.72_0.30_350/0.35)]"
+              className={`relative grid rounded-xl border-2 p-3 shadow-[0_0_30px_oklch(0.72_0.30_350/0.35)] transition-all ${
+                highlightedElement === 'board' 
+                  ? 'border-neon-pink shadow-[0_0_40px_oklch(0.72_0.30_350/0.6)] animate-pulse' 
+                  : 'border-neon-pink/60'
+              }`}
               style={{
                 gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
                 gap: 6,
@@ -535,7 +546,11 @@ function TaberSquarePage() {
                       }
                       onMouseEnter={() => setHover({ x, y })}
                       onMouseLeave={() => setHover(null)}
-                      className="relative aspect-square w-11 touch-none rounded-md transition-colors sm:w-14"
+                      className={`relative aspect-square w-11 touch-none rounded-md transition-colors sm:w-14 ${
+                        highlightedElement === 'placed-piece' && pieceIdHere === highlightedPieceId
+                          ? 'animate-pulse' 
+                          : ''
+                      }`}
                       style={{
                         background: isBlocker
                           ? "oklch(0.25 0.03 40)"
@@ -549,7 +564,9 @@ function TaberSquarePage() {
                         boxShadow: isBlocker
                           ? "inset 0 0 0 2px oklch(0.15 0.02 40), inset 0 4px 10px rgba(0,0,0,0.7)"
                           : pieceHere
-                            ? `0 0 10px ${pieceHere.color}, inset 0 0 0 1px rgba(255,255,255,0.25)`
+                            ? highlightedElement === 'placed-piece' && pieceIdHere === highlightedPieceId
+                              ? `0 0 25px ${pieceHere.color}, inset 0 0 0 2px rgba(255,255,255,0.5)`
+                              : `0 0 10px ${pieceHere.color}, inset 0 0 0 1px rgba(255,255,255,0.25)`
                             : "inset 0 0 0 1px oklch(0.75 0.03 70)",
                       }}
                       aria-label={`Cell ${String.fromCharCode(65 + x)}${y + 1}`}
@@ -591,7 +608,11 @@ function TaberSquarePage() {
                     disabled={!selected || totalOrientations <= 1}
                     aria-label={t("game.rotate")}
                     title={t("game.rotate")}
-                    className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-secondary text-secondary-foreground transition-colors hover:border-neon-pink disabled:cursor-not-allowed disabled:opacity-40"
+                    className={`flex h-10 w-10 items-center justify-center rounded-md border transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                      highlightedElement === 'rotate' 
+                        ? 'border-neon-pink bg-neon-pink/20 shadow-[0_0_15px_oklch(0.72_0.30_350/0.5)] animate-pulse' 
+                        : 'border-border bg-secondary text-secondary-foreground hover:border-neon-pink'
+                    }`}
                   >
                     <RotateCw className="h-5 w-5" />
                   </button>
@@ -600,7 +621,11 @@ function TaberSquarePage() {
                     disabled={!selected}
                     aria-label={t("game.flip")}
                     title={t("game.flip")}
-                    className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-secondary text-secondary-foreground transition-colors hover:border-neon-pink disabled:cursor-not-allowed disabled:opacity-40"
+                    className={`flex h-10 w-10 items-center justify-center rounded-md border transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                      highlightedElement === 'flip' 
+                        ? 'border-neon-pink bg-neon-pink/20 shadow-[0_0_15px_oklch(0.72_0.30_350/0.5)] animate-pulse' 
+                        : 'border-border bg-secondary text-secondary-foreground hover:border-neon-pink'
+                    }`}
                   >
                     <FlipHorizontal2 className="h-5 w-5" />
                   </button>
@@ -610,6 +635,7 @@ function TaberSquarePage() {
                 {trayPieces.map((p) => {
                   const isSel = p.id === selectedId;
                   const isRestricted = currentLevelDef.restrictedPieces.includes(pieceNumber(p.id));
+                  const isHighlighted = highlightedElement === 'piece' && highlightedPieceId === p.id;
                   return (
                     <button
                       key={p.id}
@@ -624,8 +650,8 @@ function TaberSquarePage() {
                           ? "border-neon-pink bg-neon-pink/20 neon-glow-pink"
                           : isRestricted
                             ? "border-amber-500/60 bg-amber-500/5 hover:border-amber-500"
-                            : "border-border bg-background/40 hover:border-neon-pink/60"
-                      }`}
+                            : "border-border bg-card hover:border-neon-pink/50"
+                      } ${isHighlighted ? 'shadow-[0_0_20px_oklch(0.72_0.30_350/0.6)] animate-pulse border-neon-pink' : ''}`}
                     >
                       <PieceShape cells={p.cells} color={p.color} cellSize={9} gap={1} />
                       {isRestricted && (
