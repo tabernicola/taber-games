@@ -1,12 +1,13 @@
-import { useState, useEffect, useRef } from "react";
-import { X, ChevronLeft, ChevronRight, ArrowDown, RotateCw, FlipHorizontal2 } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { ArrowDown, RotateCw, Sparkles, Check, ChevronRight } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { SQUARE_LEVELS, type SquareLevelId } from "@/lib/tabersquare/levels";
-import type { BoardCell } from "@/lib/tabersquare/game";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { BLOCKER, type BoardCell } from "@/lib/tabersquare/game";
 import type { PieceState } from "@/routes/$lang/the-taber-square/play";
 
+export type HighlightElement = "board" | "tray" | "actions" | null;
+
 interface TutorialProps {
-  levelId: SquareLevelId;
   board: BoardCell[][];
   pieces: PieceState[];
   selectedId: string | null;
@@ -16,280 +17,275 @@ interface TutorialProps {
   onComplete: () => void;
   onSkip: () => void;
   onResetTutorial?: () => void;
-  onHighlightElement?: (element: 'piece' | 'rotate' | 'flip' | 'board' | 'placed-piece' | null, pieceId?: string) => void;
+  onResetRotateFlip?: () => void;
+  onHighlightElement?: (element: HighlightElement, pieceId?: string) => void;
+  onScrollTo?: (target: "board" | "tray" | "actions") => void;
 }
 
-export function Tutorial({ 
-  levelId, 
-  board, 
-  pieces, 
+interface StepDef {
+  step: number;
+  id: "board" | "select" | "actions" | "place";
+  highlight: HighlightElement;
+  pieceId?: string;
+  scrollTarget: "board" | "tray" | "actions";
+}
+
+const STEPS: StepDef[] = [
+  { step: 1, id: "board", highlight: "board", scrollTarget: "board" },
+  { step: 2, id: "select", highlight: "tray", pieceId: "p6", scrollTarget: "tray" },
+  { step: 3, id: "actions", highlight: "actions", scrollTarget: "actions" },
+  { step: 4, id: "place", highlight: "board", pieceId: "p6", scrollTarget: "board" },
+];
+
+export function Tutorial({
+  board,
+  pieces,
   selectedId,
   selectedPiece,
   hasRotated,
   hasFlipped,
-  onComplete, 
+  onComplete,
   onSkip,
   onResetTutorial,
-  onHighlightElement 
+  onResetRotateFlip,
+  onHighlightElement,
+  onScrollTo,
 }: TutorialProps) {
   const { t } = useI18n();
+  const { playSound } = useSoundEffects();
   const [currentStep, setCurrentStep] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(null);
-  const [timerStartedForStep, setTimerStartedForStep] = useState<number | null>(null);
+  const [isCompleted, setIsCompleted] = useState(false);
   const autoCloseTimerRef = useRef<number | null>(null);
   const countdownTimerRef = useRef<number | null>(null);
-  
-  const steps = getTutorialSteps(levelId);
-  const currentStepData = steps[currentStep];
-  const isLastStep = currentStep === steps.length - 1;
-  
-  // Highlight elements based on current step
+  const prevStepRef = useRef<number>(-1);
+
+  const stepDef = STEPS[currentStep] || STEPS[0];
+
+  // Inform parent of current highlight and scroll target
   useEffect(() => {
-    let elementToHighlight: 'piece' | 'rotate' | 'flip' | 'board' | 'placed-piece' | null = null;
-    let pieceId: string | undefined = undefined;
-    
-    switch (currentStepData.action) {
-      case 'select':
-        elementToHighlight = 'piece';
-        pieceId = 'p6'; // L-4 piece
-        break;
-      case 'rotate':
-        elementToHighlight = 'rotate';
-        break;
-      case 'flip':
-        elementToHighlight = 'flip';
-        break;
-      case 'place':
-        elementToHighlight = 'board';
-        break;
-      case 'remove':
-        elementToHighlight = 'placed-piece';
-        pieceId = 'p6'; // L-4 piece
-        break;
-    }
-    
     if (onHighlightElement) {
-      onHighlightElement(elementToHighlight, pieceId);
+      onHighlightElement(stepDef.highlight, stepDef.pieceId);
     }
-  }, [currentStepData.action, onHighlightElement]);
-  
-  // Auto-advance when conditions are met (except for last step)
+    if (onScrollTo && prevStepRef.current !== currentStep) {
+      onScrollTo(stepDef.scrollTarget);
+      prevStepRef.current = currentStep;
+    }
+  }, [currentStep, stepDef, onHighlightElement, onScrollTo]);
+
+  // Handle Step 2 auto-advance (Selecting p6 - red L piece)
   useEffect(() => {
-    const isComplete = checkStepComplete(currentStepData, board, pieces, selectedId, selectedPiece, hasRotated, hasFlipped);
-    
-    if (isComplete) {
-      if (isLastStep) {
-        // For last step, show close button and start auto-close timer (only once for this step)
-        if (timerStartedForStep !== currentStepData.step) {
-          playSound('success');
-          setCountdown(5);
-          setTimerStartedForStep(currentStepData.step);
-        }
-      } else { 
-        // Auto-advance to next step
-        playSound('success');
-        setCurrentStep(currentStep + 1);
-        // Reset rotation/flip state when moving to next step
-        if (onResetTutorial) {
-          onResetTutorial();
-        }
+    if (stepDef.id === "select" && selectedId === "p6") {
+      playSound("place");
+      if (onResetRotateFlip) onResetRotateFlip();
+      const timer = setTimeout(() => {
+        setCurrentStep(2);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [stepDef.id, selectedId, playSound, onResetRotateFlip]);
+
+  // Handle Step 3 auto-advance (Rotating or Flipping)
+  useEffect(() => {
+    if (stepDef.id === "actions" && (hasRotated || hasFlipped)) {
+      playSound("place");
+      const timer = setTimeout(() => {
+        setCurrentStep(3);
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [stepDef.id, hasRotated, hasFlipped, playSound]);
+
+  // Handle Step 4 completion (Placing piece on board)
+  useEffect(() => {
+    if (stepDef.id === "place" && !isCompleted) {
+      const hasPlaced = board.some((row) =>
+        row.some((cell) => cell && cell !== BLOCKER),
+      );
+      if (hasPlaced) {
+        playSound("win");
+        setIsCompleted(true);
+        setCountdown(5);
+
+        const timer = window.setTimeout(() => {
+          onComplete();
+        }, 5000);
+        autoCloseTimerRef.current = timer;
+
+        const countInterval = window.setInterval(() => {
+          setCountdown((prev) => {
+            if (prev === null || prev <= 1) {
+              clearInterval(countInterval);
+              return null;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        countdownTimerRef.current = countInterval;
       }
     }
-  }, [currentStepData.step, board, pieces, selectedId, selectedPiece, hasRotated, hasFlipped, isLastStep, onResetTutorial]);
-  
-  // Separate effect for timer setup - only depends on timerStartedForStep
+  }, [stepDef.id, board, isCompleted, playSound, onComplete]);
+
+  // Cleanup timers on unmount
   useEffect(() => {
-    if (timerStartedForStep !== null && timerStartedForStep === currentStepData.step) {
-      // Auto-close timer
-      const autoCloseTimer = window.setTimeout(() => {
-        onComplete();
-      }, 5000);
-      autoCloseTimerRef.current = autoCloseTimer;
-      
-      // Countdown timer
-      const countdownTimer = window.setInterval(() => {
-        setCountdown((prev) => {
-          if (prev === null || prev <= 1) {
-            clearInterval(countdownTimer);
-            return null;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      countdownTimerRef.current = countdownTimer;
-      
-      // Cleanup only on unmount or when timerStartedForStep changes
-      return () => {
-        if (autoCloseTimerRef.current) {
-          clearTimeout(autoCloseTimerRef.current);
-          autoCloseTimerRef.current = null;
-        }
-        if (countdownTimerRef.current) {
-          clearInterval(countdownTimerRef.current);
-          countdownTimerRef.current = null;
-        }
-      };
+    return () => {
+      if (autoCloseTimerRef.current) clearTimeout(autoCloseTimerRef.current);
+      if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+    };
+  }, []);
+
+  const handleNextStep = useCallback(() => {
+    if (currentStep < STEPS.length - 1) {
+      playSound("click");
+      if (onResetRotateFlip) onResetRotateFlip();
+      setCurrentStep((prev) => prev + 1);
     }
-  }, [timerStartedForStep, currentStepData.step, onComplete]);
-  
+  }, [currentStep, playSound, onResetRotateFlip]);
+
   const handleClose = () => {
-    if (autoCloseTimerRef.current) {
-      clearTimeout(autoCloseTimerRef.current);
-      autoCloseTimerRef.current = null;
-    }
+    if (autoCloseTimerRef.current) clearTimeout(autoCloseTimerRef.current);
+    if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
     onComplete();
   };
-  
+
   const handleSkip = () => {
-    if (autoCloseTimerRef.current) {
-      clearTimeout(autoCloseTimerRef.current);
-      autoCloseTimerRef.current = null;
-    }
-    if (countdownTimerRef.current) {
-      clearInterval(countdownTimerRef.current);
-      countdownTimerRef.current = null;
-    }
+    if (autoCloseTimerRef.current) clearTimeout(autoCloseTimerRef.current);
+    if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
     onSkip();
   };
-  
+
   const handleResetAndRestart = () => {
-    if (autoCloseTimerRef.current) {
-      clearTimeout(autoCloseTimerRef.current);
-      autoCloseTimerRef.current = null;
-    }
-    if (countdownTimerRef.current) {
-      clearInterval(countdownTimerRef.current);
-      countdownTimerRef.current = null;
-    }
+    if (autoCloseTimerRef.current) clearTimeout(autoCloseTimerRef.current);
+    if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
     setCountdown(null);
-    setTimerStartedForStep(null);
+    setIsCompleted(false);
     setCurrentStep(0);
-    if (onResetTutorial) {
-      onResetTutorial();
-    }
+    prevStepRef.current = -1;
+    if (onResetTutorial) onResetTutorial();
+    if (onScrollTo) onScrollTo("board");
   };
-  
+
   const getStepIcon = () => {
-    switch (currentStepData.action) {
-      case 'select':
-        return <ArrowDown className="h-5 w-5 animate-bounce" />;
-      case 'rotate':
-        return <RotateCw className="h-5 w-5 animate-spin" />;
-      case 'flip':
-        return <FlipHorizontal2 className="h-5 w-5" />;
-      case 'place':
-        return <ArrowDown className="h-5 w-5 animate-bounce" />;
-      case 'complete':
-        return null;
+    switch (stepDef.id) {
+      case "board":
+        return <Sparkles className="h-5 w-5 text-neon-pink" />;
+      case "select":
+        return <ArrowDown className="h-5 w-5 animate-bounce text-neon-pink" />;
+      case "actions":
+        return <RotateCw className="h-5 w-5 animate-spin text-neon-cyan" />;
+      case "place":
+        return isCompleted ? (
+          <Check className="h-5 w-5 text-green-400" />
+        ) : (
+          <ArrowDown className="h-5 w-5 animate-bounce text-neon-yellow" />
+        );
       default:
         return null;
     }
   };
-  
+
+  const getInstruction = () => {
+    if (isCompleted) {
+      return t("tutorial.tabersquare.finish");
+    }
+    switch (stepDef.id) {
+      case "board":
+        return t("tutorial.tabersquare.step1");
+      case "select":
+        return t("tutorial.tabersquare.step2");
+      case "actions":
+        return t("tutorial.tabersquare.step3");
+      case "place":
+        return t("tutorial.tabersquare.step4");
+      default:
+        return "";
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 pointer-events-none">
-      <div className="absolute inset-0 bg-black/5 backdrop-blur-none" />
-      
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-md pointer-events-auto">
-        <div className="mx-4 rounded-xl border border-neon-pink/60 bg-background/95 backdrop-blur-sm p-4 shadow-2xl">
+    <>
+      {/* Dark overlay covering the screen */}
+      <div className="fixed inset-0 z-40 bg-black/75 backdrop-blur-[2px] transition-opacity duration-300 pointer-events-none" />
+
+      {/* Tutorial Floating Card */}
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4 pointer-events-auto">
+        <div className="rounded-2xl border-2 border-neon-pink/80 bg-card/95 p-4 shadow-[0_0_35px_oklch(0.72_0.30_350/0.4)] backdrop-blur-md transition-all">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-neon-pink">
-                Tutorial {currentStep + 1}/{steps.length}
+              <span className="rounded-full border border-neon-pink/60 bg-neon-pink/20 px-2.5 py-0.5 text-xs font-extrabold uppercase tracking-wider text-neon-pink">
+                Tutorial {currentStep + 1}/{STEPS.length}
               </span>
               {getStepIcon()}
             </div>
-            <div className="flex items-center gap-2">
-              <button onClick={handleResetAndRestart} className="text-xs text-muted-foreground hover:text-foreground">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleResetAndRestart}
+                className="text-xs text-muted-foreground transition-colors hover:text-foreground hover:underline cursor-pointer"
+              >
                 {t("tutorial.restart")}
               </button>
-              <button onClick={handleSkip} className="text-xs text-muted-foreground hover:text-foreground">
+              <button
+                type="button"
+                onClick={handleSkip}
+                className="text-xs text-muted-foreground transition-colors hover:text-foreground hover:underline cursor-pointer"
+              >
                 {t("tutorial.skip")}
               </button>
             </div>
           </div>
-          
-          <p className="text-sm leading-relaxed">
-            {currentStepData.instruction}
+
+          <p className="text-sm font-medium leading-relaxed text-foreground">
+            {getInstruction()}
           </p>
-          
-          {isLastStep && countdown !== null && (
-            <div className="mt-3 space-y-2">
-              <div className="rounded-lg bg-green-500/20 border border-green-500/60 px-3 py-2 text-sm text-green-400">
-                ✓ {t("tutorial.interactive.correct")}
-              </div>
-              <button 
-                onClick={handleClose}
-                className="w-full rounded-lg bg-neon-pink/20 border border-neon-pink/60 px-3 py-2 text-sm text-neon-pink hover:bg-neon-pink/30 transition-colors"
+
+          {/* Action buttons based on step */}
+          <div className="mt-4 flex flex-col gap-2">
+            {stepDef.id === "board" && (
+              <button
+                type="button"
+                onClick={handleNextStep}
+                className="flex items-center justify-center gap-2 w-full rounded-xl bg-neon-pink px-4 py-2.5 text-sm font-bold text-black shadow-[0_0_20px_oklch(0.72_0.30_350/0.6)] transition-all hover:brightness-110 active:scale-[0.98] cursor-pointer"
               >
-                {t("tutorial.close")}
+                <span>{t("tutorial.tabersquare.gotIt")}</span>
+                <ChevronRight className="h-4 w-4" />
               </button>
-              {countdown !== null && (
-                <p className="text-xs text-muted-foreground text-center">
-                  {t("tutorial.autoClose", { countdown })}
-                </p>
-              )}
-            </div>
-          )}
+            )}
+
+            {stepDef.id === "actions" && (
+              <button
+                type="button"
+                onClick={handleNextStep}
+                className="flex items-center justify-center gap-2 w-full rounded-xl border border-neon-pink/60 bg-neon-pink/20 px-4 py-2 text-sm font-semibold text-neon-pink transition-colors hover:bg-neon-pink/30 cursor-pointer"
+              >
+                <span>{t("tutorial.next")}</span>
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            )}
+
+            {isCompleted && (
+              <div className="space-y-2">
+                <div className="rounded-xl border border-green-500/60 bg-green-500/15 px-3 py-2 text-sm font-semibold text-green-400 flex items-center justify-center gap-2">
+                  <Check className="h-4 w-4" />
+                  <span>{t("tutorial.interactive.correct")}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="w-full rounded-xl bg-neon-pink px-4 py-2.5 text-sm font-bold text-black shadow-[0_0_20px_oklch(0.72_0.30_350/0.6)] transition-all hover:brightness-110 active:scale-[0.98] cursor-pointer"
+                >
+                  {t("tutorial.tabersquare.playNow")}
+                </button>
+                {countdown !== null && (
+                  <p className="text-xs text-muted-foreground text-center">
+                    {t("tutorial.autoClose", { countdown })}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
-}
-
-function getTutorialSteps(levelId: SquareLevelId) {
-  const { t } = useI18n();
-  
-  const baseSteps = [
-    { step: 1, action: 'select', instruction: t('tutorial.interactive.step2') },
-    { step: 2, action: 'rotate', instruction: t('tutorial.interactive.step4') },
-    { step: 3, action: 'flip', instruction: t('tutorial.interactive.step5') },
-    { step: 4, action: 'place', instruction: t('tutorial.interactive.step3') },
-    { step: 5, action: 'remove', instruction: t('tutorial.interactive.step7') },
-  ];
-  
-  return baseSteps;
-}
-
-function checkStepComplete(
-  step: { step: number; action: string; instruction: string },
-  board: BoardCell[][],
-  pieces: PieceState[],
-  selectedId: string | null,
-  selectedPiece: PieceState | null,
-  hasRotated: boolean,
-  hasFlipped: boolean
-): boolean {
-  switch (step.step) {
-    case 1: // select
-      // Only complete if selected piece is L-4 (p6)
-      return selectedId !== null && selectedPiece !== null && selectedPiece.id === 'p6';
-    case 2: // rotate
-      return hasRotated;
-    case 3: // flip
-      return hasFlipped;
-    case 4: // place
-      // Check if the L-4 piece (p6) is specifically placed on board
-      for (const row of board) {
-        for (const cell of row) {
-          if (cell === 'p6') return true;
-        }
-      }
-      return false;
-    case 5: // remove
-      // Check if L-4 piece (p6) is removed from board
-      for (const row of board) {
-        for (const cell of row) {
-          if (cell === 'p6') return false;
-        }
-      }
-      return true;
-    default:
-      return false;
-  }
-}
-
-function playSound(type: string) {
-  // This would use the sound effects hook, but for simplicity we'll skip
-  // In real implementation, this would call playSound('success')
 }

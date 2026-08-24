@@ -5,7 +5,7 @@ import { GameNav, GameNavBackLink, GameNavButton, GameNavTimer } from "@/compone
 import { PieceShape } from "@/components/tabersquare/PieceShape";
 import { DiceRollAnimation } from "@/components/tabersquare/DiceRollAnimation";
 import { ScoreForm } from "@/components/ScoreForm";
-import { Tutorial } from "@/components/tabersquare/Tutorial";
+import { Tutorial, type HighlightElement } from "@/components/tabersquare/Tutorial";
 import { useI18n } from "@/lib/i18n";
 import { pageMeta } from "@/lib/seo";
 import { useTimer } from "@/hooks/useTimer";
@@ -75,6 +75,8 @@ function TaberSquarePage() {
   const { t } = useI18n();
   const { playSound } = useSoundEffects();
   const boardContainerRef = useRef<HTMLDivElement>(null);
+  const trayContainerRef = useRef<HTMLDivElement>(null);
+  const actionsContainerRef = useRef<HTMLDivElement>(null);
   const [activeLevelId, setActiveLevelId] = useState<SquareLevelId>(getActiveLevel);
   const currentLevelDef = useMemo(() => getLevel(activeLevelId), [activeLevelId]);
 
@@ -101,7 +103,7 @@ function TaberSquarePage() {
     fromBoard: boolean;
   } | null>(null);
   const suppressClickRef = useRef(false);
-  const [highlightedElement, setHighlightedElement] = useState<'piece' | 'rotate' | 'flip' | 'board' | 'placed-piece' | null>(null);
+  const [highlightedElement, setHighlightedElement] = useState<HighlightElement>(null);
   const [highlightedPieceId, setHighlightedPieceId] = useState<string | undefined>(undefined);
   const { seconds, setSeconds } = useTimer(!won && board.length > 0 && !showDiceAnimation);
 
@@ -154,11 +156,13 @@ function TaberSquarePage() {
     }
   }, [board, currentLevelDef, activeLevelId, playSound]);
   
-  // Show tutorial on first play (before animation)
+  // Show tutorial on first play
   useEffect(() => {
     if (!isTutorialCompleted()) {
       setHasRotated(false);
       setHasFlipped(false);
+      setShowDiceAnimation(false);
+      setSelectedId(null);
       setShowTutorial(true);
     }
   }, []);
@@ -204,12 +208,37 @@ function TaberSquarePage() {
   const handleShowTutorial = useCallback(() => {
     setHasRotated(false);
     setHasFlipped(false);
+    setShowDiceAnimation(false);
+    setBoard(applyBlockers(blockers));
+    setSelectedId(null);
     setShowTutorial(true);
+  }, [blockers]);
+
+  const handleResetTutorial = useCallback(() => {
+    setHasRotated(false);
+    setHasFlipped(false);
+    setBoard(applyBlockers(blockers));
+    setSelectedId(null);
+  }, [blockers]);
+
+  const handleResetRotateFlip = useCallback(() => {
+    setHasRotated(false);
+    setHasFlipped(false);
   }, []);
   
-  const handleHighlightElement = useCallback((element: 'piece' | 'rotate' | 'flip' | 'board' | 'placed-piece' | null, pieceId?: string) => {
+  const handleHighlightElement = useCallback((element: HighlightElement, pieceId?: string) => {
     setHighlightedElement(element);
     setHighlightedPieceId(pieceId);
+  }, []);
+
+  const handleScrollTo = useCallback((target: "board" | "tray" | "actions") => {
+    if (target === "board" && boardContainerRef.current) {
+      boardContainerRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else if (target === "tray" && trayContainerRef.current) {
+      trayContainerRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else if (target === "actions" && actionsContainerRef.current) {
+      actionsContainerRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   }, []);
 
   const solutionBoard = useMemo(() => {
@@ -488,7 +517,6 @@ function TaberSquarePage() {
         
         {showTutorial && (
           <Tutorial
-            levelId={activeLevelId}
             board={board}
             pieces={pieces}
             selectedId={selectedId}
@@ -497,11 +525,10 @@ function TaberSquarePage() {
             hasFlipped={hasFlipped}
             onComplete={handleTutorialComplete}
             onSkip={handleTutorialSkip}
-            onResetTutorial={() => {
-              setHasRotated(false);
-              setHasFlipped(false);
-            }}
+            onResetTutorial={handleResetTutorial}
+            onResetRotateFlip={handleResetRotateFlip}
             onHighlightElement={handleHighlightElement}
+            onScrollTo={handleScrollTo}
           />
         )}
 
@@ -509,10 +536,10 @@ function TaberSquarePage() {
           <div className="flex justify-center">
             <div
               ref={boardContainerRef}
-              className={`relative grid rounded-xl border-2 p-3 shadow-[0_0_30px_oklch(0.72_0.30_350/0.35)] transition-all ${
-                highlightedElement === 'board' 
-                  ? 'border-neon-pink shadow-[0_0_40px_oklch(0.72_0.30_350/0.6)] animate-pulse' 
-                  : 'border-neon-pink/60'
+              className={`relative grid rounded-xl border-2 p-3 transition-all ${
+                showTutorial && highlightedElement === "board"
+                  ? "relative z-50 border-neon-pink ring-4 ring-neon-pink ring-offset-4 ring-offset-background shadow-[0_0_50px_oklch(0.72_0.30_350/0.8)]"
+                  : "border-neon-pink/60 shadow-[0_0_30px_oklch(0.72_0.30_350/0.35)]"
               }`}
               style={{
                 gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
@@ -546,11 +573,7 @@ function TaberSquarePage() {
                       }
                       onMouseEnter={() => setHover({ x, y })}
                       onMouseLeave={() => setHover(null)}
-                      className={`relative aspect-square w-11 touch-none rounded-md transition-colors sm:w-14 ${
-                        highlightedElement === 'placed-piece' && pieceIdHere === highlightedPieceId
-                          ? 'animate-pulse' 
-                          : ''
-                      }`}
+                      className="relative aspect-square w-11 touch-none rounded-md transition-colors sm:w-14"
                       style={{
                         background: isBlocker
                           ? "oklch(0.25 0.03 40)"
@@ -564,9 +587,7 @@ function TaberSquarePage() {
                         boxShadow: isBlocker
                           ? "inset 0 0 0 2px oklch(0.15 0.02 40), inset 0 4px 10px rgba(0,0,0,0.7)"
                           : pieceHere
-                            ? highlightedElement === 'placed-piece' && pieceIdHere === highlightedPieceId
-                              ? `0 0 25px ${pieceHere.color}, inset 0 0 0 2px rgba(255,255,255,0.5)`
-                              : `0 0 10px ${pieceHere.color}, inset 0 0 0 1px rgba(255,255,255,0.25)`
+                            ? `0 0 10px ${pieceHere.color}, inset 0 0 0 1px rgba(255,255,255,0.25)`
                             : "inset 0 0 0 1px oklch(0.75 0.03 70)",
                       }}
                       aria-label={`Cell ${String.fromCharCode(65 + x)}${y + 1}`}
@@ -590,7 +611,14 @@ function TaberSquarePage() {
           </div>
 
           <div className="flex flex-col gap-4">
-            <div className="rounded-xl border border-border bg-card p-4">
+            <div
+              ref={trayContainerRef}
+              className={`rounded-xl border bg-card p-4 transition-all ${
+                showTutorial && highlightedElement === "tray"
+                  ? "relative z-50 border-neon-pink ring-2 ring-neon-pink/80 shadow-[0_0_35px_oklch(0.72_0.30_350/0.5)]"
+                  : "border-border"
+              }`}
+            >
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">
                   {t("game.pieces")} ({trayPieces.length}/{pieces.length})
@@ -602,17 +630,20 @@ function TaberSquarePage() {
                 ) : (
                   <span className="text-xs text-muted-foreground">{t("game.pickPiece")}</span>
                 )}
-                <div className="ml-auto flex gap-2">
+                <div
+                  ref={actionsContainerRef}
+                  className={`ml-auto flex gap-2 rounded-lg p-1 transition-all ${
+                    showTutorial && highlightedElement === "actions"
+                      ? "relative z-50 ring-4 ring-neon-pink bg-neon-pink/20 shadow-[0_0_30px_oklch(0.72_0.30_350/0.8)] animate-pulse"
+                      : ""
+                  }`}
+                >
                   <button
                     onClick={rotateSelected}
                     disabled={!selected || totalOrientations <= 1}
                     aria-label={t("game.rotate")}
                     title={t("game.rotate")}
-                    className={`flex h-10 w-10 items-center justify-center rounded-md border transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-                      highlightedElement === 'rotate' 
-                        ? 'border-neon-pink bg-neon-pink/20 shadow-[0_0_15px_oklch(0.72_0.30_350/0.5)] animate-pulse' 
-                        : 'border-border bg-secondary text-secondary-foreground hover:border-neon-pink'
-                    }`}
+                    className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-secondary text-secondary-foreground transition-colors hover:border-neon-pink disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                   >
                     <RotateCw className="h-5 w-5" />
                   </button>
@@ -621,11 +652,7 @@ function TaberSquarePage() {
                     disabled={!selected}
                     aria-label={t("game.flip")}
                     title={t("game.flip")}
-                    className={`flex h-10 w-10 items-center justify-center rounded-md border transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-                      highlightedElement === 'flip' 
-                        ? 'border-neon-pink bg-neon-pink/20 shadow-[0_0_15px_oklch(0.72_0.30_350/0.5)] animate-pulse' 
-                        : 'border-border bg-secondary text-secondary-foreground hover:border-neon-pink'
-                    }`}
+                    className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-secondary text-secondary-foreground transition-colors hover:border-neon-pink disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                   >
                     <FlipHorizontal2 className="h-5 w-5" />
                   </button>
@@ -635,7 +662,8 @@ function TaberSquarePage() {
                 {trayPieces.map((p) => {
                   const isSel = p.id === selectedId;
                   const isRestricted = currentLevelDef.restrictedPieces.includes(pieceNumber(p.id));
-                  const isHighlighted = highlightedElement === 'piece' && highlightedPieceId === p.id;
+                  const isTargetTutorialPiece =
+                    showTutorial && highlightedElement === "tray" && highlightedPieceId === p.id;
                   return (
                     <button
                       key={p.id}
@@ -651,7 +679,11 @@ function TaberSquarePage() {
                           : isRestricted
                             ? "border-amber-500/60 bg-amber-500/5 hover:border-amber-500"
                             : "border-border bg-card hover:border-neon-pink/50"
-                      } ${isHighlighted ? 'shadow-[0_0_20px_oklch(0.72_0.30_350/0.6)] animate-pulse border-neon-pink' : ''}`}
+                      } ${
+                        isTargetTutorialPiece
+                          ? "relative z-50 ring-4 ring-neon-pink border-neon-pink shadow-[0_0_30px_oklch(0.72_0.30_350/0.9)] animate-pulse scale-105"
+                          : ""
+                      }`}
                     >
                       <PieceShape cells={p.cells} color={p.color} cellSize={9} gap={1} />
                       {isRestricted && (
