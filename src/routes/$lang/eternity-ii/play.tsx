@@ -81,6 +81,28 @@ function EternityPage() {
   const [hasRotated, setHasRotated] = useState(false);
   const [highlightedElement, setHighlightedElement] = useState<HighlightTarget>(null);
 
+  // Identify edge pieces (pieces with at least one grey border = 0)
+  const edgePieceIds = useMemo(() => {
+    return level.tiles
+      .filter((tile) => tile.edges.some((e) => e === 0))
+      .map((tile) => tile.id);
+  }, [level.tiles]);
+
+  // Identify empty border positions
+  const emptyBorderPositions = useMemo(() => {
+    const empty: number[] = [];
+    const n = level.size;
+    for (let i = 0; i < board.length; i++) {
+      const r = Math.floor(i / n);
+      const c = i % n;
+      const isBorder = r === 0 || r === n - 1 || c === 0 || c === n - 1;
+      if (isBorder && !board[i]) {
+        empty.push(i);
+      }
+    }
+    return empty;
+  }, [level.size, board]);
+
   useEffect(() => {
     if (!isTutorialCompleted() && !resume) {
       setShowTutorial(true);
@@ -99,11 +121,18 @@ function EternityPage() {
 
   const handleShowTutorial = useCallback(() => {
     setHasRotated(false);
+    setSelected(null);
+    setFocus(null);
     setShowTutorial(true);
   }, []);
 
   const handleHighlightElement = useCallback((element: HighlightTarget) => {
     setHighlightedElement(element);
+  }, []);
+
+  const handleScrollTo = useCallback((target: "board" | "tray") => {
+    const el = target === "tray" ? trayRef.current : boardFrameRef.current;
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, []);
 
   const startLevel = useCallback(
@@ -348,14 +377,22 @@ function EternityPage() {
   };
 
   const boardWrapRef = useRef<HTMLDivElement | null>(null);
+  const boardFrameRef = useRef<HTMLDivElement | null>(null);
+  const trayRef = useRef<HTMLDivElement | null>(null);
+  const [boardRect, setBoardRect] = useState<DOMRect | null>(null);
+  const [trayRect, setTrayRect] = useState<DOMRect | null>(null);
   const [wrapW, setWrapW] = useState(680);
   useEffect(() => {
-    const el = boardWrapRef.current;
-    if (!el) return;
-    const update = () => setWrapW(el.getBoundingClientRect().width);
+    const update = () => {
+      setBoardRect(boardFrameRef.current?.getBoundingClientRect() ?? null);
+      setTrayRect(trayRef.current?.getBoundingClientRect() ?? null);
+      setWrapW(boardWrapRef.current?.getBoundingClientRect().width ?? 680);
+    };
     update();
     const ro = new ResizeObserver(update);
-    ro.observe(el);
+    if (boardWrapRef.current) ro.observe(boardWrapRef.current);
+    if (boardFrameRef.current) ro.observe(boardFrameRef.current);
+    if (trayRef.current) ro.observe(trayRef.current);
     window.addEventListener("resize", update);
     window.addEventListener("orientationchange", update);
     return () => {
@@ -408,10 +445,18 @@ function EternityPage() {
             selected={selected}
             focus={focus}
             hasRotated={hasRotated}
+            boardSize={level.size}
+            edgePieceIds={edgePieceIds}
+            emptyBorderPositions={emptyBorderPositions}
             onComplete={handleTutorialComplete}
             onSkip={handleTutorialSkip}
             onResetTutorial={() => setHasRotated(false)}
             onHighlightElement={handleHighlightElement}
+            onScrollTo={handleScrollTo}
+            boardRect={boardRect}
+            trayRect={trayRect}
+            boardRef={boardFrameRef}
+            trayRef={trayRef}
           />
         )}
 
@@ -427,6 +472,7 @@ function EternityPage() {
         <div ref={boardWrapRef} className="mt-6 grid min-w-0 gap-6 lg:grid-cols-[auto_1fr]">
           <div className="flex w-full min-w-0 flex-col items-center">
             <div
+              ref={boardFrameRef}
               className="max-w-full rounded-2xl p-3"
               style={{
                 background: "linear-gradient(180deg, var(--e2-frame), var(--e2-frame-dark))",
@@ -484,6 +530,7 @@ function EternityPage() {
           </div>
 
           <section
+            ref={trayRef}
             className="rounded-2xl p-4 transition-all"
             style={{
               background: "var(--e2-panel)",
