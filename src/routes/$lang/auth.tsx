@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { SiteHeader } from "@/components/SiteHeader";
-import { useI18n } from "@/lib/i18n";
-import { pageMeta } from "@/lib/seo";
-import { useAuth } from "@/hooks/useAuth";
+import { SiteHeader } from "@/platform/layout/SiteHeader";
+import { useI18n } from "@/platform/i18n";
+import { pageMeta } from "@/platform/seo";
+import { useAuth } from "@/platform/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/$lang/auth")({
     meta: pageMeta({
       title: "Sign in — The Taber Games",
       description:
-        "Sign in to The Taber Games to save your Taber's Eternity progress and continue later.",
+        "Sign in to The Taber Games to save your progress and continue your games later.",
     }),
   }),
   component: AuthPage,

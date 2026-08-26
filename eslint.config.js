@@ -5,6 +5,45 @@ import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
+const GAME_SLUGS = ["taber-square", "tabers-star", "eternity-ii"];
+
+const platformBoundaryConfig = {
+  files: ["src/platform/**/*.{ts,tsx}"],
+  ignores: ["src/platform/games/registry.ts"],
+  rules: {
+    "no-restricted-imports": [
+      "error",
+      {
+        patterns: [
+          {
+            group: ["@/games", "@/games/*"],
+            message:
+              "The platform must not depend on game slices. Only registry.ts may import manifests.",
+          },
+        ],
+      },
+    ],
+  },
+};
+
+const gameBoundaryConfigs = GAME_SLUGS.map((slug) => {
+  const others = GAME_SLUGS.filter((s) => s !== slug);
+  return {
+    files: [`src/games/${slug}/**/*.{ts,tsx}`],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: others.map((other) => ({
+            group: [`@/games/${other}`, `@/games/${other}/*`],
+            message: `Game slices must stay independent: do not import from "${other}".`,
+          })),
+        },
+      ],
+    },
+  };
+});
+
 export default tseslint.config(
   { ignores: ["dist", ".output", ".vinxi"] },
   {
@@ -36,5 +75,7 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
+  platformBoundaryConfig,
+  ...gameBoundaryConfigs,
   eslintPluginPrettier,
 );

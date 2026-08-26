@@ -62,6 +62,78 @@ export type Database = {
         };
         Relationships: [];
       };
+      scores_eternity_ii: {
+        Row: {
+          created_at: string;
+          id: string;
+          level: number;
+          player_name: string;
+          seconds: number;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          level?: number;
+          player_name: string;
+          seconds: number;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          level?: number;
+          player_name?: string;
+          seconds?: number;
+        };
+        Relationships: [];
+      };
+      scores_taber_square: {
+        Row: {
+          created_at: string;
+          id: string;
+          level: number;
+          player_name: string;
+          seconds: number;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          level?: number;
+          player_name: string;
+          seconds: number;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          level?: number;
+          player_name?: string;
+          seconds?: number;
+        };
+        Relationships: [];
+      };
+      scores_tabers_star: {
+        Row: {
+          created_at: string;
+          id: string;
+          level: number;
+          player_name: string;
+          seconds: number;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          level?: number;
+          player_name: string;
+          seconds: number;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          level?: number;
+          player_name?: string;
+          seconds?: number;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

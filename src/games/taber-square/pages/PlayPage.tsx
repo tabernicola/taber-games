@@ -1,0 +1,593 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { SiteHeader } from "@/platform/layout/SiteHeader";
+import { GameNav, GameNavBackLink, GameNavButton, GameNavTimer } from "@/platform/layout/GameNav";
+import { PieceShape } from "../ui/PieceShape";
+import { DiceRollAnimation } from "../ui/DiceRollAnimation";
+import { Tutorial, type HighlightElement } from "../ui/Tutorial";
+import { LevelSelector } from "../ui/LevelSelector";
+import type { PieceState } from "../ui/types";
+import { WinModal } from "@/platform/kit/WinModal";
+import { usePieceDragDrop } from "@/platform/kit/usePieceDragDrop";
+import { useI18n } from "@/platform/i18n";
+import { useTimer } from "@/platform/hooks/useTimer";
+import { useKeyboardShortcuts } from "@/platform/hooks/useKeyboardShortcuts";
+import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
+import { FlipHorizontal2, Lightbulb, RefreshCw, RotateCw, Eye, EyeOff } from "lucide-react";
+import taberSquareHeaderAsset from "@/assets/taber-square-header.png.asset.json";
+import {
+  BLOCKER,
+  BOARD_SIZE,
+  applyBlockers,
+  canPlaceAt,
+  generatePuzzle,
+  isSolved,
+  placeCells,
+  removePiece,
+  solveBlockers,
+  pieceNumber,
+  type BoardCell,
+  type Placement,
+} from "../logic/game";
+import { PIECES, allOrientations, flip, normalize, rotate, type Cell } from "../logic/pieces";
+import { getLevel, nextLevelId, levelIndex, type SquareLevelId } from "../logic/levels";
+import {
+  getActiveLevel,
+  setActiveLevel,
+  isLevelUnlocked,
+  unlockNextLevel,
+  isTutorialCompleted,
+  markTutorialCompleted,
+} from "../logic/progress";
+import { createScoresService } from "@/platform/scores/createScoresService";
+
+const scores = createScoresService("scores_taber_square");
+
+export function PlayPage() {
+  const { t } = useI18n();
+  const { playSound } = useSoundEffects();
+  const boardContainerRef = useRef<HTMLDivElement>(null);
+  const trayContainerRef = useRef<HTMLDivElement>(null);
+  const actionsContainerRef = useRef<HTMLDivElement>(null);
+  const [activeLevelId, setActiveLevelId] = useState<SquareLevelId>(getActiveLevel);
+  const currentLevelDef = useMemo(() => getLevel(activeLevelId), [activeLevelId]);
+
+  const [blockers, setBlockers] = useState<Cell[]>([]);
+  const [board, setBoard] = useState<BoardCell[][]>([]);
+  const [pieces, setPieces] = useState<PieceState[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [hover, setHover] = useState<{ x: number; y: number } | null>(null);
+  const [won, setWon] = useState(false);
+  const [solution, setSolution] = useState<Placement[] | null>(null);
+  const [showSolution, setShowSolution] = useState(false);
+  const [hintUsed, setHintUsed] = useState(false);
+  const [helped, setHelped] = useState(false);
+  const [showDiceAnimation, setShowDiceAnimation] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [hasRotated, setHasRotated] = useState(false);
+  const [hasFlipped, setHasFlipped] = useState(false);
+  const [highlightedElement, setHighlightedElement] = useState<HighlightElement>(null);
+  const [highlightedPieceId, setHighlightedPieceId] = useState<string | undefined>(undefined);
+  const { seconds, setSeconds } = useTimer(!won && board.length > 0 && !showDiceAnimation);
+
+  // Latest state for pointer-event handlers attached to window.
+  const stateRef = useRef({ board, pieces, currentLevelDef });
+  stateRef.current = { board, pieces, currentLevelDef };
+
+  const newGame = useCallback(() => {
+    const puzzle = generatePuzzle(activeLevelId);
+    const puzzleBlockers = puzzle.blockers;
+    setBlockers(puzzleBlockers);
+    setBoard(applyBlockers(puzzleBlockers));
+    setPieces(
+      PIECES.map((p) => ({ id: p.id, name: p.name, color: p.color, cells: normalize(p.cells) })),
+    );
+    setSelectedId(null);
+    setHover(null);
+    setWon(false);
+    setSolution(solveBlockers(puzzle.blockers, activeLevelId));
+    setShowSolution(false);
+    setHintUsed(false);
+    setHelped(false);
+    setHasRotated(false);
+    setHasFlipped(false);
+    setSeconds(0);
+    setShowDiceAnimation(true);
+  }, [activeLevelId, setSeconds]);
+
+  useEffect(() => {
+    newGame();
+  }, [newGame]);
+
+  // Auto-scroll to level info/rules when page loads
+  useEffect(() => {
+    setTimeout(() => {
+      const levelInfoElement = document.querySelector("[data-level-info]");
+      if (levelInfoElement) {
+        levelInfoElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        window.scrollBy({ top: 250, behavior: "smooth" });
+      }
+    }, 100);
+  }, []);
+
+  useEffect(() => {
+    if (board.length && isSolved(board, currentLevelDef)) {
+      playSound("win");
+      setWon(true);
+      unlockNextLevel(activeLevelId);
+    }
+  }, [board, currentLevelDef, activeLevelId, playSound]);
+
+  // Show tutorial on first play
+  useEffect(() => {
+    if (!isTutorialCompleted()) {
+      setHasRotated(false);
+      setHasFlipped(false);
+      setShowDiceAnimation(false);
+      setSelectedId(null);
+      setShowTutorial(true);
+    }
+  }, []);
+
+  const handleSelectLevel = useCallback((levelId: SquareLevelId) => {
+    if (isLevelUnlocked(levelId)) {
+      setActiveLevelId(levelId);
+      setActiveLevel(levelId);
+    }
+  }, []);
+
+  const giveHint = useCallback(() => {
+    if (hintUsed || !solution) return;
+    const target = solution.find(
+      (pl) => !pl.cells.every(([dx, dy]) => board[pl.oy + dy]?.[pl.ox + dx] === pl.id),
+    );
+    if (!target) return;
+    let next = removePiece(board, target.id);
+    for (const [dx, dy] of target.cells) {
+      const occupant = next[target.oy + dy]?.[target.ox + dx];
+      if (occupant && occupant !== BLOCKER) next = removePiece(next, occupant);
+    }
+    next = placeCells(next, target.cells, target.ox, target.oy, target.id);
+    setPieces((prev) =>
+      prev.map((p) => (p.id === target.id ? { ...p, cells: normalize(target.cells) } : p)),
+    );
+    setBoard(next);
+    setSelectedId(null);
+    setHintUsed(true);
+    setHelped(true);
+  }, [board, hintUsed, solution]);
+
+  const handleTutorialComplete = useCallback(() => {
+    markTutorialCompleted();
+    setShowTutorial(false);
+  }, []);
+
+  const handleTutorialSkip = useCallback(() => {
+    markTutorialCompleted();
+    setShowTutorial(false);
+  }, []);
+
+  const handleShowTutorial = useCallback(() => {
+    setHasRotated(false);
+    setHasFlipped(false);
+    setShowDiceAnimation(false);
+    setBoard(applyBlockers(blockers));
+    setSelectedId(null);
+    setShowTutorial(true);
+  }, [blockers]);
+
+  const handleResetTutorial = useCallback(() => {
+    setHasRotated(false);
+    setHasFlipped(false);
+    setBoard(applyBlockers(blockers));
+    setSelectedId(null);
+  }, [blockers]);
+
+  const handleResetRotateFlip = useCallback(() => {
+    setHasRotated(false);
+    setHasFlipped(false);
+  }, []);
+
+  const handleHighlightElement = useCallback((element: HighlightElement, pieceId?: string) => {
+    setHighlightedElement(element);
+    setHighlightedPieceId(pieceId);
+  }, []);
+
+  const handleScrollTo = useCallback((target: "board" | "tray" | "actions") => {
+    if (target === "board" && boardContainerRef.current) {
+      boardContainerRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else if (target === "tray" && trayContainerRef.current) {
+      trayContainerRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else if (target === "actions" && actionsContainerRef.current) {
+      actionsContainerRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, []);
+
+  const solutionBoard = useMemo(() => {
+    if (!showSolution || !solution) return null;
+    let b = applyBlockers(blockers);
+    for (const pl of solution) b = placeCells(b, pl.cells, pl.ox, pl.oy, pl.id);
+    return b;
+  }, [showSolution, solution, blockers]);
+
+  const selected = useMemo(
+    () => pieces.find((p) => p.id === selectedId) ?? null,
+    [pieces, selectedId],
+  );
+
+  const placedIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const row of board) for (const c of row) if (c && c !== BLOCKER) set.add(c);
+    return set;
+  }, [board]);
+
+  const trayPieces = pieces.filter((p) => !placedIds.has(p.id));
+
+  const rotateSelected = useCallback(() => {
+    if (!selected) return;
+    playSound("rotate");
+    setHasRotated(true);
+    setPieces((prev) =>
+      prev.map((p) => (p.id === selected.id ? { ...p, cells: rotate(p.cells) } : p)),
+    );
+  }, [selected, playSound]);
+
+  const flipSelected = useCallback(() => {
+    if (!selected) return;
+    playSound("rotate");
+    setHasFlipped(true);
+    setPieces((prev) =>
+      prev.map((p) => (p.id === selected.id ? { ...p, cells: flip(p.cells) } : p)),
+    );
+  }, [selected, playSound]);
+
+  useKeyboardShortcuts({
+    r: rotateSelected,
+    f: flipSelected,
+    Escape: () => setSelectedId(null),
+  });
+
+  /** Board cell under a client point, or null when outside the grid. */
+  const cellFromPoint = useCallback((clientX: number, clientY: number) => {
+    const el = document.elementFromPoint(clientX, clientY);
+    const cellEl = el?.closest?.("[data-cell]") as HTMLElement | null;
+    if (!cellEl || !boardContainerRef.current?.contains(cellEl)) return null;
+    const [cx, cy] = cellEl.dataset.cell!.split(",").map(Number);
+    return { x: cx, y: cy };
+  }, []);
+
+  const { drag, startDrag, shouldSuppressClick } = usePieceDragDrop<{ x: number; y: number }>({
+    canStartDrag: () => !showSolution && !showDiceAnimation && !won,
+    resolveTarget: cellFromPoint,
+    onPickPiece: setSelectedId,
+    onLiftPiece: (pieceId) => {
+      playSound("click");
+      setBoard((prev) => removePiece(prev, pieceId));
+    },
+    onHoverTarget: setHover,
+    onDrop: (pieceId, cell) => {
+      const { board: b, pieces: ps, currentLevelDef: lvl } = stateRef.current;
+      const piece = ps.find((p) => p.id === pieceId);
+      if (piece && cell && canPlaceAt(b, piece.cells, cell.x, cell.y, lvl, piece.id)) {
+        playSound("place");
+        setBoard(placeCells(b, piece.cells, cell.x, cell.y, piece.id));
+        const placed = new Set<string>();
+        for (const row of b) for (const c of row) if (c && c !== BLOCKER) placed.add(c);
+        const remaining = ps.filter((p) => p.id !== piece.id && !placed.has(p.id));
+        setSelectedId(remaining[0]?.id ?? null);
+        return;
+      }
+      // Dropped outside or in an invalid spot: the piece returns to the tray.
+      playSound("click");
+      setSelectedId(piece?.id ?? null);
+    },
+  });
+
+  const handleCellClick = (x: number, y: number) => {
+    if (shouldSuppressClick()) return;
+    const cell = board[y]?.[x];
+    if (cell && cell !== BLOCKER) {
+      playSound("click");
+      setBoard(removePiece(board, cell));
+      setSelectedId(cell);
+      return;
+    }
+    if (!selected) return;
+    if (canPlaceAt(board, selected.cells, x, y, currentLevelDef, selected.id)) {
+      playSound("place");
+      setBoard(placeCells(board, selected.cells, x, y, selected.id));
+      const remaining = trayPieces.filter((p) => p.id !== selected.id);
+      setSelectedId(remaining[0]?.id ?? null);
+    } else {
+      playSound("click");
+    }
+  };
+
+  const previewCells = useMemo(() => {
+    if (!selected || !hover) return null;
+    const cells = selected.cells;
+    const valid = canPlaceAt(board, cells, hover.x, hover.y, currentLevelDef, selected.id);
+    const set = new Set<string>();
+    for (const [dx, dy] of cells) {
+      const x = hover.x + dx;
+      const y = hover.y + dy;
+      if (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE) set.add(`${x},${y}`);
+    }
+    return { set, valid };
+  }, [selected, hover, board, currentLevelDef]);
+
+  const totalOrientations = useMemo(
+    () => (selected ? allOrientations(selected.cells).length : 0),
+    [selected],
+  );
+
+  const dragPiece = useMemo(
+    () => (drag ? (pieces.find((p) => p.id === drag.id) ?? null) : null),
+    [drag, pieces],
+  );
+
+  return (
+    <div className="min-h-screen">
+      <SiteHeader />
+      <main className="mx-auto max-w-6xl px-4 pb-32 pt-4">
+        <header className="flex flex-col items-center">
+          <img
+            src={taberSquareHeaderAsset.url}
+            alt="The Taber Square"
+            className="w-full max-w-md object-contain"
+          />
+        </header>
+
+        <LevelSelector
+          activeLevelId={activeLevelId}
+          onSelect={handleSelectLevel}
+          onShowTutorial={handleShowTutorial}
+        />
+
+        {showSolution && (
+          <div className="my-4 rounded-lg border border-neon-yellow/60 bg-neon-yellow/10 px-4 py-2 text-sm text-neon-yellow">
+            {t("game.solutionShown")}
+          </div>
+        )}
+
+        {showTutorial && (
+          <Tutorial
+            board={board}
+            pieces={pieces}
+            selectedId={selectedId}
+            selectedPiece={selected}
+            hasRotated={hasRotated}
+            hasFlipped={hasFlipped}
+            onComplete={handleTutorialComplete}
+            onSkip={handleTutorialSkip}
+            onResetTutorial={handleResetTutorial}
+            onResetRotateFlip={handleResetRotateFlip}
+            onHighlightElement={handleHighlightElement}
+            onScrollTo={handleScrollTo}
+          />
+        )}
+
+        <div className="grid gap-6 lg:grid-cols-[auto,1fr]">
+          <div className="flex justify-center">
+            <div
+              ref={boardContainerRef}
+              className={`relative grid rounded-xl border-2 p-3 transition-all ${
+                showTutorial && highlightedElement === "board"
+                  ? "relative z-50 border-neon-pink ring-4 ring-neon-pink ring-offset-4 ring-offset-background shadow-[0_0_50px_oklch(0.72_0.30_350/0.8)]"
+                  : "border-neon-pink/60 shadow-[0_0_30px_oklch(0.72_0.30_350/0.35)]"
+              }`}
+              style={{
+                gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
+                gap: 6,
+                background: "linear-gradient(135deg, oklch(0.96 0.02 90), oklch(0.88 0.04 70))",
+              }}
+            >
+              {showDiceAnimation && (
+                <DiceRollAnimation
+                  blockers={blockers}
+                  onComplete={() => setShowDiceAnimation(false)}
+                  boardContainerRef={boardContainerRef}
+                />
+              )}
+              {(solutionBoard ?? board).map((row, y) =>
+                row.map((cell, x) => {
+                  // Keep the board looking empty until the dice roll finishes and the
+                  // dice visually transform into the pivots on top of it.
+                  const isBlocker = cell === BLOCKER && !showDiceAnimation;
+                  const pieceIdHere = cell && cell !== BLOCKER ? cell : null;
+                  const pieceHere = pieceIdHere ? pieces.find((p) => p.id === pieceIdHere) : null;
+                  const inPreview = previewCells?.set.has(`${x},${y}`);
+                  const previewValid = previewCells?.valid;
+                  return (
+                    <button
+                      key={`${x}-${y}`}
+                      data-cell={`${x},${y}`}
+                      onClick={() => !showSolution && handleCellClick(x, y)}
+                      onPointerDown={(e) =>
+                        pieceIdHere && !showSolution && startDrag(e, pieceIdHere, true)
+                      }
+                      onMouseEnter={() => setHover({ x, y })}
+                      onMouseLeave={() => setHover(null)}
+                      className="relative aspect-square w-11 touch-none rounded-md transition-colors sm:w-14"
+                      style={{
+                        background: isBlocker
+                          ? "oklch(0.25 0.03 40)"
+                          : pieceHere
+                            ? pieceHere.color
+                            : inPreview
+                              ? previewValid
+                                ? "oklch(0.72 0.30 350 / 0.55)"
+                                : "oklch(0.65 0.25 25 / 0.55)"
+                              : "oklch(0.99 0.01 90)",
+                        boxShadow: isBlocker
+                          ? "inset 0 0 0 2px oklch(0.15 0.02 40), inset 0 4px 10px rgba(0,0,0,0.7)"
+                          : pieceHere
+                            ? `0 0 10px ${pieceHere.color}, inset 0 0 0 1px rgba(255,255,255,0.25)`
+                            : "inset 0 0 0 1px oklch(0.75 0.03 70)",
+                      }}
+                      aria-label={`Cell ${String.fromCharCode(65 + x)}${y + 1}`}
+                    >
+                      {isBlocker && (
+                        <span className="absolute inset-0 flex items-center justify-center text-neon-yellow">
+                          <svg
+                            viewBox="0 0 24 24"
+                            className="h-4 w-4 sm:h-5 sm:w-5"
+                            fill="currentColor"
+                          >
+                            <circle cx="12" cy="12" r="4" />
+                          </svg>
+                        </span>
+                      )}
+                    </button>
+                  );
+                }),
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <div
+              ref={trayContainerRef}
+              className={`rounded-xl border bg-card p-4 transition-all ${
+                showTutorial && highlightedElement === "tray"
+                  ? "relative z-50 border-neon-pink ring-2 ring-neon-pink/80 shadow-[0_0_35px_oklch(0.72_0.30_350/0.5)]"
+                  : "border-border"
+              }`}
+            >
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <span className="text-xs uppercase tracking-widest text-muted-foreground">
+                  {t("game.pieces")} ({trayPieces.length}/{pieces.length})
+                </span>
+                {selected ? (
+                  <span className="text-sm font-semibold" style={{ color: selected.color }}>
+                    {selected.name}
+                  </span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">{t("game.pickPiece")}</span>
+                )}
+                <div
+                  ref={actionsContainerRef}
+                  className={`ml-auto flex gap-2 rounded-lg p-1 transition-all ${
+                    showTutorial && highlightedElement === "actions"
+                      ? "relative z-50 ring-4 ring-neon-pink bg-neon-pink/20 shadow-[0_0_30px_oklch(0.72_0.30_350/0.8)] animate-pulse"
+                      : ""
+                  }`}
+                >
+                  <button
+                    onClick={rotateSelected}
+                    disabled={!selected || totalOrientations <= 1}
+                    aria-label={t("game.rotate")}
+                    title={t("game.rotate")}
+                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border border-border bg-secondary text-secondary-foreground transition-colors hover:border-neon-pink disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <RotateCw className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={flipSelected}
+                    disabled={!selected}
+                    aria-label={t("game.flip")}
+                    title={t("game.flip")}
+                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border border-border bg-secondary text-secondary-foreground transition-colors hover:border-neon-pink disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <FlipHorizontal2 className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-5 gap-2 sm:grid-cols-6 md:grid-cols-9">
+                {trayPieces.map((p) => {
+                  const isSel = p.id === selectedId;
+                  const isRestricted = currentLevelDef.restrictedPieces.includes(pieceNumber(p.id));
+                  const isTargetTutorialPiece =
+                    showTutorial && highlightedElement === "tray" && highlightedPieceId === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        if (shouldSuppressClick()) return;
+                        setSelectedId(p.id);
+                      }}
+                      onPointerDown={(e) => startDrag(e, p.id, false)}
+                      title={isRestricted ? t("game.levelInfo") : undefined}
+                      className={`relative flex aspect-square touch-none items-center justify-center rounded-lg border p-1 transition-all ${
+                        isSel
+                          ? "border-neon-pink bg-neon-pink/20 neon-glow-pink"
+                          : isRestricted
+                            ? "border-amber-500/60 bg-amber-500/5 hover:border-amber-500"
+                            : "border-border bg-card hover:border-neon-pink/50"
+                      } ${
+                        isTargetTutorialPiece
+                          ? "relative z-50 scale-105 animate-pulse ring-4 border-neon-pink ring-neon-pink shadow-[0_0_30px_oklch(0.72_0.30_350/0.9)]"
+                          : ""
+                      }`}
+                    >
+                      <PieceShape cells={p.cells} color={p.color} cellSize={9} gap={1} />
+                      {isRestricted && (
+                        <span className="absolute right-1 top-1 h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">{t("game.hint")}</p>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <GameNav borderClass="border-neon-pink/40">
+        <GameNavBackLink to="/$lang/the-taber-square" />
+        <GameNavTimer seconds={seconds} />
+        <GameNavButton
+          onClick={giveHint}
+          disabled={hintUsed || !solution || won}
+          colorClass="text-neon-cyan"
+          icon={<Lightbulb className="h-5 w-5" />}
+          label={hintUsed ? t("game.hintUsed") : t("game.hintBtn")}
+        />
+        <GameNavButton
+          onClick={() => {
+            setShowSolution((v) => !v);
+            setHelped(true);
+          }}
+          disabled={!solution}
+          colorClass="text-neon-yellow"
+          icon={showSolution ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          label={showSolution ? t("game.hideSolution") : t("game.solution")}
+        />
+        <GameNavButton
+          onClick={newGame}
+          colorClass="text-neon-pink"
+          icon={<RefreshCw className="h-5 w-5" />}
+          label={t("game.new")}
+        />
+      </GameNav>
+
+      {drag && dragPiece && (
+        <div
+          className="pointer-events-none fixed z-50"
+          style={{ left: drag.x, top: drag.y, transform: "translate(-50%, -50%)" }}
+        >
+          <PieceShape cells={dragPiece.cells} color={dragPiece.color} cellSize={26} gap={3} />
+        </div>
+      )}
+
+      {won && (
+        <WinModal
+          helped={helped}
+          seconds={seconds}
+          scores={scores}
+          level={levelIndex(activeLevelId) + 1}
+          onNextLevel={
+            nextLevelId(activeLevelId)
+              ? () => {
+                  const next = nextLevelId(activeLevelId);
+                  if (next) handleSelectLevel(next);
+                }
+              : undefined
+          }
+          onPlayAgain={newGame}
+          onClose={() => setWon(false)}
+        />
+      )}
+    </div>
+  );
+}

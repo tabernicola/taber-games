@@ -1,6 +1,7 @@
 import { createFileRoute, notFound, Outlet } from "@tanstack/react-router";
-import { I18nProvider, langFromSlug } from "@/lib/i18n";
-import { CookieBanner } from "@/components/CookieBanner";
+import { I18nProvider, langFromSlug } from "@/platform/i18n";
+import { CookieBanner } from "@/platform/layout/CookieBanner";
+import { appTranslations } from "@/platform/games/registry";
 
 export const Route = createFileRoute("/$lang")({
   beforeLoad: ({ params }) => {
@@ -13,7 +14,7 @@ function LangLayout() {
   const { lang } = Route.useParams();
   const resolved = langFromSlug(lang) ?? "es";
   return (
-    <I18nProvider lang={resolved}>
+    <I18nProvider translations={appTranslations} lang={resolved}>
       <Outlet />
       <CookieBanner />
     </I18nProvider>

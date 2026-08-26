@@ -1,5 +1,5 @@
 import { redirect } from "@tanstack/react-router";
-import { detectLangSlug } from "@/lib/i18n";
+import { detectLangSlug } from "@/platform/i18n";
 
 /**
  * Sends a language-less path to its language-prefixed equivalent, picking the
