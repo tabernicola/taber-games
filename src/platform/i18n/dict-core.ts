@@ -71,6 +71,12 @@ export const coreTranslations: Translations = {
     "tutorial.showAgain": "Erakutsi tutoriala berriro",
     "tutorial.interactive.correct": "Zuzena!",
     "tutorial.close": "Ulertuta",
+    "meta.title": "The Taber Games — Arcade Neon Minijokoak",
+    "meta.description": "Sartu The Taber Games arcadera: The Taber Square, Taber's Eternity eta The Taber's Star, sailkapenekin eta gordetako jokoekin.",
+    "meta.keywords": "minijokoak, arcade, puzzleak, AI jokoak, online jokoak, jokoak doan, estrategia jokoak, buru jokoak",
+    "meta.og.description": "Neon arcade of hand-crafted minigames. Play The Taber Square and more inside The Taber Games.",
+    "schema.website.description": "Eskuz egindako minijoko arcade bat. Jokatu The Taber Square eta gehiago The Taber Games-en.",
+    "schema.organization.description": "Eskuz egindako minijoko arcade bat",
   },
 
   es: {
@@ -143,6 +149,12 @@ export const coreTranslations: Translations = {
     "tutorial.showAgain": "Mostrar tutorial de nuevo",
     "tutorial.interactive.correct": "¡Correcto!",
     "tutorial.close": "Entendido",
+    "meta.title": "The Taber Games — Arcade Neon de Minijuegos",
+    "meta.description": "Entra al arcade The Taber Games: The Taber Square, Taber's Eternity y The Taber's Star, con rankings y partidas guardadas.",
+    "meta.keywords": "minijuegos, arcade, puzzles, juegos de IA, juegos online, juegos gratis, juegos de estrategia, juegos de mente",
+    "meta.og.description": "Arcade neon de minijuegos hechos a mano. Juega a The Taber Square y más en The Taber Games.",
+    "schema.website.description": "Arcade de minijuegos hechos a mano. Juega a The Taber Square y más en The Taber Games.",
+    "schema.organization.description": "Arcade de minijuegos hechos a mano",
   },
 
   en: {
@@ -214,5 +226,11 @@ export const coreTranslations: Translations = {
     "tutorial.showAgain": "Show tutorial again",
     "tutorial.interactive.correct": "Correct!",
     "tutorial.close": "Got it",
+    "meta.title": "The Taber Games — Neon Arcade of Minigames",
+    "meta.description": "Enter The Taber Games arcade: The Taber Square, Taber's Eternity and The Taber's Star, with rankings and saved games.",
+    "meta.keywords": "minigames, arcade, puzzles, AI games, online games, free games, strategy games, brain games",
+    "meta.og.description": "Neon arcade of hand-crafted minigames. Play The Taber Square and more inside The Taber Games.",
+    "schema.website.description": "Neon arcade of hand-crafted minigames. Play The Taber Square and more inside The Taber Games.",
+    "schema.organization.description": "Neon arcade of hand-crafted minigames",
   },
 };

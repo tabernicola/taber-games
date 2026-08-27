@@ -1,3 +1,6 @@
+import { coreTranslations } from "@/platform/i18n";
+import type { Lang } from "@/platform/i18n/engine";
+
 /** Standard meta tags (title, description, Open Graph, Twitter card) for a page. */
 export function pageMeta({
   title,
@@ -34,4 +37,17 @@ export function pageMeta({
   }
 
   return meta;
+}
+
+/** Get translated meta tags for a specific language. */
+export function getTranslatedMeta(lang: Lang) {
+  const translations = coreTranslations[lang];
+  return {
+    title: translations["meta.title"],
+    description: translations["meta.description"],
+    keywords: translations["meta.keywords"],
+    ogDescription: translations["meta.og.description"],
+    schemaWebsiteDescription: translations["schema.website.description"],
+    schemaOrganizationDescription: translations["schema.organization.description"],
+  };
 }

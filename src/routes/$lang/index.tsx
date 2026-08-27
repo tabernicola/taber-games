@@ -2,20 +2,22 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import logoAsset from "@/assets/taber-games-logo-v2.png.asset.json";
 import { SiteHeader } from "@/platform/layout/SiteHeader";
-import { useI18n } from "@/platform/i18n";
-import { pageMeta } from "@/platform/seo";
+import { useI18n, langFromSlug } from "@/platform/i18n";
+import { pageMeta, getTranslatedMeta } from "@/platform/seo";
 import { externalGames, games } from "@/platform/games/registry";
 
 export const Route = createFileRoute("/$lang/")({
   head: ({ params }) => {
+    const lang = langFromSlug(params.lang) ?? "es";
+    const meta = getTranslatedMeta(lang);
     const canonicalUrl = `https://taber-games.lovable.app/${params.lang}`;
+    
     return {
       meta: pageMeta({
-        title: "The Taber Games — Neon Arcade of Minigames",
-        description:
-          "Enter The Taber Games arcade: The Taber Square, Taber's Eternity and The Taber's Star, with rankings and saved games.",
+        title: meta.title,
+        description: meta.description,
         ogImage: logoAsset.url,
-        keywords: "minigames, arcade, puzzles, AI games, online games, free games, strategy games, brain games",
+        keywords: meta.keywords,
       }),
       scripts: [
         {
@@ -25,7 +27,7 @@ export const Route = createFileRoute("/$lang/")({
             "@type": "WebSite",
             name: "The Taber Games",
             url: "https://taber-games.lovable.app",
-            description: "Neon arcade of hand-crafted minigames. Play The Taber Square and more inside The Taber Games.",
+            description: meta.schemaWebsiteDescription,
             inLanguage: ["en", "es", "eu"],
             potentialAction: {
               "@type": "SearchAction",
@@ -42,7 +44,7 @@ export const Route = createFileRoute("/$lang/")({
             name: "The Taber Games",
             url: "https://taber-games.lovable.app",
             logo: logoAsset.url,
-            description: "Neon arcade of hand-crafted minigames",
+            description: meta.schemaOrganizationDescription,
             sameAs: [],
           }),
         },
