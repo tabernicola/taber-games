@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Disallow crawling of auth and play pages
+Disallow: /auth
+Disallow: /*/auth
+Disallow: /*/play
+
+# Sitemap
+Sitemap: https://taber-games.lovable.app/sitemap.xml

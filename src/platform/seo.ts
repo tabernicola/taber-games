@@ -3,13 +3,19 @@ export function pageMeta({
   title,
   description,
   ogTitle = title,
+  ogImage,
+  keywords,
 }: {
   title: string;
   description: string;
   /** Open Graph title, when it should differ from the document title. */
   ogTitle?: string;
+  /** Open Graph image URL. */
+  ogImage?: string;
+  /** Keywords for SEO (optional). */
+  keywords?: string;
 }) {
-  return [
+  const meta = [
     { title },
     { name: "description", content: description },
     { property: "og:title", content: ogTitle },
@@ -17,4 +23,15 @@ export function pageMeta({
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },
   ];
+
+  if (ogImage) {
+    meta.push({ property: "og:image", content: ogImage });
+    meta.push({ name: "twitter:image", content: ogImage });
+  }
+
+  if (keywords) {
+    meta.push({ name: "keywords", content: keywords });
+  }
+
+  return meta;
 }

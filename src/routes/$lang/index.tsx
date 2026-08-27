@@ -7,13 +7,51 @@ import { pageMeta } from "@/platform/seo";
 import { externalGames, games } from "@/platform/games/registry";
 
 export const Route = createFileRoute("/$lang/")({
-  head: () => ({
-    meta: pageMeta({
-      title: "The Taber Games — Neon Arcade of Minigames",
-      description:
-        "Enter The Taber Games arcade: The Taber Square, Taber's Eternity and The Taber's Star, with rankings and saved games.",
-    }),
-  }),
+  head: ({ params }) => {
+    const canonicalUrl = `https://taber-games.lovable.app/${params.lang}`;
+    return {
+      meta: pageMeta({
+        title: "The Taber Games — Neon Arcade of Minigames",
+        description:
+          "Enter The Taber Games arcade: The Taber Square, Taber's Eternity and The Taber's Star, with rankings and saved games.",
+        ogImage: logoAsset.url,
+        keywords: "minigames, arcade, puzzles, AI games, online games, free games, strategy games, brain games",
+      }),
+      scripts: [
+        {
+          type: "application/ld+json",
+          innerHTML: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "The Taber Games",
+            url: "https://taber-games.lovable.app",
+            description: "Neon arcade of hand-crafted minigames. Play The Taber Square and more inside The Taber Games.",
+            inLanguage: ["en", "es", "eu"],
+            potentialAction: {
+              "@type": "SearchAction",
+              target: "https://taber-games.lovable.app/{search_term_string}",
+              "query-input": "required name=search_term_string",
+            },
+          }),
+        },
+        {
+          type: "application/ld+json",
+          innerHTML: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "The Taber Games",
+            url: "https://taber-games.lovable.app",
+            logo: logoAsset.url,
+            description: "Neon arcade of hand-crafted minigames",
+            sameAs: [],
+          }),
+        },
+      ],
+      links: [
+        { rel: "canonical", href: canonicalUrl },
+      ],
+    };
+  },
   component: Home,
 });
 
