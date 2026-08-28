@@ -1,11 +1,13 @@
 // Core game logic for The Taber's Star, a solo puzzle inspired by
 // The Genius Star: a six-pointed star board of 48 unit triangles,
-// 6 random blockers and 7 triangular pieces (41 cells) that must
+// 7 dice-based blockers and 7 triangular pieces (41 cells) that must
 // exactly fill the remaining space.
 
 import { SQRT3, triCentroid, triKey, type Tri } from "./geometry";
 import { allTriOrientations } from "./geometry";
 import { STAR_PIECES, type StarPieceDef } from "./pieces";
+import { rollAllDice } from "./dice";
+import { getCellsWithNumbers } from "./numberMapping";
 
 export const BLOCKER = "#";
 export const BLOCKER_COUNT = 7;
@@ -69,7 +71,7 @@ function buildStarBoard(): Tri[] {
       }
     }
   }
-  return cells.sort((a, b) => a.r - b.r || a.q - b.q || a.d - b.d);
+  return cells.sort((a, b) => a.q - b.q || (a.q + a.r) - (b.q + b.r) || a.r - b.r || a.d - b.d);
 }
 
 export function emptyStarBoard(): StarBoardCell[] {
@@ -182,61 +184,30 @@ export interface StarPuzzle {
 }
 
 /**
- * Generates a guaranteed-solvable puzzle by construction: the pieces are
- * packed onto the empty star first (randomized backtracking) and the cells
- * left over become the blockers.
+ * Generates a puzzle using the dice system: roll 7 dice to determine
+ * which cells become blockers. This maps dice results to board cells
+ * using the number mapping system.
  */
 export function generatePuzzle(maxAttempts = 200): StarPuzzle {
-  const occupied = new Array<boolean>(BOARD_SIZE).fill(false);
-
-  const packFrom = (pieceIdx: number): StarPlacement[] | null => {
-    if (pieceIdx >= PACK_PIECES.length) return [];
-    const piece = PACK_PIECES[pieceIdx];
-    const orients = ORIENTATIONS.get(piece.id)!;
-    // Randomize search order so every attempt explores a different packing.
-    const anchor = occupied.indexOf(false);
-    const oStart = Math.floor(Math.random() * orients.length);
-    for (let oi = 0; oi < orients.length; oi++) {
-      const orient = orients[(oi + oStart) % orients.length];
-      for (let ci = 0; ci < orient.length; ci++) {
-        const base = orient[ci];
-        const dq = BOARD[anchor].q - base.q;
-        const dr = BOARD[anchor].r - base.r;
-        if (!canPlaceAtMask(occupied, orient, dq, dr)) continue;
-        for (const t of absTris(orient, dq, dr)) {
-          occupied[TRI_INDEX.get(triKey(t))!] = true;
-        }
-        const rest = packFrom(pieceIdx + 1);
-        if (rest) return [{ id: piece.id, tris: absTris(orient, dq, dr) }, ...rest];
-        for (const t of absTris(orient, dq, dr)) {
-          occupied[TRI_INDEX.get(triKey(t))!] = false;
-        }
-      }
-    }
-    return null;
-  };
-
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    occupied.fill(false);
-    // Shuffle which piece is tried first at the top level for variety.
-    const swap = Math.floor(Math.random() * PACK_PIECES.length);
-    [PACK_PIECES[0], PACK_PIECES[swap]] = [PACK_PIECES[swap], PACK_PIECES[0]];
-    const placements = packFrom(0);
-    if (placements && placements.length === STAR_PIECES.length) {
-      const blockers = BOARD.filter((_, i) => !occupied[i]);
-      if (blockers.length !== BLOCKER_COUNT) continue;
-      return { blockers, board: applyStarBlockers(blockers) };
+    // Roll the 7 dice to get 7 numbers
+    const rolledNumbers = rollAllDice();
+
+    // Map dice numbers to board cells
+    const blockerCells = getCellsWithNumbers(rolledNumbers, BOARD);
+
+    // Must have exactly 7 valid blockers
+    if (blockerCells.length !== BLOCKER_COUNT) continue;
+
+    // Check if this puzzle is solvable
+    const board = applyStarBlockers(blockerCells);
+    const solution = solveWithPlacements({ board }, orderedPieces(), []);
+
+    if (solution) {
+      return { blockers: blockerCells, board };
     }
   }
   throw new Error("taberstar: could not generate a solvable puzzle");
-}
-
-function canPlaceAtMask(occupied: boolean[], cells: Tri[], dq: number, dr: number): boolean {
-  for (const t of absTris(cells, dq, dr)) {
-    const i = TRI_INDEX.get(triKey(t));
-    if (i === undefined || occupied[i]) return false;
-  }
-  return true;
 }
 
 /** Full solution for a set of blockers: one placement per piece. */

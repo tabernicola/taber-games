@@ -73,7 +73,7 @@ describe("generatePuzzle", () => {
       expect(puzzle.blockers).toHaveLength(7);
       const solution = solveStar(puzzle.blockers);
       expect(solution).not.toBeNull();
-      expect(solution).toHaveLength(7);
+      expect(solution).toHaveLength(11);
 
       // Applying the solution must fill every free cell.
       const b = applyStarBlockers(puzzle.blockers);

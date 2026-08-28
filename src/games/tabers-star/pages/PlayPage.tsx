@@ -28,6 +28,7 @@ import { STAR_PIECES } from "../logic/pieces";
 import { flipTri, normalizeTris, rotateTri, triKey, triVerts, type Tri } from "../logic/geometry";
 import { isTutorialCompleted, markTutorialCompleted } from "../logic/progress";
 import { createScoresService } from "@/platform/scores/createScoresService";
+import { DiceRollAnimation } from "../ui/DiceRollAnimation";
 
 const scores = createScoresService("scores_tabers_star");
 
@@ -66,6 +67,8 @@ export function PlayPage() {
   const [hintUsed, setHintUsed] = useState(false);
   const [helped, setHelped] = useState(false);
   const [won, setWon] = useState(false);
+  const [showDiceAnimation, setShowDiceAnimation] = useState(false);
+  const [nextBlockers, setNextBlockers] = useState<Tri[]>([]);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoverTri, setHoverTri] = useState<Tri | null>(null);
@@ -83,7 +86,8 @@ export function PlayPage() {
 
   const newGame = useCallback(() => {
     const puzzle = generatePuzzle();
-    setBlockers(puzzle.blockers);
+    setNextBlockers(puzzle.blockers);
+    setShowDiceAnimation(true);
     setBoard(applyStarBlockers(puzzle.blockers));
     setPieces(
       STAR_PIECES.map((p) => ({
@@ -104,6 +108,11 @@ export function PlayPage() {
     setHasFlipped(false);
     setSeconds(0);
   }, [setSeconds]);
+
+  const handleDiceAnimationComplete = useCallback(() => {
+    setShowDiceAnimation(false);
+    setBlockers(nextBlockers);
+  }, [nextBlockers]);
 
   useEffect(() => {
     newGame();
@@ -402,6 +411,13 @@ export function PlayPage() {
                 background: "linear-gradient(135deg, oklch(0.96 0.02 90), oklch(0.88 0.04 70))",
               }}
             >
+              {showDiceAnimation && (
+                <DiceRollAnimation
+                  blockers={nextBlockers}
+                  onComplete={handleDiceAnimationComplete}
+                  boardContainerRef={boardContainerRef}
+                />
+              )}
               <svg
                 viewBox={`${BOARD_BBOX.minX - 1} ${BOARD_BBOX.minY - 1} ${BOARD_BBOX.w + 2} ${BOARD_BBOX.h + 2}`}
                 className="max-w-full"

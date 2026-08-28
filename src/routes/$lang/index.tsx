@@ -11,7 +11,7 @@ export const Route = createFileRoute("/$lang/")({
     const lang = langFromSlug(params.lang) ?? "es";
     const meta = getTranslatedMeta(lang);
     const canonicalUrl = `https://taber-games.lovable.app/${params.lang}`;
-    
+
     return {
       meta: pageMeta({
         title: meta.title,
@@ -49,9 +49,7 @@ export const Route = createFileRoute("/$lang/")({
           }),
         },
       ],
-      links: [
-        { rel: "canonical", href: canonicalUrl },
-      ],
+      links: [{ rel: "canonical", href: canonicalUrl }],
     };
   },
   component: Home,
