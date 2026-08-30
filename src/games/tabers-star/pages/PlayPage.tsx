@@ -18,14 +18,22 @@ import {
   applyStarBlockers,
   canPlaceAt,
   generatePuzzle,
+  getCellColor,
   isStarSolved,
   removePiece,
-  solveStar,
   type StarBoardCell,
   type StarPlacement,
 } from "../logic/game";
 import { STAR_PIECES } from "../logic/pieces";
-import { flipTri, normalizeTris, rotateTri, triKey, triVerts, type Tri } from "../logic/geometry";
+import {
+  flipTri,
+  normalizeTris,
+  rotateTri,
+  triKey,
+  triVerts,
+  type Tri,
+  allTriOrientations,
+} from "../logic/geometry";
 import { isTutorialCompleted, markTutorialCompleted } from "../logic/progress";
 import { createScoresService } from "@/platform/scores/createScoresService";
 import { DiceRollAnimation } from "../ui/DiceRollAnimation";
@@ -84,23 +92,121 @@ export function PlayPage() {
   const stateRef = useRef({ board, pieces });
   stateRef.current = { board, pieces };
 
+  const placedPieceColorsMap = useMemo(() => {
+    const map: Record<string, string> = {};
+
+    pieces.forEach((piece) => {
+      const boardIndices = board
+        .map((cell, idx) => (cell === piece.id ? idx : -1))
+        .filter((idx) => idx !== -1);
+
+      if (boardIndices.length === 0) return;
+
+      const placedTris = boardIndices.map((idx) => BOARD[idx]);
+
+      if (placedTris.length !== piece.cells.length) return;
+
+      const placedSet = new Set(placedTris.map(triKey));
+      const localCell = piece.cells[0];
+
+      let dq = 0;
+      let dr = 0;
+      for (const absCell of placedTris) {
+        const testDq = absCell.q - localCell.q;
+        const testDr = absCell.r - localCell.r;
+        const matches = piece.cells.every((lc) => {
+          const absKey = triKey({ q: lc.q + testDq, r: lc.r + testDr, d: lc.d });
+          return placedSet.has(absKey);
+        });
+        if (matches) {
+          dq = testDq;
+          dr = testDr;
+          break;
+        }
+      }
+
+      piece.cells.forEach((lc) => {
+        const absTri = { q: lc.q + dq, r: lc.r + dr, d: lc.d };
+        const index = IDX_BY_KEY.get(triKey(absTri));
+        if (index !== undefined) {
+          map[triKey(absTri)] = getCellColor(index);
+        }
+      });
+    });
+
+    return map;
+  }, [pieces, board]);
+
   const newGame = useCallback(() => {
     const puzzle = generatePuzzle();
     setNextBlockers(puzzle.blockers);
     setShowDiceAnimation(true);
     setBoard(applyStarBlockers(puzzle.blockers));
-    setPieces(
-      STAR_PIECES.map((p) => ({
-        id: p.id,
-        name: p.name,
-        color: p.color,
-        cells: normalizeTris(p.cells),
-      })),
-    );
+
+    const piecesWithColors = STAR_PIECES.map((p) => {
+      const placement = puzzle.solution?.find((pl) => pl.id === p.id);
+      const normalizedCells = normalizeTris(p.cells);
+
+      if (placement) {
+        const placementSet = new Set(placement.tris.map(triKey));
+        const orientations = allTriOrientations(p.cells);
+
+        let orient: Tri[] | undefined;
+        let dq = 0;
+        let dr = 0;
+        for (const candidate of orientations) {
+          for (const localCell of candidate) {
+            for (const absCell of placement.tris) {
+              const testDq = absCell.q - localCell.q;
+              const testDr = absCell.r - localCell.r;
+              const matches = candidate.every((lc) => {
+                const absKey = triKey({ q: lc.q + testDq, r: lc.r + testDr, d: lc.d });
+                return placementSet.has(absKey);
+              });
+              if (matches) {
+                orient = candidate;
+                dq = testDq;
+                dr = testDr;
+                break;
+              }
+            }
+            if (orient) break;
+          }
+          if (orient) break;
+        }
+
+        if (orient) {
+          const colorMap = new Map<string, string>();
+          placement.tris.forEach((absTri) => {
+            const index = IDX_BY_KEY.get(triKey(absTri));
+            if (index !== undefined) {
+              colorMap.set(triKey(absTri), getCellColor(index));
+            }
+          });
+
+          const cellsWithColors = orient.map((t) => {
+            const absTri = { q: t.q + dq, r: t.r + dr, d: t.d };
+            const color = colorMap.get(triKey(absTri));
+            return { ...t, color };
+          });
+
+          return {
+            id: p.id,
+            name: p.name,
+            color: cellsWithColors[0]?.color,
+            cells: cellsWithColors,
+          };
+        }
+      }
+
+      return { id: p.id, name: p.name, color: p.color, cells: normalizedCells };
+    });
+
+    setPieces(piecesWithColors);
     setSelectedId(null);
     setHoverTri(null);
     setWon(false);
-    setSolution(solveStar(puzzle.blockers));
+    setSolution(puzzle.solution);
     setShowSolution(false);
     setHintUsed(false);
     setHelped(false);
@@ -437,15 +543,17 @@ export function PlayPage() {
                     cell && cell !== BLOCKER ? pieces.find((p) => p.id === cell) : null;
                   const inPreview = previewSet?.set.has(key);
                   const previewValid = previewSet?.valid;
+
                   const fill = isBlocker
-                    ? "oklch(0.25 0.03 40)"
+                    ? getCellColor(i)
                     : pieceHere
-                      ? pieceHere.color
+                      ? placedPieceColorsMap[key] || pieceHere.color
                       : inPreview
                         ? previewValid
                           ? "oklch(0.72 0.30 350 / 0.55)"
                           : "oklch(0.65 0.25 25 / 0.55)"
-                        : "oklch(0.99 0.01 90)";
+                         : "oklch(0.72 0.02 240)";
+
                   return (
                     <polygon
                       key={key}

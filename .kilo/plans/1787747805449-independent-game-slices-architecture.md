@@ -11,24 +11,24 @@ La lógica ya está separada en `src/lib/{tabersquare,taberstar,eternity2}` y lo
 
 ## Decisiones tomadas (con el usuario)
 
-| Decisión | Elección |
-|---|---|
-| Estructura física | Slices autocontenidos en el mismo repo (`src/games/<slug>/`), sin monorepo ni apps separadas |
-| Mecánicas comunes | Kit compartido en capa `platform`; los juegos dependen de platform, nunca entre sí |
-| Timing del kit | Extraer a `platform/kit` solo al migrar el 2º consumidor (Star); el piloto mueve código sin abstracciones prematuras |
-| Estrategia | Incremental, un juego cada vez, app siempre funcional |
-| Scores | Tabla separada por juego vía migración SQL |
-| Datos existentes | Copiar filas de `public.scores` a las nuevas tablas; conservar la antigua como backup |
-| Aplicación de migración | Vía Lovable (el agente solo genera el `.sql`) |
+| Decisión                | Elección                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Estructura física       | Slices autocontenidos en el mismo repo (`src/games/<slug>/`), sin monorepo ni apps separadas                         |
+| Mecánicas comunes       | Kit compartido en capa `platform`; los juegos dependen de platform, nunca entre sí                                   |
+| Timing del kit          | Extraer a `platform/kit` solo al migrar el 2º consumidor (Star); el piloto mueve código sin abstracciones prematuras |
+| Estrategia              | Incremental, un juego cada vez, app siempre funcional                                                                |
+| Scores                  | Tabla separada por juego vía migración SQL                                                                           |
+| Datos existentes        | Copiar filas de `public.scores` a las nuevas tablas; conservar la antigua como backup                                |
+| Aplicación de migración | Vía Lovable (el agente solo genera el `.sql`)                                                                        |
 
 ## Naming canónico
 
-| Juego | URL | Slice | Tabla scores |
-|---|---|---|---|
-| The Taber Square | `/$lang/the-taber-square` | `src/games/taber-square/` | `scores_taber_square` |
-| The Taber's Star | `/$lang/the-tabers-star` | `src/games/tabers-star/` | `scores_tabers_star` |
-| Taber's Eternity | `/$lang/eternity-ii` | `src/games/eternity-ii/` | `scores_eternity_ii` |
-| The Taber Study | externo (`base44.app`) | entrada externa del registry | — |
+| Juego            | URL                       | Slice                        | Tabla scores          |
+| ---------------- | ------------------------- | ---------------------------- | --------------------- |
+| The Taber Square | `/$lang/the-taber-square` | `src/games/taber-square/`    | `scores_taber_square` |
+| The Taber's Star | `/$lang/the-tabers-star`  | `src/games/tabers-star/`     | `scores_tabers_star`  |
+| Taber's Eternity | `/$lang/eternity-ii`      | `src/games/eternity-ii/`     | `scores_eternity_ii`  |
+| The Taber Study  | externo (`base44.app`)    | entrada externa del registry | —                     |
 
 ## Estructura destino
 
@@ -60,13 +60,17 @@ src/
 
 ```ts
 export interface GameModule {
-  id: string;                               // "taber-square"
-  Card: ComponentType<GameCardProps>;       // tarjeta de la home (con sus propios textos i18n)
+  id: string; // "taber-square"
+  Card: ComponentType<GameCardProps>; // tarjeta de la home (con sus propios textos i18n)
   translations: Record<Lang, Dict>;
   createScoresService: () => ScoresService; // ligado a su tabla
-  formatLevelLabel(level: number): string;  // "Starter", "4×4", "★"
+  formatLevelLabel(level: number): string; // "Starter", "4×4", "★"
 }
-export interface ExternalGameEntry { id: string; href: string; Card: ComponentType<GameCardProps> }
+export interface ExternalGameEntry {
+  id: string;
+  href: string;
+  Card: ComponentType<GameCardProps>;
+}
 ```
 
 ## Reparto de claves i18n
@@ -78,11 +82,13 @@ export interface ExternalGameEntry { id: string; href: string; Card: ComponentTy
 ## Tareas ordenadas
 
 ### Fase 0 — Fundaciones (app verde tras cada paso)
+
 1. Crear `src/platform/` y mover código compartido: `lib/{storage,seo}`, `formatTime`, motor de i18n (sin diccionarios de juegos), `hooks/*`, layout. Actualizar imports.
 2. `platform/games/types.ts` + `registry.ts`. Home renderiza desde registry con las tarjetas actuales inline (se externalizan por juego en su fase).
 3. Reglas ESLint: prohibir imports `@/games/X` desde `@/games/Y` y prohibir que `platform/` importe de `games/`.
 
 ### Fase 1 — Base de datos
+
 4. Migración `supabase/migrations/<timestamp>_per_game_score_tables.sql` (solo se genera; se aplica vía Lovable):
    - 3 tablas con el mismo esquema menos `game` (`level` se queda TEXT para compatibilidad con los datos existentes).
    - `INSERT INTO … SELECT … FROM public.scores WHERE game = '<id>'` para cada una.
@@ -92,19 +98,23 @@ export interface ExternalGameEntry { id: string; href: string; Card: ComponentTy
 6. **Orden de despliegue**: migración aplicada en Lovable ANTES de desplegar el cambio de código. Rollback: revertir los commits de este cambio de código (la migración es inocua).
 
 ### Fase 2 — Piloto: The Taber Square (mover, no abstraer)
+
 7. Crear slice: mover `lib/tabersquare → logic/`, `components/tabersquare → ui/`.
 8. Extraer `play.tsx` dentro del slice: `pages/PlayPage.tsx` + `ui/WinModal`, `ui/LevelSelector`, hook local de drag&drop. Rutas `routes/$lang/the-taber-square/{index,play}.tsx` quedan como wrappers finos.
 9. Mover claves del juego a `i18n/{eu,es,en}.ts` del slice; provider acepta `extra`.
 10. `manifest.ts`: Card con logo, traducciones, `formatLevelLabel` (mapa 1..5→starter..wizard), servicio sobre `scores_taber_square`. Adaptar `ScoreForm`/`Ranking` a props (`service`, `formatLevelLabel`). Registrar en registry.
 
 ### Fase 3 — The Taber's Star (aquí sí, extraer kit)
+
 11. Migrar slice igual que el piloto.
 12. Al encontrar el 2º consumidor, subir a `platform/kit` lo genérico de Square+Star: primitivas de tablero/bandeja, drag&drop, rotar/flip, WinModal, `TutorialShell` (usa `tutorial.*` base) y `LandingShell` (usa `landing.*`). Refactorizar Square sobre el kit. Tests del kit en platform.
 
 ### Fase 4 — Taber's Eternity
+
 13. Migrar slice + mover su acceso a `eternity_saves` dentro del slice. Generalizar el copy de auth en platform (hoy menciona "Taber's Eternity").
 
 ### Fase 5 — Home y limpieza
+
 14. Home 100% registry-driven (incluye entrada externa de The Taber Study); `home.available {n}` deriva del registro (hoy hardcodea 4).
 15. Borrar `lib/{tabersquare,taberstar,eternity2}`, `components/{...}` antiguos y residuos de `GameId`; `routeTree.gen.ts` se regenera solo (no editar a mano).
 

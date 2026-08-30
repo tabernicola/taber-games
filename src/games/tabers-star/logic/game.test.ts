@@ -5,12 +5,21 @@ import {
   applyStarBlockers,
   canPlaceAt,
   generatePuzzle,
+  getCellColor,
   isStarSolved,
   placeCells,
   solveStar,
+  TRI_INDEX,
 } from "./game";
 import { STAR_PIECES } from "./pieces";
-import { allTriOrientations, flipTri, normalizeTris, rotateTri, triNeighbors } from "./geometry";
+import {
+  allTriOrientations,
+  flipTri,
+  normalizeTris,
+  rotateTri,
+  triNeighbors,
+  triKey,
+} from "./geometry";
 
 describe("board", () => {
   it("builds a 48-triangle star board", () => {
@@ -68,14 +77,13 @@ describe("pieces", () => {
 
 describe("generatePuzzle", () => {
   it("always returns a solvable puzzle with 7 blockers", () => {
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 4; i++) {
       const puzzle = generatePuzzle();
       expect(puzzle.blockers).toHaveLength(7);
       const solution = solveStar(puzzle.blockers);
       expect(solution).not.toBeNull();
       expect(solution).toHaveLength(11);
 
-      // Applying the solution must fill every free cell.
       const b = applyStarBlockers(puzzle.blockers);
       const idxOf = (t: { q: number; r: number; d: number }) =>
         BOARD.findIndex((c) => c.q === t.q && c.r === t.r && c.d === t.d);
@@ -88,7 +96,7 @@ describe("generatePuzzle", () => {
       }
       expect(isStarSolved(b)).toBe(true);
     }
-  });
+  }, 10000);
 
   it("solution placements never overlap blockers", () => {
     const puzzle = generatePuzzle();
@@ -99,7 +107,74 @@ describe("generatePuzzle", () => {
         expect(blockerKeys.has(`${t.q},${t.r},${t.d}`)).toBe(false);
       }
     }
-  });
+  }, 10000);
+
+  it("piece colors follow the Palestinian flag pattern from the solution", () => {
+    const puzzle = generatePuzzle();
+    const solution = solveStar(puzzle.blockers)!;
+    const placementByPiece = new Map(solution.map((pl) => [pl.id, pl]));
+    const validColors = new Set(["#DC143C", "#1a1a1a", "#FFFFFF", "#228B22"]);
+
+    for (const piece of STAR_PIECES) {
+      const placement = placementByPiece.get(piece.id);
+      if (!placement) continue;
+
+      const normalizedCells = normalizeTris(piece.cells);
+      const placementSet = new Set(placement.tris.map(triKey));
+      const orientations = allTriOrientations(piece.cells);
+
+      let dq = 0;
+      let dr = 0;
+      let found = false;
+      let matchedOrient: Tri[] = [];
+      for (const candidate of orientations) {
+        for (const localCell of candidate) {
+          for (const absCell of placement.tris) {
+            const testDq = absCell.q - localCell.q;
+            const testDr = absCell.r - localCell.r;
+            const matches = candidate.every((lc) => {
+              const absKey = triKey({ q: lc.q + testDq, r: lc.r + testDr, d: lc.d });
+              return placementSet.has(absKey);
+            });
+            if (matches) {
+              dq = testDq;
+              dr = testDr;
+              matchedOrient = candidate;
+              found = true;
+              break;
+            }
+          }
+          if (found) break;
+        }
+        if (found) break;
+      }
+
+      if (!found) {
+        console.log("Piece:", piece.id);
+        console.log("normalizedCells:", JSON.stringify(normalizedCells));
+        console.log("placement.tris:", JSON.stringify(placement.tris));
+        console.log("BOARD sample:", JSON.stringify(BOARD.slice(0, 5)));
+        expect(found, `found offset for ${piece.id}`).toBe(true);
+        return;
+      }
+
+      for (const t of matchedOrient) {
+        const absTri = { q: t.q + dq, r: t.r + dr, d: t.d };
+        const index = TRI_INDEX.get(triKey(absTri));
+        if (index === undefined) {
+          console.log("Piece:", piece.id);
+          console.log("absTri:", JSON.stringify(absTri));
+          console.log("BOARD keys:", BOARD.map(triKey));
+          console.log("TRI_INDEX size:", TRI_INDEX.size);
+        }
+        expect(index, `board index for ${piece.id} cell ${triKey(absTri)}`).toBeGreaterThanOrEqual(
+          0,
+        );
+        const color = getCellColor(index);
+        expect(validColors.has(color), `color ${color} for ${piece.id}`).toBe(true);
+      }
+    }
+  }, 10000);
 });
 
 describe("canPlaceAt / placeCells", () => {

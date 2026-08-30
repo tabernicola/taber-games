@@ -19,7 +19,26 @@ export type StarBoardCell = null | typeof BLOCKER | string;
 export const BOARD: Tri[] = buildStarBoard();
 export const BOARD_SIZE = BOARD.length; // 48
 
-const TRI_INDEX = new Map<string, number>(BOARD.map((t, i) => [triKey(t), i]));
+export const TRI_INDEX = new Map<string, number>(BOARD.map((t, i) => [triKey(t), i]));
+
+/** Palestinian flag colors by cell index (1-48) */
+// Red cells (arrow): 1, 2, 3, 5, 6, 7, 8, 9
+const RED_CELLS = [1, 2, 3, 5, 6, 7, 8, 9];
+// Black cells (rows 1, 3): 16, 17, 25, 26, 27, 34, 35, 36, 37, 38, 45, 46, 48
+const BLACK_CELLS = [16, 17, 25, 26, 27, 34, 35, 36, 37, 38, 45, 46, 48];
+// White cells (rows 2, 4): 10, 18, 19, 20, 21, 28, 29, 30, 31, 39, 40, 41, 42, 47
+const WHITE_CELLS = [10, 18, 19, 20, 21, 28, 29, 30, 31, 39, 40, 41, 42, 47];
+
+/** Get color for a cell index (0-47, corresponds to board position) */
+export function getCellColor(index: number): string {
+  // Convert to 1-based index
+  const cellNum = index + 1;
+
+  if (RED_CELLS.includes(cellNum)) return "#DC143C"; // Crimson red
+  if (BLACK_CELLS.includes(cellNum)) return "#1a1a1a"; // Dark charcoal (visible black)
+  if (WHITE_CELLS.includes(cellNum)) return "#FFFFFF"; // White
+  return "#228B22"; // Forest green for the rest
+}
 
 function buildStarBoard(): Tri[] {
   const apothem = SQRT3; // hexagon side s=2 -> apothem s*sqrt(3)/2
@@ -71,7 +90,7 @@ function buildStarBoard(): Tri[] {
       }
     }
   }
-  return cells.sort((a, b) => a.q - b.q || (a.q + a.r) - (b.q + b.r) || a.r - b.r || a.d - b.d);
+  return cells.sort((a, b) => a.q - b.q || a.q + a.r - (b.q + b.r) || a.r - b.r || a.d - b.d);
 }
 
 export function emptyStarBoard(): StarBoardCell[] {
@@ -181,6 +200,7 @@ function orderedPieces(): StarPieceDef[] {
 export interface StarPuzzle {
   blockers: Tri[];
   board: StarBoardCell[];
+  solution: StarPlacement[] | null;
 }
 
 /**
@@ -204,7 +224,7 @@ export function generatePuzzle(maxAttempts = 200): StarPuzzle {
     const solution = solveWithPlacements({ board }, orderedPieces(), []);
 
     if (solution) {
-      return { blockers: blockerCells, board };
+      return { blockers: blockerCells, board, solution };
     }
   }
   throw new Error("taberstar: could not generate a solvable puzzle");
@@ -214,6 +234,25 @@ export function generatePuzzle(maxAttempts = 200): StarPuzzle {
 export function solveStar(blockers: Tri[]): StarPlacement[] | null {
   const board = applyStarBlockers(blockers);
   return solveWithPlacements({ board }, orderedPieces(), []);
+}
+
+/** Assign colors to pieces based on their position in the solution */
+export function assignPieceColors(
+  solution: StarPlacement[],
+): { id: string; name: string; color: string; cellColors: string[] }[] {
+  return solution.map((pl) => {
+    const pieceDef = STAR_PIECES.find((p) => p.id === pl.id);
+    if (!pieceDef) {
+      return { id: pl.id, name: "Unknown", color: "gray", cellColors: pl.tris.map(() => "gray") };
+    }
+
+    const cellColors = pl.tris.map((tri) => {
+      const index = TRI_INDEX.get(triKey(tri));
+      return index !== undefined ? getCellColor(index) : "gray";
+    });
+
+    return { id: pl.id, name: pieceDef.name, color: pieceDef.color, cellColors };
+  });
 }
 
 /** Solved when every board triangle is covered and every piece is used once. */

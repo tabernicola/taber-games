@@ -78,7 +78,9 @@
 .dice-die.is-placed .dice-cube {
   opacity: 0;
   transform: scale(0.2) rotateZ(180deg);
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
 }
 
 /* 3D Dice Faces - backface-visibility is set to preserve 3D cube geometry */
@@ -94,7 +96,9 @@
   box-sizing: border-box;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8), 0 4px 15px rgba(0, 0, 0, 0.6);
+  box-shadow:
+    inset 0 0 10px rgba(0, 0, 0, 0.8),
+    0 4px 15px rgba(0, 0, 0, 0.6);
 }
 
 /* Styled coordinate text (A1-F6) with premium neon glow */
@@ -103,7 +107,9 @@
   font-weight: 800;
   font-size: 1.15rem;
   color: var(--neon-yellow);
-  text-shadow: 0 0 8px rgba(255, 202, 58, 0.6), 0 0 2px rgba(255, 202, 58, 0.9);
+  text-shadow:
+    0 0 8px rgba(255, 202, 58, 0.6),
+    0 0 2px rgba(255, 202, 58, 0.9);
   user-select: none;
   letter-spacing: -0.04em;
   line-height: 1;
@@ -146,10 +152,14 @@
   inset: 0;
   opacity: 0;
   transform: scale(0.3);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
   background: oklch(0.25 0.03 40);
   border-radius: 8px;
-  box-shadow: inset 0 0 0 2px oklch(0.15 0.02 40), inset 0 4px 10px rgba(0, 0, 0, 0.7);
+  box-shadow:
+    inset 0 0 0 2px oklch(0.15 0.02 40),
+    inset 0 4px 10px rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -167,7 +177,9 @@
   height: 10px;
   background: var(--neon-yellow);
   border-radius: 50%;
-  box-shadow: 0 0 12px var(--neon-yellow), 0 0 4px var(--neon-yellow);
+  box-shadow:
+    0 0 12px var(--neon-yellow),
+    0 0 4px var(--neon-yellow);
   animation: peg-glow-pulse 1.5s infinite alternate ease-in-out;
 }
 
@@ -178,6 +190,8 @@
   }
   100% {
     transform: scale(1.15);
-    box-shadow: 0 0 16px var(--neon-yellow), 0 0 4px var(--neon-yellow);
+    box-shadow:
+      0 0 16px var(--neon-yellow),
+      0 0 4px var(--neon-yellow);
   }
 }

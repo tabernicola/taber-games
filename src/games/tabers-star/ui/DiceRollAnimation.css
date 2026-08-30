@@ -73,7 +73,9 @@
 .dice-die.is-placed .dice-cube {
   opacity: 0;
   transform: scale(0.2) rotateZ(180deg);
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
 }
 
 .dice-face {
@@ -88,7 +90,9 @@
   box-sizing: border-box;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8), 0 4px 15px rgba(0, 0, 0, 0.6);
+  box-shadow:
+    inset 0 0 10px rgba(0, 0, 0, 0.8),
+    0 4px 15px rgba(0, 0, 0, 0.6);
 }
 
 .dice-front {
@@ -154,7 +158,9 @@
 .dice-die.is-placed .dice-octahedron {
   opacity: 0;
   transform: scale(0.2) rotateZ(180deg);
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
 }
 
 /* D8 triangular face geometry: relative to container so it scales */
@@ -229,13 +235,17 @@
 /* D6 Text: Neon Cyan */
 .dice-face .dice-face-text {
   color: var(--neon-cyan, #06b6d4);
-  text-shadow: 0 0 8px rgba(6, 182, 212, 0.8), 0 0 2px rgba(255, 255, 255, 0.9);
+  text-shadow:
+    0 0 8px rgba(6, 182, 212, 0.8),
+    0 0 2px rgba(255, 255, 255, 0.9);
 }
 
 /* D8 Text: Neon Pink / Magenta */
 .dice-d8-face .dice-face-text {
   color: #f472b6;
-  text-shadow: 0 0 8px rgba(244, 114, 182, 0.85), 0 0 2px rgba(255, 255, 255, 0.9);
+  text-shadow:
+    0 0 8px rgba(244, 114, 182, 0.85),
+    0 0 2px rgba(255, 255, 255, 0.9);
 }
 
 .d8-top-face .dice-face-text {
@@ -256,7 +266,9 @@
   inset: 0;
   opacity: 0;
   transform: scale(0.3);
-  transition: opacity 0.45s ease, transform 0.45s ease;
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s ease;
   background: oklch(0.25 0.03 40);
   box-shadow: inset 0 0 0 1px oklch(0.75 0.03 70 / 0.6);
   display: flex;

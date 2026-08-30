@@ -5,7 +5,7 @@ import { taberSquareGame } from "@/games/taber-square/manifest";
 import { tabersStarGame } from "@/games/tabers-star/manifest";
 import { eternityIIGame } from "@/games/eternity-ii/manifest";
 
-export const games: GameModule[] = [taberSquareGame, eternityIIGame];
+export const games: GameModule[] = [taberSquareGame, eternityIIGame, tabersStarGame];
 
 export const externalGames: ExternalGameEntry[] = [
   {
