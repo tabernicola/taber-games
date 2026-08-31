@@ -127,9 +127,9 @@ export function PlayPage() {
 
       piece.cells.forEach((lc) => {
         const absTri = { q: lc.q + dq, r: lc.r + dr, d: lc.d };
-        const index = IDX_BY_KEY.get(triKey(absTri));
-        if (index !== undefined) {
-          map[triKey(absTri)] = getCellColor(index);
+        const absKey = triKey(absTri);
+        if (lc.color !== undefined) {
+          map[absKey] = lc.color;
         }
       });
     });
