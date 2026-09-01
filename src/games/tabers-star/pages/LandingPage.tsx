@@ -6,6 +6,7 @@ import { createScoresService } from "@/platform/scores/createScoresService";
 import { useI18n } from "@/platform/i18n";
 import type { TranslateFn } from "@/platform/games/types";
 import { TaberStarLogo } from "../ui/TaberStarLogo";
+import { Mascot } from "../ui/Mascot";
 
 const scores = createScoresService("scores_tabers_star");
 
@@ -14,40 +15,47 @@ export const formatLevelLabel = (_level: number, _t: TranslateFn) => "★";
 export function LandingPage() {
   const { t, slug } = useI18n();
   return (
-    <div className="min-h-screen">
+    <div className="ts-scope min-h-screen">
       <SiteHeader />
       <main className="mx-auto max-w-4xl px-4 pb-24 pt-10">
         <header className="flex flex-col items-center text-center">
-          <TaberStarLogo className="h-40 w-40 drop-shadow-[0_0_30px_oklch(0.72_0.30_350/0.5)]" />
-          <h1
-            className="mt-4 text-3xl tracking-widest text-neon-pink text-glow-pink sm:text-4xl"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            {t("star.title")}
-          </h1>
-          <p className="mt-3 max-w-xl text-sm text-muted-foreground">{t("star.desc")}</p>
-          <Link
-            to="/$lang/the-tabers-star/play"
-            params={{ lang: slug }}
-            className="mt-6 rounded-lg border border-neon-pink bg-neon-pink/15 px-6 py-3 text-sm font-semibold text-neon-pink transition-all neon-glow-pink hover:bg-neon-pink/25"
-          >
+          <TaberStarLogo className="h-40 max-w-64" />
+          <h1 className="ts-title mt-4 text-3xl tracking-widest sm:text-4xl">{t("star.title")}</h1>
+          <p className="mt-3 max-w-xl text-sm text-[var(--ts-ink-soft)]">{t("star.desc")}</p>
+          <Link to="/$lang/the-tabers-star/play" params={{ lang: slug }} className="ts-btn mt-6">
             {t("landing.startPlay")}
           </Link>
+          <Mascot className="ts-mascot ts-mascot--landing" />
         </header>
 
         <div className="mt-12 grid gap-6 sm:grid-cols-2">
-          <section className="rounded-2xl border border-border bg-card p-5">
-            <h2
-              className="mb-3 text-sm tracking-widest text-neon-cyan"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              {t("landing.howto")}
-            </h2>
-            <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
-              <li>{t("star.rule1")}</li>
-              <li>{t("star.rule2")}</li>
-              <li>{t("star.rule3")}</li>
-              <li>{t("star.rule4")}</li>
+          <section className="ts-card p-5">
+            <h2 className="ts-heading mb-3 text-sm tracking-widest">{t("landing.howto")}</h2>
+            <ul className="list-none space-y-2 pl-5 text-sm text-[var(--ts-ink-soft)]">
+              <li className="flex items-start gap-2">
+                <span className="font-bold" style={{ color: "var(--ts-olive)" }} aria-hidden>
+                  •
+                </span>
+                <span>{t("star.rule1")}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-bold" style={{ color: "var(--ts-olive)" }} aria-hidden>
+                  •
+                </span>
+                <span>{t("star.rule2")}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-bold" style={{ color: "var(--ts-olive)" }} aria-hidden>
+                  •
+                </span>
+                <span>{t("star.rule3")}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-bold" style={{ color: "var(--ts-olive)" }} aria-hidden>
+                  •
+                </span>
+                <span>{t("star.rule4")}</span>
+              </li>
             </ul>
           </section>
 

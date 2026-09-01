@@ -38,6 +38,20 @@
   --color-neon-orange: var(--neon-orange);
   --color-neon-red: var(--neon-red);
   --color-neon-blue: var(--neon-blue);
+
+  /* Taber's Star skin tokens (variable-backed, resolved under .ts-scope) */
+  --color-ts-ink: var(--ts-ink);
+  --color-ts-ink-soft: var(--ts-ink-soft);
+  --color-ts-olive: var(--ts-olive);
+  --color-ts-olive-deep: var(--ts-olive-deep);
+  --color-ts-olive-soft: var(--ts-olive-soft);
+  --color-ts-terracotta: var(--ts-terracotta);
+  --color-ts-terracotta-d: var(--ts-terracotta-d);
+  --color-ts-terracotta-soft: var(--ts-terracotta-soft);
+  --color-ts-cream: var(--ts-cream);
+  --color-ts-sand: var(--ts-sand);
+  --color-ts-good: var(--ts-good);
+
   --font-display: "Bungee", system-ui, sans-serif;
   --font-sans: "Space Grotesk", system-ui, sans-serif;
 }
@@ -264,4 +278,308 @@
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+}
+
+/* ----------------------------------------------------------------
+   Taber's Star skin — warm "palestrian travel notebook" look.
+   Deliberately free of neon. All tokens are local to .ts-scope so
+   the rest of the site (home, eternity-ii, taber-square, header,
+   footer) keeps its current appearance, exactly like .e2-scope.
+---------------------------------------------------------------- */
+.ts-scope {
+  --ts-sand: #F2E6CE;
+  --ts-sand-2: #E8D6B3;
+  --ts-cream: #FFF8EC;
+  --ts-ink: #2A1F14;
+  --ts-ink-soft: #6B5840;
+  --ts-olive: #5C6B3A;
+  --ts-olive-deep: #3B4624;
+  --ts-terracotta: #B5532A;
+  --ts-terracotta-d: #7A3717;
+  --ts-terracotta-soft: rgba(181, 83, 42, 0.3);
+  --ts-shadow: rgba(60, 40, 20, 0.18);
+  --ts-olive-soft: rgba(92, 107, 58, 0.18);
+  --ts-good: #5A8A3A;
+
+  color: var(--ts-ink);
+  background:
+    radial-gradient(ellipse at 20% 0%, #fff6e0 0%, transparent 55%),
+    linear-gradient(180deg, var(--ts-sand) 0%, var(--ts-sand-2) 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+.ts-scope :where(button, a):focus-visible {
+  outline: 3px solid var(--ts-olive);
+  outline-offset: 2px;
+}
+
+.ts-card {
+  background: var(--ts-cream);
+  border: 1px solid var(--ts-shadow);
+  border-radius: 1rem;
+  box-shadow:
+    0 2px 0 rgba(60, 40, 20, 0.10),
+    0 6px 14px var(--ts-shadow);
+}
+
+.ts-title {
+  font-family: var(--font-display);
+  color: var(--ts-ink);
+  text-shadow:
+    0 1px 0 #fff8e6,
+    0 3px 0 rgba(124, 79, 39, 0.18);
+}
+
+.ts-heading {
+  font-family: var(--font-display);
+  color: var(--ts-olive-deep);
+  letter-spacing: 0.05em;
+}
+
+.ts-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.6rem 1.2rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #fffdf7;
+  background: linear-gradient(180deg, #d2754a, var(--ts-terracotta));
+  border: 1px solid var(--ts-terracotta-d);
+  box-shadow:
+    0 3px 0 var(--ts-terracotta-d),
+    0 6px 12px var(--ts-shadow);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  cursor: pointer;
+}
+.ts-btn:hover {
+  transform: translateY(-1px);
+}
+.ts-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--ts-terracotta-d);
+}
+.ts-btn[data-variant="soft"] {
+  color: var(--ts-ink);
+  background: linear-gradient(180deg, var(--ts-cream), #f0dfc0);
+  border-color: #c2a97f;
+  box-shadow: 0 3px 0 #c2a97f, 0 6px 12px var(--ts-shadow);
+}
+.ts-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ts-board-frame {
+  border: 2px solid var(--ts-olive-deep);
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(ellipse at 50% 50%, #fffaf0 0%, #f3e6c4 100%);
+  box-shadow:
+    inset 0 0 0 4px var(--ts-cream),
+    0 10px 24px var(--ts-shadow);
+  padding: 0.75rem;
+}
+.ts-board-frame[data-highlight="board"] {
+  outline: 3px dashed var(--ts-olive);
+  outline-offset: 4px;
+  animation: ts-pulse 1.6s ease-in-out infinite;
+}
+@keyframes ts-pulse {
+  0%, 100% { outline-color: rgba(92, 107, 58, 0.35); }
+  50%      { outline-color: rgba(92, 107, 58, 0.9); }
+}
+
+.ts-tray {
+  background: var(--ts-cream);
+  border: 1px solid var(--ts-shadow);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 6px 14px var(--ts-shadow);
+}
+.ts-tray[data-highlight="tray"] {
+  outline: 3px dashed var(--ts-olive);
+  outline-offset: 3px;
+}
+.ts-scope [data-highlight="actions"] {
+  outline: 3px dashed var(--ts-terracotta);
+  outline-offset: 2px;
+  animation: ts-pulse 1.6s ease-in-out infinite;
+}
+
+.ts-piece-btn {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  border: 1px solid var(--ts-shadow);
+  background: #F2E6CE;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, border-color 0.1s ease;
+  cursor: pointer;
+}
+.ts-piece-btn:hover {
+  border-color: var(--ts-olive);
+  transform: translateY(-1px);
+}
+.ts-piece-btn[data-selected] {
+  border: 2px solid var(--ts-olive-deep);
+  background: var(--ts-olive-soft);
+  box-shadow: 0 0 0 4px var(--ts-olive-soft);
+}
+.ts-piece-btn[data-highlight] {
+  outline: 3px solid var(--ts-terracotta);
+  outline-offset: 2px;
+  animation: ts-wiggle 1.2s ease-in-out infinite;
+}
+@keyframes ts-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25%      { transform: rotate(-2deg); }
+  75%      { transform: rotate(2deg); }
+}
+
+.ts-icon-btn {
+  height: 2.5rem;
+  width: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  border: 1px solid var(--ts-shadow);
+  background: var(--ts-cream);
+  color: var(--ts-olive);
+  cursor: pointer;
+  transition: border-color 0.1s ease, background 0.1s ease;
+}
+.ts-icon-btn:hover {
+  border-color: var(--ts-olive);
+  background: #fff;
+}
+.ts-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ts-tutorial-card {
+  background: var(--ts-cream);
+  border: 2px solid var(--ts-olive-deep);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow:
+    0 2px 0 #fff8e6,
+    0 10px 20px var(--ts-shadow);
+}
+.ts-tutorial-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--ts-olive-deep);
+  background: var(--ts-olive-soft);
+  color: var(--ts-olive-deep);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.ts-tutorial-step-ok {
+  border-color: var(--ts-olive);
+  background: rgba(92, 107, 58, 0.3);
+  color: var(--ts-olive-deep);
+}
+
+.ts-solution-banner {
+  border: 1px solid var(--ts-terracotta);
+  background: rgba(181, 83, 42, 0.10);
+  color: var(--ts-terracotta-d);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.ts-mascot {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+}
+.ts-mascot--landing {
+  width: 220px;
+  height: auto;
+  right: 2rem;
+  top: 6rem;
+  transform: rotate(-4deg);
+  filter: drop-shadow(0 6px 10px var(--ts-shadow));
+}
+.ts-mascot--play {
+  width: 140px;
+  height: auto;
+  right: 1rem;
+  bottom: 6rem;
+  transform: rotate(3deg);
+  opacity: 0.95;
+  filter: drop-shadow(0 4px 8px var(--ts-shadow));
+}
+@media (max-width: 768px) {
+  .ts-mascot--landing { display: none; }
+  .ts-mascot--play    { display: none; }
+}
+
+/* Override shared components that still carry neon, only inside this scope */
+.ts-scope [data-rank-title] { color: var(--ts-olive-deep); }
+.ts-scope [data-rank-pos]    { color: var(--ts-terracotta-d); }
+
+.ts-scope [data-win-modal] > div {
+  background: var(--ts-cream);
+  border-color: var(--ts-olive-deep);
+  color: var(--ts-ink);
+  border-radius: 1rem;
+  box-shadow:
+    0 2px 0 #fff8e6,
+    0 10px 24px var(--ts-shadow);
+}
+.ts-scope [data-win-modal] h2 {
+  font-family: var(--font-display);
+  color: var(--ts-ink);
+  text-shadow:
+    0 1px 0 #fff8e6,
+    0 3px 0 rgba(124, 79, 39, 0.18);
+}
+.ts-scope [data-win-modal] p { color: var(--ts-ink-soft); }
+.ts-scope [data-win-modal] [data-action="primary"] {
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-weight: 700;
+  color: #fffdf7;
+  background: linear-gradient(180deg, #d2754a, var(--ts-terracotta));
+  border-color: var(--ts-terracotta-d);
+  box-shadow: 0 3px 0 var(--ts-terracotta-d);
+}
+.ts-scope [data-win-modal] [data-action="primary"]:hover { transform: translateY(-1px); }
+.ts-scope [data-win-modal] [data-action="secondary"],
+.ts-scope [data-win-modal] [data-action="warning"] {
+  color: var(--ts-ink);
+  background: var(--ts-cream);
+  border-color: #c2a97f;
+}
+.ts-scope [data-win-modal] [data-action="warning"] { color: var(--ts-terracotta-d); }
+
+.ts-scope [data-nav="hint"]    { color: var(--ts-olive); }
+.ts-scope [data-nav="solution"] { color: var(--ts-terracotta); }
+.ts-scope [data-nav="new"]     { color: var(--ts-olive-deep); }
+.ts-scope [data-nav="back"]    { color: var(--ts-ink-soft); }
+.ts-scope [data-nav="back"]:hover { color: var(--ts-olive-deep); }
+.ts-scope nav {
+  background: var(--ts-cream);
+  border-color: var(--ts-olive-soft);
+}
+.ts-scope [data-timer] {
+  color: var(--ts-olive-deep);
+  border-color: var(--ts-olive-soft);
+  background: var(--ts-cream);
 }

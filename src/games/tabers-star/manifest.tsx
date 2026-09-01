@@ -11,24 +11,24 @@ function Card({ lang }: GameCardProps) {
     <Link
       to="/$lang/the-tabers-star"
       params={{ lang }}
-      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-0.5 hover:border-neon-pink"
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-0.5 hover:border-[#5C6B3A]"
     >
       <div
         aria-hidden
         className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full opacity-0 blur-3xl transition-opacity group-hover:opacity-60"
-        style={{ background: "var(--neon-pink)" }}
+        style={{ background: "#5C6B3A" }}
       />
       <div className="mb-3 flex justify-center">
-        <TaberStarLogo className="h-24 w-24 drop-shadow-[0_0_20px_oklch(0.72_0.30_350/0.5)]" />
+        <TaberStarLogo className="h-24 max-w-64" />
       </div>
-      <span className="text-[10px] uppercase tracking-widest text-neon-pink">
+      <span className="text-[10px] uppercase tracking-widest text-[#3B4624]">
         {t("home.card.star.tag")}
       </span>
       <h3 className="mt-2 text-xl text-foreground" style={{ fontFamily: "var(--font-display)" }}>
         The Taber's Star
       </h3>
       <p className="mt-3 text-sm text-muted-foreground">{t("home.card.star.desc")}</p>
-      <div className="mt-auto inline-flex items-center gap-1 pt-6 text-sm font-medium text-neon-pink">
+      <div className="mt-auto inline-flex items-center gap-1 pt-6 text-sm font-medium text-[#5C6B3A]">
         {t("home.play")} <span aria-hidden>→</span>
       </div>
     </Link>

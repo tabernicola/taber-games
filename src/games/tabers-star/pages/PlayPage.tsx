@@ -3,6 +3,7 @@ import { SiteHeader } from "@/platform/layout/SiteHeader";
 import { GameNav, GameNavBackLink, GameNavButton, GameNavTimer } from "@/platform/layout/GameNav";
 import { TriShape } from "../ui/TriShape";
 import { TaberStarLogo } from "../ui/TaberStarLogo";
+import { Mascot } from "../ui/Mascot";
 import { Tutorial, type HighlightElement } from "../ui/Tutorial";
 import type { PieceState } from "../ui/types";
 import { WinModal } from "@/platform/kit/WinModal";
@@ -190,11 +191,22 @@ export function PlayPage() {
             return { ...t, color };
           });
 
+          // Scramble the starting orientation (random rotations + optional flip)
+          // so pieces don't ship pre-aligned to the solution. Colors are attached
+          // to each triangle and travel through rotateTri/flipTri, so the flag
+          // palette on every piece is preserved.
+          const rotations = Math.floor(Math.random() * 6);
+          const doFlip = Math.random() < 0.5;
+          let cells = cellsWithColors;
+          for (let i = 0; i < rotations; i++) cells = cells.map(rotateTri);
+          if (doFlip) cells = cells.map(flipTri);
+          cells = normalizeTris(cells);
+
           return {
             id: p.id,
             name: p.name,
-            color: cellsWithColors[0]?.color,
-            cells: cellsWithColors,
+            color: cells[0]?.color,
+            cells: cells,
           };
         }
       }
@@ -460,32 +472,23 @@ export function PlayPage() {
   }, [board, hintUsed, solution]);
 
   return (
-    <div className="min-h-screen">
+    <div className="ts-scope min-h-screen relative">
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-4 pb-32 pt-4">
         <header className="flex flex-col items-center">
           <div className="flex items-center gap-3">
-            <TaberStarLogo className="h-16 w-16 drop-shadow-[0_0_20px_oklch(0.72_0.30_350/0.5)]" />
-            <h1
-              className="text-2xl tracking-widest text-neon-pink text-glow-pink sm:text-3xl"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              THE TABER'S STAR
-            </h1>
+            <TaberStarLogo className="h-24" />
+            
           </div>
           <button
             onClick={handleShowTutorial}
-            className="mt-3 cursor-pointer text-xs text-muted-foreground transition-colors underline decoration-dotted hover:text-neon-pink"
+            className="mt-3 cursor-pointer text-xs text-ts-ink-soft underline decoration-dotted decoration-ts-olive transition-colors hover:text-ts-olive-deep"
           >
             {t("tutorial.showAgain")}
           </button>
         </header>
 
-        {showSolution && (
-          <div className="my-4 rounded-lg border border-neon-yellow/60 bg-neon-yellow/10 px-4 py-2 text-sm text-neon-yellow">
-            {t("game.solutionShown")}
-          </div>
-        )}
+        {showSolution && <div className="ts-solution-banner my-4">{t("game.solutionShown")}</div>}
 
         {showTutorial && (
           <Tutorial
@@ -508,11 +511,10 @@ export function PlayPage() {
           <div className="flex justify-center">
             <div
               ref={boardContainerRef}
-              className={`relative rounded-xl border-2 p-3 transition-all ${
-                showTutorial && highlightedElement === "board"
-                  ? "relative z-50 border-neon-pink ring-4 ring-neon-pink ring-offset-4 ring-offset-background shadow-[0_0_50px_oklch(0.72_0.30_350/0.8)]"
-                  : "border-neon-pink/60 shadow-[0_0_30px_oklch(0.72_0.30_350/0.35)]"
+              className={`ts-board-frame relative transition-all ${
+                showTutorial && highlightedElement === "board" ? "z-50" : ""
               }`}
+              data-highlight={showTutorial && highlightedElement === "board" ? "board" : undefined}
               style={{
                 background: "linear-gradient(135deg, oklch(0.96 0.02 90), oklch(0.88 0.04 70))",
               }}
@@ -550,9 +552,9 @@ export function PlayPage() {
                       ? placedPieceColorsMap[key] || pieceHere.color
                       : inPreview
                         ? previewValid
-                          ? "oklch(0.72 0.30 350 / 0.55)"
-                          : "oklch(0.65 0.25 25 / 0.55)"
-                         : "oklch(0.72 0.02 240)";
+                          ? "rgba(92, 107, 58, 0.35)"
+                          : "rgba(181, 83, 42, 0.35)"
+                        : "oklch(0.72 0.02 240)";
 
                   return (
                     <polygon
@@ -562,8 +564,8 @@ export function PlayPage() {
                         .map(([x, y]) => `${x},${y}`)
                         .join(" ")}
                       fill={fill}
-                      stroke={pieceHere ? "rgba(255,255,255,0.3)" : "oklch(0.75 0.03 70)"}
-                      strokeWidth="0.06"
+                      stroke={pieceHere ? "rgba(242, 230, 206, 0.85)" : "oklch(0.75 0.03 70)"}
+                      strokeWidth={pieceHere ? 0.08 : 0.06}
                       style={{ cursor: "pointer" }}
                       onClick={() => !showSolution && placeSelected(tri)}
                       onPointerDown={(e) =>
@@ -583,14 +585,13 @@ export function PlayPage() {
           <div className="flex flex-col gap-4">
             <div
               ref={trayContainerRef}
-              className={`rounded-xl border bg-card p-4 transition-all ${
-                showTutorial && highlightedElement === "tray"
-                  ? "relative z-50 border-neon-pink ring-2 ring-neon-pink/80 shadow-[0_0_35px_oklch(0.72_0.30_350/0.5)]"
-                  : "border-border"
+              className={`ts-tray transition-all ${
+                showTutorial && highlightedElement === "tray" ? "relative z-50" : ""
               }`}
+              data-highlight={showTutorial && highlightedElement === "tray" ? "tray" : undefined}
             >
               <div className="mb-3 flex flex-wrap items-center gap-2">
-                <span className="text-xs uppercase tracking-widest text-muted-foreground">
+                <span className="text-xs uppercase tracking-widest text-ts-ink-soft">
                   {t("game.pieces")} ({trayPieces.length}/{pieces.length})
                 </span>
                 {selected ? (
@@ -598,22 +599,21 @@ export function PlayPage() {
                     {selected.name}
                   </span>
                 ) : (
-                  <span className="text-xs text-muted-foreground">{t("game.pickPiece")}</span>
+                  <span className="text-xs text-ts-ink-soft">{t("game.pickPiece")}</span>
                 )}
                 <div
                   ref={actionsContainerRef}
-                  className={`ml-auto flex gap-2 rounded-lg p-1 transition-all ${
-                    showTutorial && highlightedElement === "actions"
-                      ? "relative z-50 ring-4 ring-neon-pink bg-neon-pink/20 shadow-[0_0_30px_oklch(0.72_0.30_350/0.8)] animate-pulse"
-                      : ""
-                  }`}
+                  className="ml-auto flex items-center gap-2"
+                  data-highlight={
+                    showTutorial && highlightedElement === "actions" ? "actions" : undefined
+                  }
                 >
                   <button
                     onClick={rotateSelected}
                     disabled={!selected}
                     aria-label={t("game.rotate")}
                     title={t("game.rotate")}
-                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border border-border bg-secondary text-secondary-foreground transition-colors hover:border-neon-pink disabled:cursor-not-allowed disabled:opacity-40"
+                    className="ts-icon-btn"
                   >
                     <RotateCw className="h-5 w-5" />
                   </button>
@@ -622,7 +622,7 @@ export function PlayPage() {
                     disabled={!selected}
                     aria-label={t("game.flip")}
                     title={t("game.flip")}
-                    className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border border-border bg-secondary text-secondary-foreground transition-colors hover:border-neon-pink disabled:cursor-not-allowed disabled:opacity-40"
+                    className="ts-icon-btn"
                   >
                     <FlipHorizontal2 className="h-5 w-5" />
                   </button>
@@ -641,34 +641,29 @@ export function PlayPage() {
                         setSelectedId(p.id);
                       }}
                       onPointerDown={(e) => startDrag(e, p.id, false)}
-                      className={`relative flex aspect-square touch-none items-center justify-center rounded-lg border p-1 transition-all ${
-                        isSel
-                          ? "border-neon-pink bg-neon-pink/20 neon-glow-pink"
-                          : "border-border bg-card hover:border-neon-pink/50"
-                      } ${
-                        isTargetTutorialPiece
-                          ? "relative z-50 scale-105 animate-pulse ring-4 border-neon-pink ring-neon-pink shadow-[0_0_30px_oklch(0.72_0.30_350/0.9)]"
-                          : ""
-                      }`}
+                      className={`ts-piece-btn p-1 ${isTargetTutorialPiece ? "relative z-50" : ""}`}
+                      data-selected={isSel || undefined}
+                      data-highlight={isTargetTutorialPiece ? "piece" : undefined}
                     >
                       <TriShape cells={p.cells} color={p.color} cellSize={11} />
                     </button>
                   );
                 })}
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">{t("game.hint")}</p>
+              <p className="mt-3 text-xs text-ts-ink-soft">{t("game.hint")}</p>
             </div>
           </div>
         </div>
       </main>
 
-      <GameNav borderClass="border-neon-pink/40">
+      <GameNav borderClass="border-[#3B4624]/40">
         <GameNavBackLink to="/$lang/the-tabers-star" />
         <GameNavTimer seconds={seconds} />
         <GameNavButton
           onClick={giveHint}
           disabled={hintUsed || !solution || won}
-          colorClass="text-neon-cyan"
+          colorClass=""
+          dataNav="hint"
           icon={<Lightbulb className="h-5 w-5" />}
           label={hintUsed ? t("game.hintUsed") : t("game.hintBtn")}
         />
@@ -678,17 +673,21 @@ export function PlayPage() {
             setHelped(true);
           }}
           disabled={!solution}
-          colorClass="text-neon-yellow"
+          colorClass=""
+          dataNav="solution"
           icon={showSolution ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           label={showSolution ? t("game.hideSolution") : t("game.solution")}
         />
         <GameNavButton
           onClick={newGame}
-          colorClass="text-neon-pink"
+          colorClass=""
+          dataNav="new"
           icon={<RefreshCw className="h-5 w-5" />}
           label={t("game.new")}
         />
       </GameNav>
+
+      <Mascot className="ts-mascot ts-mascot--play" />
 
       {drag && dragPiece && (
         <div
