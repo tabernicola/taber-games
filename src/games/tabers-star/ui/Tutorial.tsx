@@ -33,7 +33,7 @@ interface StepDef {
 const STEPS: StepDef[] = [
   { step: 1, id: "board", highlight: "board", scrollTarget: "board" },
   { step: 2, id: "select", highlight: "tray", pieceId: "s6", scrollTarget: "tray" },
-  { step: 3, id: "actions", highlight: "actions", scrollTarget: "tray" },
+  { step: 3, id: "actions", highlight: "actions", scrollTarget: "actions" },
   { step: 4, id: "place", highlight: "board", pieceId: "s6", scrollTarget: "board" },
 ];
 
@@ -166,16 +166,16 @@ export function Tutorial({
   const getStepIcon = () => {
     switch (stepDef.id) {
       case "board":
-        return <Sparkles className="h-5 w-5 text-neon-pink" />;
+        return <Sparkles className="h-5 w-5 text-[var(--ts-olive)]" />;
       case "select":
-        return <ArrowDown className="h-5 w-5 animate-bounce text-neon-pink" />;
+        return <ArrowDown className="h-5 w-5 animate-bounce text-[var(--ts-terracotta)]" />;
       case "actions":
-        return <RotateCw className="h-5 w-5 animate-spin text-neon-cyan" />;
+        return <RotateCw className="h-5 w-5 animate-spin text-[var(--ts-olive)]" />;
       case "place":
         return isCompleted ? (
-          <Check className="h-5 w-5 text-green-400" />
+          <Check className="h-5 w-5 text-[var(--ts-good)]" />
         ) : (
-          <ArrowDown className="h-5 w-5 animate-bounce text-neon-yellow" />
+          <ArrowDown className="h-5 w-5 animate-bounce text-[var(--ts-terracotta)]" />
         );
       default:
         return null;
@@ -203,7 +203,10 @@ export function Tutorial({
   return (
     <>
       {/* Dark overlay covering the screen */}
-      <div className="fixed inset-0 z-40 bg-black/75 backdrop-blur-[2px] transition-opacity duration-300 pointer-events-none" />
+      <div
+        className="fixed inset-0 z-40 backdrop-blur-sm transition-opacity duration-300 pointer-events-none"
+        style={{ backgroundColor: "rgba(42, 31, 20, 0.6)" }}
+      />
 
       {/* Tutorial Floating Card — above the dark overlay (z-40) and any
           highlighted element raised to z-50 by the play page */}
@@ -211,10 +214,10 @@ export function Tutorial({
         className="fixed top-4 left-1/2 -translate-x-1/2 w-full max-w-lg px-4 pointer-events-auto"
         style={{ zIndex: 60 }}
       >
-        <div className="rounded-2xl border-2 border-neon-pink/80 bg-card/95 p-4 shadow-[0_0_35px_oklch(0.72_0.30_350/0.4)] backdrop-blur-md transition-all">
+        <div className="ts-tutorial-card ts-scope">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="rounded-full border border-neon-pink/60 bg-neon-pink/20 px-2.5 py-0.5 text-xs font-extrabold uppercase tracking-wider text-neon-pink">
+              <span className="ts-tutorial-step">
                 Tutorial {currentStep + 1}/{STEPS.length}
               </span>
               {getStepIcon()}
@@ -223,30 +226,28 @@ export function Tutorial({
               <button
                 type="button"
                 onClick={handleResetAndRestart}
-                className="text-xs text-muted-foreground transition-colors hover:text-foreground hover:underline cursor-pointer"
+                className="text-xs text-[var(--ts-ink-soft)] transition-colors hover:text-[var(--ts-olive-deep)] hover:underline cursor-pointer"
               >
                 {t("tutorial.restart")}
               </button>
               <button
                 type="button"
                 onClick={handleSkip}
-                className="text-xs text-muted-foreground transition-colors hover:text-foreground hover:underline cursor-pointer"
+                className="text-xs text-[var(--ts-ink-soft)] transition-colors hover:text-[var(--ts-olive-deep)] hover:underline cursor-pointer"
               >
                 {t("tutorial.skip")}
               </button>
             </div>
           </div>
 
-          <p className="text-sm font-medium leading-relaxed text-foreground">{getInstruction()}</p>
+          <p className="text-sm font-medium leading-relaxed text-[var(--ts-ink)]">
+            {getInstruction()}
+          </p>
 
           {/* Action buttons based on step */}
           <div className="mt-4 flex flex-col gap-2">
             {stepDef.id === "board" && (
-              <button
-                type="button"
-                onClick={handleNextStep}
-                className="flex items-center justify-center gap-2 w-full rounded-xl bg-neon-pink px-4 py-2.5 text-sm font-bold text-black shadow-[0_0_20px_oklch(0.72_0.30_350/0.6)] transition-all hover:brightness-110 active:scale-[0.98] cursor-pointer"
-              >
+              <button type="button" onClick={handleNextStep} className="ts-btn w-full">
                 <span>{t("tutorial.taberstar.gotIt")}</span>
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -254,19 +255,15 @@ export function Tutorial({
 
             {isCompleted && (
               <div className="space-y-2">
-                <div className="rounded-xl border border-green-500/60 bg-green-500/15 px-3 py-2 text-sm font-semibold text-green-400 flex items-center justify-center gap-2">
+                <div className="ts-tutorial-step-ok inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold">
                   <Check className="h-4 w-4" />
                   <span>{t("tutorial.interactive.correct")}</span>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  className="w-full rounded-xl bg-neon-pink px-4 py-2.5 text-sm font-bold text-black shadow-[0_0_20px_oklch(0.72_0.30_350/0.6)] transition-all hover:brightness-110 active:scale-[0.98] cursor-pointer"
-                >
+                <button type="button" onClick={handleClose} className="ts-btn w-full">
                   {t("tutorial.taberstar.playNow")}
                 </button>
                 {countdown !== null && (
-                  <p className="text-xs text-muted-foreground text-center">
+                  <p className="text-xs text-[var(--ts-ink-soft)] text-center">
                     {t("tutorial.autoClose", { countdown })}
                   </p>
                 )}

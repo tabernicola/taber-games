@@ -9,7 +9,7 @@ export const dict: Dict = {
   "star.rule3": "Piezak biratu (R) eta iraul (F) daitezke.",
   "star.rule4": "Puzle guztiak askagarriak dira; denbora gutxien behar duenak irabazten du.",
   "tutorial.taberstar.step1":
-    "Ongi etorri The Taber's Star-era! Hau da izarraren itxurako joko-taula, 7 gelaxka blokeatuekin. Zure helburua gainerakoa piezekin betetzea da.",
+    "Ongi etorri The Taber's Star-era! Hau da izarraren itxurako joko-taula, 7 gelaxka blokeatuekin. Zure helburua izarraren gainerakoa piezekin betetzea eta Palestinako bandera osatzea da.",
   "tutorial.taberstar.step2":
     "Hona hemen 7 pieza triangeluar. Haien gainean klik eginez hautatzen dira. Saiatu pieza gorria hautatzen!",
   "tutorial.taberstar.step3":

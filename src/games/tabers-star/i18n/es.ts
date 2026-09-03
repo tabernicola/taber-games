@@ -9,7 +9,7 @@ export const dict: Dict = {
   "star.rule3": "Las piezas se pueden rotar (R) y voltear (F).",
   "star.rule4": "Todos los puzles tienen solución; gana quien lo resuelva en menos tiempo.",
   "tutorial.taberstar.step1":
-    "¡Bienvenido a The Taber's Star! Este es el tablero en forma de estrella con 6 casillas bloqueadas. Tu objetivo será llenar el resto con las piezas.",
+    "¡Bienvenido a The Taber's Star! Este es el tablero en forma de estrella con 7 casillas bloqueadas. Tu objetivo es rellenar el resto de la estrella con las piezas y formar la bandera de Palestina.",
   "tutorial.taberstar.step2":
     "Estas son las 7 fichas triangulares. Se seleccionan pinchando sobre ellas. ¡Prueba a seleccionar la pieza roja!",
   "tutorial.taberstar.step3":

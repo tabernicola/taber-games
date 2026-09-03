@@ -604,9 +604,6 @@ export function PlayPage() {
                 <div
                   ref={actionsContainerRef}
                   className="ml-auto flex items-center gap-2"
-                  data-highlight={
-                    showTutorial && highlightedElement === "actions" ? "actions" : undefined
-                  }
                 >
                   <button
                     onClick={rotateSelected}
@@ -614,6 +611,9 @@ export function PlayPage() {
                     aria-label={t("game.rotate")}
                     title={t("game.rotate")}
                     className="ts-icon-btn"
+                    data-highlight={
+                      showTutorial && highlightedElement === "actions" ? "actions" : undefined
+                    }
                   >
                     <RotateCw className="h-5 w-5" />
                   </button>
@@ -623,6 +623,9 @@ export function PlayPage() {
                     aria-label={t("game.flip")}
                     title={t("game.flip")}
                     className="ts-icon-btn"
+                    data-highlight={
+                      showTutorial && highlightedElement === "actions" ? "actions" : undefined
+                    }
                   >
                     <FlipHorizontal2 className="h-5 w-5" />
                   </button>

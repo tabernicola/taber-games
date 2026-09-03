@@ -405,9 +405,23 @@
   outline-offset: 3px;
 }
 .ts-scope [data-highlight="actions"] {
+  position: relative;
+  z-index: 70;
   outline: 3px dashed var(--ts-terracotta);
-  outline-offset: 2px;
-  animation: ts-pulse 1.6s ease-in-out infinite;
+  outline-offset: 3px;
+  border-radius: 0.5rem;
+  background: var(--ts-terracotta-soft);
+  animation: ts-pulse-actions 1.6s ease-in-out infinite;
+}
+@keyframes ts-pulse-actions {
+  0%, 100% {
+    outline-color: rgba(181, 83, 42, 0.4);
+    box-shadow: 0 0 0 0 rgba(181, 83, 42, 0.35);
+  }
+  50% {
+    outline-color: rgba(181, 83, 42, 1);
+    box-shadow: 0 0 0 6px rgba(181, 83, 42, 0.18);
+  }
 }
 
 .ts-piece-btn {
@@ -468,10 +482,18 @@
   background: var(--ts-cream);
   border: 2px solid var(--ts-olive-deep);
   border-radius: 1rem;
-  padding: 1rem;
+  padding: 0.75rem 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
   box-shadow:
     0 2px 0 #fff8e6,
     0 10px 20px var(--ts-shadow);
+}
+/* The tutorial card is `fixed` and adds .ts-scope just to inherit the
+   skin tokens, so cancel the scope's min-height: 100vh which otherwise
+   stretches the card to the full viewport height. */
+.ts-tutorial-card.ts-scope {
+  min-height: 0;
 }
 .ts-tutorial-step {
   display: inline-flex;
