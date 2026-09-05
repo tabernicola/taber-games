@@ -251,7 +251,7 @@ export function assignPieceColors(
       return index !== undefined ? getCellColor(index) : "gray";
     });
 
-    return { id: pl.id, name: pieceDef.name, color: pieceDef.color, cellColors };
+    return { id: pl.id, name: pieceDef.name, color: pieceDef.color || "gray", cellColors };
   });
 }
 

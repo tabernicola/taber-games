@@ -26,6 +26,7 @@ export function Ranking({
   return (
     <div className={`rounded-2xl border border-border bg-card p-4 ${className}`}>
       <h3
+        data-rank-title
         className="mb-3 text-sm tracking-widest text-neon-pink"
         style={{ fontFamily: "var(--font-display)" }}
       >
@@ -40,7 +41,9 @@ export function Ranking({
         <ol className="space-y-1.5">
           {data.map((s, i) => (
             <li key={s.id} className="flex items-center gap-3 text-sm">
-              <span className="w-5 text-right text-xs text-neon-yellow">{i + 1}.</span>
+              <span data-rank-pos className="w-5 text-right text-xs text-neon-yellow">
+                {i + 1}.
+              </span>
               <span className="flex-1 truncate text-foreground">{s.player_name}</span>
               {formatLevelLabel && (
                 <span className="text-xs text-muted-foreground font-medium">

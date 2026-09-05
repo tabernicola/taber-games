@@ -53,7 +53,7 @@ export function triCentroid(t: Tri): [number, number] {
 
 /** Rotate 60° counter-clockwise. Orientation flips each step. */
 export function rotateTri(t: Tri): Tri {
-  const next =
+  const next: Tri =
     t.d === 0 ? { q: -t.r - 1, r: t.q + t.r, d: 1 } : { q: -t.r - 1, r: t.q + t.r + 1, d: 0 };
   if (t.color !== undefined) next.color = t.color;
   return next;
@@ -61,7 +61,7 @@ export function rotateTri(t: Tri): Tri {
 
 /** Mirror across the vertical axis. Orientation is preserved. */
 export function flipTri(t: Tri): Tri {
-  const next = { q: -t.q - t.r - (t.d === 0 ? 1 : 2), r: t.r, d: t.d };
+  const next: Tri = { q: -t.q - t.r - (t.d === 0 ? 1 : 2), r: t.r, d: t.d };
   if (t.color !== undefined) next.color = t.color;
   return next;
 }

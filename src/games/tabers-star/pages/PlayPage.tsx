@@ -17,6 +17,7 @@ import {
   BLOCKER,
   BOARD,
   applyStarBlockers,
+  emptyStarBoard,
   canPlaceAt,
   generatePuzzle,
   getCellColor,
@@ -32,6 +33,7 @@ import {
   rotateTri,
   triKey,
   triVerts,
+  triCentroid,
   type Tri,
   allTriOrientations,
 } from "../logic/geometry";
@@ -141,8 +143,9 @@ export function PlayPage() {
   const newGame = useCallback(() => {
     const puzzle = generatePuzzle();
     setNextBlockers(puzzle.blockers);
+    setBlockers([]);
     setShowDiceAnimation(true);
-    setBoard(applyStarBlockers(puzzle.blockers));
+    setBoard(emptyStarBoard());
 
     const piecesWithColors = STAR_PIECES.map((p) => {
       const placement = puzzle.solution?.find((pl) => pl.id === p.id);
@@ -197,7 +200,7 @@ export function PlayPage() {
           // palette on every piece is preserved.
           const rotations = Math.floor(Math.random() * 6);
           const doFlip = Math.random() < 0.5;
-          let cells = cellsWithColors;
+          let cells: Tri[] = cellsWithColors;
           for (let i = 0; i < rotations; i++) cells = cells.map(rotateTri);
           if (doFlip) cells = cells.map(flipTri);
           cells = normalizeTris(cells);
@@ -230,6 +233,7 @@ export function PlayPage() {
   const handleDiceAnimationComplete = useCallback(() => {
     setShowDiceAnimation(false);
     setBlockers(nextBlockers);
+    setBoard(applyStarBlockers(nextBlockers));
   }, [nextBlockers]);
 
   useEffect(() => {
@@ -357,12 +361,51 @@ export function PlayPage() {
     return { dq: target.q - cells[0].q, dr: target.r - cells[0].r };
   }, []);
 
-  /** Board triangle under a client point, or null when outside the star. */
+  /** Board triangle under a client point, or closest board triangle on mobile. */
   const triFromPoint = useCallback((clientX: number, clientY: number) => {
+    // 1. Direct hit test on SVG polygon
     const el = document.elementFromPoint(clientX, clientY);
     const cellEl = el?.closest?.("[data-tri]") as HTMLElement | null;
-    if (!cellEl || !boardContainerRef.current?.contains(cellEl)) return null;
-    return TRI_BY_KEY.get(cellEl.dataset.tri!) ?? null;
+    if (cellEl && boardContainerRef.current?.contains(cellEl)) {
+      return TRI_BY_KEY.get(cellEl.dataset.tri!) ?? null;
+    }
+
+    // 2. Proximity fallback: Map point to board coordinates and find closest cell
+    if (boardContainerRef.current) {
+      const svg = boardContainerRef.current.querySelector("svg");
+      if (svg) {
+        const svgRect = svg.getBoundingClientRect();
+        const pad = 28; // Touch margin around the board
+        if (
+          clientX >= svgRect.left - pad &&
+          clientX <= svgRect.right + pad &&
+          clientY >= svgRect.top - pad &&
+          clientY <= svgRect.bottom + pad
+        ) {
+          const vx = BOARD_BBOX.minX - 1;
+          const vy = BOARD_BBOX.minY - 1;
+          const vw = BOARD_BBOX.w + 2;
+          const vh = BOARD_BBOX.h + 2;
+          const svgX = vx + ((clientX - svgRect.left) / svgRect.width) * vw;
+          const svgY = vy + ((clientY - svgRect.top) / svgRect.height) * vh;
+
+          let closestTri: Tri | null = null;
+          let minDist = Infinity;
+          for (const t of BOARD) {
+            const [cx, cy] = triCentroid(t);
+            const dist = Math.hypot(svgX - cx, svgY - cy);
+            if (dist < minDist) {
+              minDist = dist;
+              closestTri = t;
+            }
+          }
+          if (closestTri && minDist < 1.2) {
+            return closestTri;
+          }
+        }
+      }
+    }
+    return null;
   }, []);
 
   const placeOnBoard = useCallback(
@@ -381,7 +424,7 @@ export function PlayPage() {
   );
 
   const { drag, startDrag, shouldSuppressClick } = usePieceDragDrop<Tri>({
-    canStartDrag: () => !showSolution && !won && !showTutorial,
+    canStartDrag: () => !showSolution && !won && !showTutorial && !showDiceAnimation,
     resolveTarget: triFromPoint,
     onPickPiece: setSelectedId,
     onLiftPiece: (pieceId) => {
@@ -566,7 +609,7 @@ export function PlayPage() {
                       fill={fill}
                       stroke={pieceHere ? "rgba(242, 230, 206, 0.85)" : "oklch(0.75 0.03 70)"}
                       strokeWidth={pieceHere ? 0.08 : 0.06}
-                      style={{ cursor: "pointer" }}
+                      style={{ cursor: "pointer", touchAction: "none" }}
                       onClick={() => !showSolution && placeSelected(tri)}
                       onPointerDown={(e) =>
                         pieceHere && !showSolution && startDrag(e, pieceHere.id, true)
@@ -644,7 +687,8 @@ export function PlayPage() {
                         setSelectedId(p.id);
                       }}
                       onPointerDown={(e) => startDrag(e, p.id, false)}
-                      className={`ts-piece-btn p-1 ${isTargetTutorialPiece ? "relative z-50" : ""}`}
+                      className={`ts-piece-btn p-1 touch-none select-none ${isTargetTutorialPiece ? "relative z-50" : ""}`}
+                      style={{ touchAction: "none", userSelect: "none" }}
                       data-selected={isSel || undefined}
                       data-highlight={isTargetTutorialPiece ? "piece" : undefined}
                     >
@@ -694,10 +738,19 @@ export function PlayPage() {
 
       {drag && dragPiece && (
         <div
-          className="pointer-events-none fixed z-50"
-          style={{ left: drag.x, top: drag.y, transform: "translate(-50%, -50%)" }}
+          className="pointer-events-none fixed z-50 select-none"
+          style={{
+            left: drag.x,
+            top: drag.y,
+            transform: "translate(-50%, -50%)",
+            willChange: "transform, left, top",
+          }}
         >
-          <TriShape cells={dragPiece.cells} color={dragPiece.color} cellSize={26} />
+          <TriShape
+            cells={dragPiece.cells}
+            color={dragPiece.color}
+            cellSize={typeof window !== "undefined" && window.innerWidth < 640 ? 22 : 28}
+          />
         </div>
       )}
 

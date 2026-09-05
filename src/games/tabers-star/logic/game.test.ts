@@ -19,6 +19,7 @@ import {
   rotateTri,
   triNeighbors,
   triKey,
+  type Tri,
 } from "./geometry";
 
 describe("board", () => {
@@ -170,8 +171,10 @@ describe("generatePuzzle", () => {
         expect(index, `board index for ${piece.id} cell ${triKey(absTri)}`).toBeGreaterThanOrEqual(
           0,
         );
-        const color = getCellColor(index);
-        expect(validColors.has(color), `color ${color} for ${piece.id}`).toBe(true);
+        if (index !== undefined) {
+          const color = getCellColor(index);
+          expect(validColors.has(color), `color ${color} for ${piece.id}`).toBe(true);
+        }
       }
     }
   }, 10000);

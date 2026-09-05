@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import type { Tri } from "../logic/geometry";
-import { triCentroid } from "../logic/geometry";
+import { triCentroid} from "../logic/geometry";
 import { DICE } from "../logic/dice";
 import { getNumberForCell } from "../logic/numberMapping";
 import { BOARD } from "../logic/game";
@@ -29,12 +29,11 @@ export function DiceRollAnimation({
   const [activeTransformIndex, setActiveTransformIndex] = useState<number>(-1);
   const { playSound } = useSoundEffects();
 
-  // Listen to board container size dynamically
+  // Listen to board container size dynamically and measure cell positions
   useEffect(() => {
     const updateSize = () => {
       if (overlayRef.current && boardContainerRef?.current) {
         const boardRect = boardContainerRef.current.getBoundingClientRect();
-        // Position overlay exactly over the board container
         overlayRef.current.style.position = "absolute";
         overlayRef.current.style.top = "0";
         overlayRef.current.style.left = "0";
@@ -112,8 +111,6 @@ export function DiceRollAnimation({
   const diceFaces = useMemo(() => {
     return blockers.map((blocker) => {
       const blockerNumber = getNumberForCell(blocker, BOARD);
-
-      // Find which die contains this blocker's number
       const dieConfig = DICE.find((die) => die.faces.includes(blockerNumber || 0));
       if (!dieConfig) return ["", "", "", "", "", "", "", ""];
 
@@ -128,8 +125,7 @@ export function DiceRollAnimation({
         const temp = faces[0];
         faces[0] = faces[rolledIdx];
         faces[rolledIdx] = temp;
-      }
-
+      } 
       // Format each face as a number string
       return faces.map(formatNumber);
     });
@@ -184,6 +180,7 @@ export function DiceRollAnimation({
             const finalLeft = centerX + cellCx * scale;
             const finalTop = centerY + cellCy * scale;
 
+
             const isTransformed = phase === "transforming" && i < activeTransformIndex;
             const isTransformingNow = phase === "transforming" && i === activeTransformIndex;
             const targetX = isTransformed || isTransformingNow ? finalLeft : currentX;
@@ -209,7 +206,7 @@ export function DiceRollAnimation({
                   {
                     left: `${targetX}px`,
                     top: `${targetY}px`,
-                    width: `${dieSize}px`,
+                     width: `${dieSize}px`,
                     height: `${dieSize}px`,
                     "--die-half": `${dieHalf}px`,
                     "--random-spin-x": `${randomOffsets[i].spinX}deg`,
@@ -241,6 +238,7 @@ export function DiceRollAnimation({
                 )}
 
                 <div className={`dice-triangle-shape ${cell.d === 0 ? "tri-down" : "tri-up"}`}>
+
                   <div className="dice-triangle-number">{cellNumber || ""}</div>
                 </div>
               </div>
