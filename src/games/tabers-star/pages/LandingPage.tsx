@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { SiteHeader } from "@/platform/layout/SiteHeader";
 import { GameFooter } from "@/platform/layout/GameFooter";
-import { Ranking } from "@/platform/scores/Ranking";
+import { TaberStarRanking } from "./TaberStarRanking";
 import { createScoresService } from "@/platform/scores/createScoresService";
 import { useI18n } from "@/platform/i18n";
 import type { TranslateFn } from "@/platform/games/types";
@@ -59,7 +59,7 @@ export function LandingPage() {
             </ul>
           </section>
 
-          <Ranking
+          <TaberStarRanking
             service={scores}
             title={t("landing.ranking")}
             formatLevelLabel={formatLevelLabel}

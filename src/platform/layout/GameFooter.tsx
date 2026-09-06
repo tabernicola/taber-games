@@ -24,7 +24,7 @@ export function GameFooter({ basedOn }: { basedOn?: string }) {
         </Link>
         <span>with</span>
         <a
-          href="https://lovable.dev"
+          href="https://lovable.dev/invite/U62GEX8"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center transition-opacity hover:opacity-80"
