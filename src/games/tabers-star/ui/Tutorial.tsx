@@ -33,7 +33,7 @@ interface StepDef {
 const STEPS: StepDef[] = [
   { step: 1, id: "board", highlight: "board", scrollTarget: "board" },
   { step: 2, id: "select", highlight: "tray", pieceId: "s6", scrollTarget: "tray" },
-  { step: 3, id: "actions", highlight: "actions", scrollTarget: "actions" },
+  { step: 3, id: "actions", highlight: "actions", pieceId: "s6", scrollTarget: "actions" },
   { step: 4, id: "place", highlight: "board", pieceId: "s6", scrollTarget: "board" },
 ];
 
@@ -202,11 +202,13 @@ export function Tutorial({
 
   return (
     <>
-      {/* Dark overlay covering the screen */}
-      <div
-        className="fixed inset-0 z-40 backdrop-blur-sm transition-opacity duration-300 pointer-events-none"
-        style={{ backgroundColor: "rgba(42, 31, 20, 0.6)" }}
-      />
+      {/* Dark overlay covering the screen (disabled on the placing step so the board stays fully visible) */}
+      {stepDef.id !== "place" && (
+        <div
+          className="fixed inset-0 z-40 backdrop-blur-sm transition-opacity duration-300 pointer-events-none"
+          style={{ backgroundColor: "rgba(42, 31, 20, 0.6)" }}
+        />
+      )}
 
       {/* Tutorial Floating Card — above the dark overlay (z-40) and any
           highlighted element raised to z-50 by the play page */}

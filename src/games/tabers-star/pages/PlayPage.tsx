@@ -521,7 +521,6 @@ export function PlayPage() {
         <header className="flex flex-col items-center">
           <div className="flex items-center gap-3">
             <TaberStarLogo className="h-24" />
-            
           </div>
           <button
             onClick={handleShowTutorial}
@@ -644,10 +643,7 @@ export function PlayPage() {
                 ) : (
                   <span className="text-xs text-ts-ink-soft">{t("game.pickPiece")}</span>
                 )}
-                <div
-                  ref={actionsContainerRef}
-                  className="ml-auto flex items-center gap-2"
-                >
+                <div ref={actionsContainerRef} className="ml-auto flex items-center gap-2">
                   <button
                     onClick={rotateSelected}
                     disabled={!selected}
@@ -677,8 +673,7 @@ export function PlayPage() {
               <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
                 {trayPieces.map((p) => {
                   const isSel = p.id === selectedId;
-                  const isTargetTutorialPiece =
-                    showTutorial && highlightedElement === "tray" && highlightedPieceId === p.id;
+                  const isTargetTutorialPiece = showTutorial && highlightedPieceId === p.id;
                   return (
                     <button
                       key={p.id}
