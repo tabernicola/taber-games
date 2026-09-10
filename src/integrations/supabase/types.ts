@@ -134,6 +134,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      murdoku_cases: {
+        Row: {
+          content: Json;
+          created_at: string;
+          creator_id: string | null;
+          id: string;
+          rejection_note: string | null;
+          status: "draft" | "pending_review" | "approved" | "rejected";
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          content: Json;
+          created_at?: string;
+          creator_id?: string | null;
+          id?: string;
+          rejection_note?: string | null;
+          status?: "draft" | "pending_review" | "approved" | "rejected";
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          content?: Json;
+          created_at?: string;
+          creator_id?: string | null;
+          id?: string;
+          rejection_note?: string | null;
+          status?: "draft" | "pending_review" | "approved" | "rejected";
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

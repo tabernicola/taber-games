@@ -8,6 +8,7 @@ type LangRoute =
   | "/$lang/eternity-ii"
   | "/$lang/the-taber-square"
   | "/$lang/the-tabers-star"
+  | "/$lang/murdoku"
   | "/$lang/auth";
 
 const itemClass =

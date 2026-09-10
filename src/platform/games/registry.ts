@@ -4,8 +4,9 @@ import studyLogo from "@/assets/taber-study-logo.png.asset.json";
 import { taberSquareGame } from "@/games/taber-square/manifest";
 import { tabersStarGame } from "@/games/tabers-star/manifest";
 import { eternityIIGame } from "@/games/eternity-ii/manifest";
+import { murdokuGame } from "@/games/murdoku/manifest";
 
-export const games: GameModule[] = [tabersStarGame, eternityIIGame, taberSquareGame ];
+export const games: GameModule[] = [tabersStarGame, eternityIIGame, taberSquareGame, murdokuGame];
 export const externalGames: ExternalGameEntry[] = [
   {
     id: "taber-study",
