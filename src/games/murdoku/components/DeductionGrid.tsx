@@ -25,7 +25,7 @@ export function DeductionGrid({
   return (
     <div className="p-3">
       <div className="mb-2 text-center">
-        <h2 className="text-xl font-bold tracking-widest text-neon-pink">Notebook</h2>
+        <h2 className="text-xl font-bold tracking-widest text-primary">Notebook</h2>
         <p className="text-xs text-muted-foreground">Tap cells to cycle marks</p>
       </div>
 
@@ -52,10 +52,10 @@ export function DeductionGrid({
                   onClick={() => handleCycle(pos)}
                   className={`flex aspect-square items-center justify-center text-xl transition-all ${
                     isConfirmed
-                      ? "bg-neon-pink/15 text-neon-pink ring-1 ring-neon-pink"
+                      ? "bg-primary/10 text-primary ring-1 ring-primary"
                       : isExcluded
                         ? "bg-muted/30 text-destructive"
-                        : "bg-card text-muted-foreground hover:bg-neon-pink/10"
+                        : "bg-card text-muted-foreground hover:bg-primary/10"
                   }`}
                 >
                   {mark !== null && markLabel(mark)}

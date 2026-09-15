@@ -1,14 +1,18 @@
+import { MapIcon, Edit, XCircle, Eraser, Skull } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
-import { MapIcon, List, Book } from "lucide-react";
 
-export type MurdokuTab = "map" | "clues" | "notes";
+export type GameMode = "place" | "notes" | "crosses" | "erase";
 
 export function BottomNavigation({
-  activeTab,
-  onChange,
+  mode,
+  onChangeMode,
+  onAccuse,
+  accusationOpen,
 }: {
-  activeTab: MurdokuTab;
-  onChange: (tab: MurdokuTab) => void;
+  mode: GameMode;
+  onChangeMode: (mode: GameMode) => void;
+  onAccuse: () => void;
+  accusationOpen: boolean;
 }) {
   const { t } = useI18n();
   return (
@@ -17,30 +21,46 @@ export function BottomNavigation({
       role="tablist"
     >
       <div className="mx-auto flex max-w-md items-stretch justify-around gap-1 px-2 py-2">
-        <Tab
+        <ModeButton
           icon={<MapIcon className="h-5 w-5" />}
-          label={t("murdoku.map")}
-          active={activeTab === "map"}
-          onClick={() => onChange("map")}
+          label={t("murdoku.place")}
+          active={mode === "place"}
+          onClick={() => onChangeMode("place")}
         />
-        <Tab
-          icon={<List className="h-5 w-5" />}
-          label={t("murdoku.clues")}
-          active={activeTab === "clues"}
-          onClick={() => onChange("clues")}
-        />
-        <Tab
-          icon={<Book className="h-5 w-5" />}
+        <ModeButton
+          icon={<Edit className="h-5 w-5" />}
           label={t("murdoku.notes")}
-          active={activeTab === "notes"}
-          onClick={() => onChange("notes")}
+          active={mode === "notes"}
+          onClick={() => onChangeMode("notes")}
         />
+        <ModeButton
+          icon={<XCircle className="h-5 w-5" />}
+          label={t("murdoku.crosses")}
+          active={mode === "crosses"}
+          onClick={() => onChangeMode("crosses")}
+        />
+        <ModeButton
+          icon={<Eraser className="h-5 w-5" />}
+          label={t("murdoku.erase")}
+          active={mode === "erase"}
+          onClick={() => onChangeMode("erase")}
+        />
+        <button
+          type="button"
+          onClick={onAccuse}
+          disabled={accusationOpen}
+          className="flex flex-1 flex-col items-center gap-1 rounded-lg border border-primary bg-primary/10 px-2 py-1.5 text-[10px] font-semibold text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
+          aria-label={t("murdoku.accuse")}
+        >
+          <Skull className="h-5 w-5" />
+          {t("murdoku.accuse")}
+        </button>
       </div>
     </nav>
   );
 }
 
-function Tab({
+function ModeButton({
   icon,
   label,
   active,
@@ -56,8 +76,10 @@ function Tab({
       type="button"
       role="tab"
       onClick={onClick}
-      className={`flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold transition-colors ${
-        active ? "text-neon-pink neon-glow-pink" : "text-muted-foreground hover:text-foreground"
+      className={`flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold transition-all ${
+        active
+          ? "border border-primary bg-primary/10 text-primary"
+          : "text-muted-foreground hover:text-foreground hover:bg-muted"
       }`}
     >
       {icon}

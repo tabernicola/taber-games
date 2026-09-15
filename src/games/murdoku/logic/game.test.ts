@@ -265,7 +265,7 @@ describe("isCaseSolvable", () => {
   it("fails when a clue has empty text", () => {
     const content: CaseContent = {
       ...SAMPLE_CASE_CONTENT,
-      clues: [{ id: "c1", text: "  ", type: "fact" }],
+      clues: [{ id: "c1", text: { es: "  ", en: "  ", eu: "  " }, type: "fact" }],
     };
     const result = isCaseSolvable(content);
     expect(result.solvable).toBe(false);
@@ -275,8 +275,8 @@ describe("isCaseSolvable", () => {
     const content: CaseContent = {
       ...SAMPLE_CASE_CONTENT,
       clues: [
-        { id: "dup", text: "Clue A", type: "fact" },
-        { id: "dup", text: "Clue B", type: "fact" },
+        { id: "dup", text: { es: "Clue A", en: "Clue A", eu: "Clue A" }, type: "fact" },
+        { id: "dup", text: { es: "Clue B", en: "Clue B", eu: "Clue B" }, type: "fact" },
       ],
     };
     const result = isCaseSolvable(content);

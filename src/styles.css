@@ -411,7 +411,7 @@
 .ts-tray[data-highlight="tray"] {
   outline: 3px dashed var(--ts-olive);
   outline-offset: 3px;
-}
+} para la landing y para la página de juego no afecte ese background del body y que deshagas el último cambio que has hecho de quitar el tema de creado para el juego en la landing y en el único sitio donde tiene que afectar el background de laágina es en la barra de la landing
 .ts-scope [data-highlight="actions"] {
   position: relative;
   z-index: 70;

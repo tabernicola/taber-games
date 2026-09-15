@@ -134,6 +134,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      murdoku_characters: {
+        Row: {
+          created_at: string;
+          description: Json;
+          id: string;
+          image: string | null;
+          name: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          description?: Json;
+          id?: string;
+          image?: string | null;
+          name: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          description?: Json;
+          id?: string;
+          image?: string | null;
+          name?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       murdoku_cases: {
         Row: {
           content: Json;

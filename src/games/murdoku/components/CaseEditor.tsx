@@ -17,41 +17,8 @@ import type {
   ClueType,
   Position,
   Room,
+  RoomElement,
 } from "@/games/murdoku/data/gameSchema";
-import { useI18n as useI18nInner } from "@/platform/i18n";
-
-const EMOJI_PICKER = [
-  "👤",
-  "👩",
-  "👨",
-  "👵",
-  "👴",
-  "🕵",
-  "👮",
-  "🕵",
-  "👩‍⚖",
-  "👨‍⚖",
-  "👩‍🎓",
-  "👨‍🎓",
-  "🔪",
-  "🔫",
-  "🔨",
-  "🎣",
-  "🔧",
-  "🪡",
-  "🔔",
-  "📚",
-  "🍳",
-  "🎱",
-  "🌿",
-  "🏠",
-  "🏰",
-  "🏨",
-  "🚗",
-  "🎭",
-  "🎤",
-  "🎨",
-];
 
 function slugify(str: string): string {
   return str
@@ -66,7 +33,7 @@ function genCharId(name: string, idx: number): string {
 }
 
 export function CaseEditor() {
-  const { t, slug } = useI18n();
+  const { t, slug, lang } = useI18n();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -81,26 +48,30 @@ export function CaseEditor() {
   const [roomRows, setRoomRows] = useState(3);
   const [roomCols, setRoomCols] = useState(2);
   const [characters, setCharacters] = useState<Character[]>([
-    { id: "char-0", name: "Butler", emoji: "👨" },
-    { id: "char-1", name: "Maid", emoji: "👩" },
-    { id: "char-2", name: "Gardener", emoji: "🌿" },
-    { id: "char-3", name: "Chef", emoji: "👨" },
-    { id: "char-4", name: "Librarian", emoji: "👩" },
-    { id: "col-5", name: "Colonel", emoji: "👨" },
+    { id: "char-0", name: "Butler" },
+    { id: "char-1", name: "Maid" },
+    { id: "char-2", name: "Gardener" },
+    { id: "char-3", name: "Chef" },
+    { id: "char-4", name: "Librarian" },
+    { id: "col-5", name: "Colonel" },
   ]);
   const [placements, setPlacements] = useState<Record<string, Position>>({});
   const [selectedCharId, setSelectedCharId] = useState<string | null>(null);
   const [killerId, setKillerId] = useState("");
   const [victimId, setVictimId] = useState("");
   const [clues, setClues] = useState<Clue[]>([
-    { id: "clue-0", text: "", type: "fact" },
-    { id: "clue-1", text: "", type: "elimination" },
+    { id: "clue-0", text: { es: "", en: "", eu: "" }, type: "fact" },
+    { id: "clue-1", text: { es: "", en: "", eu: "" }, type: "elimination" },
   ]);
+  const [roomElements, setRoomElements] = useState<Record<string, RoomElement[]>>({});
 
-  const rooms: Room[] = useMemo(
-    () => createDefaultRooms(gridRows, gridCols, roomRows, roomCols),
-    [gridRows, gridCols, roomRows, roomCols],
-  );
+  const rooms: Room[] = useMemo(() => {
+    const defaultRooms = createDefaultRooms(gridRows, gridCols, roomRows, roomCols);
+    return defaultRooms.map((room) => ({
+      ...room,
+      elements: roomElements[room.id] ?? [],
+    }));
+  }, [gridRows, gridCols, roomRows, roomCols, roomElements]);
 
   const step1Valid = useMemo(() => {
     if (!title.trim()) return false;
@@ -214,7 +185,7 @@ export function CaseEditor() {
         <Link
           to="/$lang/auth"
           params={{ lang: slug }}
-          className="rounded-lg border border-neon-pink bg-neon-pink/15 px-6 py-3 text-sm font-semibold text-neon-pink hover:bg-neon-pink/25"
+          className="rounded-lg border border-primary bg-primary/10 px-6 py-3 text-sm font-semibold text-primary hover:bg-primary/20"
         >
           {t("creator.signIn")}
         </Link>
@@ -225,8 +196,8 @@ export function CaseEditor() {
   if (submitSuccess) {
     return (
       <div className="flex min-h-screen items-center justify-center p-4 text-center">
-        <div className="rounded-xl border border-neon-cyan/30 bg-neon-cyan/10 p-8">
-          <h2 className="text-xl font-bold text-neon-cyan">{t("creator.savedDraft")}</h2>
+        <div className="rounded-xl border border-secondary/20 bg-secondary/5 p-8">
+          <h2 className="text-xl font-bold text-secondary">{t("creator.savedDraft")}</h2>
           <p className="mt-2 text-sm text-muted-foreground">{t("murdoku.createDesc")}</p>
         </div>
       </div>
@@ -236,7 +207,7 @@ export function CaseEditor() {
   return (
     <div className="min-h-screen pb-20">
       <header className="sticky top-0 z-30 border-b border-border bg-background/80 px-4 py-3 backdrop-blur">
-        <h1 className="text-lg font-bold tracking-widest text-neon-pink">{t("creator.title")}</h1>
+        <h1 className="text-lg font-bold tracking-widest text-primary">{t("creator.title")}</h1>
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-6">
@@ -249,9 +220,9 @@ export function CaseEditor() {
               disabled={i > step}
               className={`rounded-lg border px-4 py-2 text-xs font-semibold transition-colors ${
                 i === step
-                  ? "border-neon-pink bg-neon-pink/15 text-neon-pink"
+                  ? "border-primary bg-primary/10 text-primary"
                   : i < step
-                    ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan"
+                    ? "border-secondary bg-secondary/10 text-secondary"
                     : "border-border bg-background text-muted-foreground"
               }`}
             >
@@ -291,10 +262,12 @@ export function CaseEditor() {
             setKillerId={setKillerId}
             victimId={victimId}
             setVictimId={setVictimId}
+            roomElements={roomElements}
+            setRoomElements={setRoomElements}
           />
         )}
 
-        {step === 2 && <Step3 clues={clues} setClues={setClues} />}
+        {step === 2 && <Step3 clues={clues} setClues={setClues} characters={characters} />}
 
         {submitError && <p className="mt-4 text-center text-sm text-destructive">{submitError}</p>}
 
@@ -313,7 +286,7 @@ export function CaseEditor() {
               type="button"
               onClick={handleNext}
               disabled={step === 0 ? !step1Valid : !step2Valid}
-              className="flex-1 rounded-lg border border-neon-cyan bg-neon-cyan/15 px-4 py-2 text-sm font-semibold text-neon-cyan transition-colors hover:bg-neon-cyan/25 disabled:opacity-50"
+              className="flex-1 rounded-lg border border-secondary bg-secondary/10 px-4 py-2 text-sm font-semibold text-secondary transition-colors hover:bg-secondary/20 disabled:opacity-50"
             >
               {t("creator.next")}
             </button>
@@ -322,7 +295,7 @@ export function CaseEditor() {
               type="button"
               onClick={handleSubmit}
               disabled={submitting || !step2Valid}
-              className="flex-1 rounded-lg border border-neon-pink bg-neon-pink/15 px-4 py-2 text-sm font-semibold text-neon-pink transition-colors hover:bg-neon-pink/25 disabled:opacity-50"
+              className="flex-1 rounded-lg border border-primary bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
             >
               {submitting ? t("creator.submitting") : t("creator.submit")}
             </button>
@@ -360,11 +333,11 @@ function Step1({
   characters: Character[];
   setCharacters: (v: Character[]) => void;
 }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
 
   const addCharacter = () => {
     const idx = characters.length;
-    setCharacters([...characters, { id: `char-${idx}`, name: "", emoji: "👤" }]);
+    setCharacters([...characters, { id: `char-${idx}`, name: "" }]);
   };
 
   const removeCharacter = (id: string) => {
@@ -389,8 +362,12 @@ function Step1({
     );
   };
 
-  const updateEmoji = (id: string, emoji: string) => {
-    setCharacters(characters.map((c) => (c.id === id ? { ...c, emoji } : c)));
+  const updateImage = (id: string, image: string) => {
+    setCharacters(characters.map((c) => (c.id === id ? { ...c, image: image || undefined } : c)));
+  };
+
+  const updateDescription = (id: string, description: Record<string, string>) => {
+    setCharacters(characters.map((c) => (c.id === id ? { ...c, description } : c)));
   };
 
   return (
@@ -435,7 +412,7 @@ function Step1({
           <button
             type="button"
             onClick={addCharacter}
-            className="text-xs text-neon-cyan hover:text-neon-pink"
+            className="text-xs text-secondary hover:text-primary"
           >
             + {t("creator.addCharacter")}
           </button>
@@ -443,34 +420,46 @@ function Step1({
 
         <div className="space-y-2">
           {characters.map((char, idx) => (
-            <div key={char.id} className="flex items-end gap-2">
-              <select
-                value={char.emoji ?? ""}
-                onChange={(e) => updateEmoji(char.id, e.target.value)}
-                className="w-12 rounded-lg border border-border bg-background p-1 text-center text-lg"
-              >
-                {EMOJI_PICKER.map((e) => (
-                  <option key={e} value={e}>
-                    {e}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="text"
-                value={char.name}
-                onChange={(e) => updateName(char.id, e.target.value)}
-                placeholder={char.name || `Character ${idx + 1}`}
-                className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-neon-pink"
-              />
-              {characters.length > 3 && (
-                <button
-                  type="button"
-                  onClick={() => removeCharacter(char.id)}
-                  className="rounded-lg border border-destructive/30 bg-destructive/10 px-2 py-1 text-xs text-destructive hover:bg-destructive/20"
-                >
-                  ✕
-                </button>
-              )}
+            <div key={char.id} className="flex flex-col gap-2">
+              <div className="flex items-end gap-2">
+                <input
+                  type="text"
+                  value={char.name}
+                  onChange={(e) => updateName(char.id, e.target.value)}
+                  placeholder={char.name || `Character ${idx + 1}`}
+                  className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+                />
+                {characters.length > 3 && (
+                  <button
+                    type="button"
+                    onClick={() => removeCharacter(char.id)}
+                    className="rounded-lg border border-destructive/30 bg-destructive/10 px-2 py-1 text-xs text-destructive hover:bg-destructive/20"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <input
+                  type="text"
+                  value={char.image ?? ""}
+                  onChange={(e) => updateImage(char.id, e.target.value)}
+                  placeholder={t("creator.imageUrl")}
+                  className="rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground outline-none focus:border-primary"
+                />
+                <textarea
+                  value={char.description?.[lang] ?? ""}
+                  onChange={(e) =>
+                    updateDescription(char.id, {
+                      ...(char.description ?? {}),
+                      [lang]: e.target.value,
+                    })
+                  }
+                  placeholder={t("creator.description")}
+                  rows={2}
+                  className="rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground outline-none focus:border-primary resize-y-none"
+                />
+              </div>
             </div>
           ))}
         </div>
@@ -492,6 +481,8 @@ function Step2({
   setKillerId,
   victimId,
   setVictimId,
+  roomElements,
+  setRoomElements,
 }: {
   gridRows: number;
   gridCols: number;
@@ -505,8 +496,50 @@ function Step2({
   setKillerId: (v: string) => void;
   victimId: string;
   setVictimId: (v: string) => void;
+  roomElements: Record<string, RoomElement[]>;
+  setRoomElements: (v: Record<string, RoomElement[]>) => void;
 }) {
   const { t } = useI18n();
+
+  const elementAt = (roomId: string, pos: Position): RoomElement | undefined => {
+    return roomElements[roomId]?.find(
+      (e) => e.position.row === pos.row && e.position.col === pos.col,
+    );
+  };
+
+  const updateRoomElements = (roomId: string, elements: RoomElement[]) => {
+    setRoomElements({ ...roomElements, [roomId]: elements });
+  };
+
+  const addElement = (roomId: string) => {
+    const room = rooms.find((r) => r.id === roomId);
+    if (!room) return;
+    const newElement: RoomElement = {
+      name: "elemento",
+      icon: "📍",
+      position: room.cells[0],
+      walkable: true,
+    };
+    updateRoomElements(roomId, [...(roomElements[roomId] ?? []), newElement]);
+  };
+
+  const removeElement = (roomId: string, elementIdx: number) => {
+    updateRoomElements(
+      roomId,
+      roomElements[roomId].filter((_, i) => i !== elementIdx),
+    );
+  };
+
+  const updateElement = (
+    roomId: string,
+    elementIdx: number,
+    field: keyof RoomElement,
+    value: string | Position | boolean,
+  ) => {
+    const elements = [...(roomElements[roomId] ?? [])];
+    elements[elementIdx] = { ...elements[elementIdx], [field]: value };
+    updateRoomElements(roomId, elements);
+  };
 
   const placedIds = new Set(Object.keys(placements));
   const unplaced = characters.filter((c) => !placedIds.has(c.id));
@@ -528,13 +561,13 @@ function Step2({
                 onClick={() => setSelectedCharId(selectedCharId === char.id ? null : char.id)}
                 className={`flex items-center gap-1 rounded-lg border-2 px-2 py-1 text-xs font-medium transition-all ${
                   selectedCharId === char.id
-                    ? "border-neon-pink bg-neon-pink/15 text-neon-pink"
+                    ? "border-primary bg-primary/10 text-primary"
                     : placed
-                      ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan"
-                      : "border-border bg-card text-foreground hover:border-neon-pink/60"
+                      ? "border-secondary bg-secondary/10 text-secondary"
+                      : "border-border bg-card text-foreground hover:border-muted-foreground/50"
                 }`}
               >
-                <span>{char.emoji ?? char.name[0]}</span>
+                <span>{char.name[0]}</span>
                 <span>{char.name}</span>
               </button>
             );
@@ -544,7 +577,7 @@ function Step2({
 
       <div className="mx-auto max-w-[320px]">
         <div
-          className="grid gap-0.5 rounded-lg border border-neon-cyan/30 bg-neon-cyan/5 p-0.5"
+          className="grid gap-0.5 rounded-lg border border-secondary/20 bg-secondary/5 p-0.5"
           style={{ gridTemplateColumns: `repeat(${gridCols}, 1fr)` }}
         >
           {Array.from({ length: gridRows }).map((_, row) =>
@@ -556,38 +589,128 @@ function Step2({
               const charsHere = characters.filter(
                 (c) => placements[c.id]?.row === row && placements[c.id]?.col === col,
               );
+              const elHere = room ? elementAt(room.id, pos) : undefined;
+              const cellHasNonWalkable = elHere && !elHere.walkable;
               const isClicked =
                 selectedCharId !== null &&
                 placements[selectedCharId]?.row === row &&
                 placements[selectedCharId]?.col === col;
 
+              const handleCellClick = (pos: Position) => {
+                if (selectedCharId && cellHasNonWalkable) return;
+                onCellClick(pos);
+              };
+
               return (
                 <button
                   key={key}
                   type="button"
-                  onClick={() => onCellClick(pos)}
+                  onClick={() => handleCellClick(pos)}
                   className={`relative flex aspect-square items-center justify-center text-xs transition-all ${
                     ROOM_COLORS[roomIdx % ROOM_COLORS.length]
-                  } ${isClicked ? "ring-2 ring-neon-pink" : ""}`}
+                  } ${cellHasNonWalkable ? "opacity-50" : ""} ${isClicked ? "ring-2 ring-primary" : ""}`}
+                  title={cellHasNonWalkable ? "No se puede colocar aquí" : undefined}
                 >
-                  {room && (
-                    <span className="absolute top-0.5 left-0.5 text-[8px] opacity-40">
-                      {room.emoji ?? room.name[0]}
-                    </span>
-                  )}
                   {charsHere.length > 0 && (
-                    <span className="z-10 text-center text-lg font-bold text-neon-pink">
-                      {charsHere.map((c) => c.emoji ?? c.name[0]).join(" ")}
+                    <span className="z-10 flex flex-col items-center">
+                      {charsHere.map((c) =>
+                        c.image ? (
+                          <img
+                            key={c.id}
+                            src={c.image}
+                            alt={c.name}
+                            className="h-6 w-6 rounded-full object-top object-cover"
+                          />
+                        ) : (
+                          <span key={c.id} className="text-center text-lg font-bold text-primary">
+                            {c.name[0]}
+                          </span>
+                        ),
+                      )}
                     </span>
                   )}
-                  <span className="absolute bottom-0.5 right-0.5 text-[7px] text-muted-foreground/50">
-                    {row},{col}
-                  </span>
+                  {elHere && (
+                    <span className="z-0 absolute bottom-0 right-0 text-base select-none">
+                      {elHere.icon}
+                    </span>
+                  )}
+                  {room &&
+                    (() => {
+                      const bottomRow = Math.max(...room.cells.map((c) => c.row));
+                      if (pos.row !== bottomRow) return null;
+                      const bottomCells = room.cells.filter((c) => c.row === bottomRow);
+                      const minCol = Math.min(...bottomCells.map((c) => c.col));
+                      const maxCol = Math.max(...bottomCells.map((c) => c.col));
+                      const centerCol = Math.floor((minCol + maxCol) / 2);
+                      if (pos.col !== centerCol) return null;
+                      return (
+                        <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 max-w-[80%] truncate text-[7px] text-muted-foreground/60">
+                          {room.name}
+                        </span>
+                      );
+                    })()}
                 </button>
               );
             }),
           )}
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {t("murdoku.rooms")}
+        </h4>
+        {rooms.map((room) => (
+          <div key={room.id} className="rounded-lg border border-border bg-card p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold">{room.name}</span>
+              <button
+                type="button"
+                onClick={() => addElement(room.id)}
+                className="text-xs text-secondary hover:text-primary"
+              >
+                + {t("creator.addElement")}
+              </button>
+            </div>
+            {(roomElements[room.id] ?? []).map((el, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={el.name}
+                  onChange={(e) => updateElement(room.id, idx, "name", e.target.value)}
+                  placeholder={t("creator.name")}
+                  className="flex-1 rounded border border-border px-2 py-1 text-xs"
+                />
+                <input
+                  type="text"
+                  value={el.icon}
+                  onChange={(e) => updateElement(room.id, idx, "icon", e.target.value)}
+                  placeholder="Icono"
+                  className="w-12 rounded border border-border px-2 py-1 text-center text-sm"
+                />
+                <span className="text-xs text-muted-foreground">
+                  {el.position.row},{el.position.col}
+                </span>
+                <label className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={el.walkable}
+                    onChange={(e) => updateElement(room.id, idx, "walkable", e.target.checked)}
+                    className="w-4 h-4"
+                  />
+                  {t("murdoku.walkable")}
+                </label>
+                <button
+                  type="button"
+                  onClick={() => removeElement(room.id, idx)}
+                  className="text-xs text-destructive hover:text-destructive/80"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
 
       {unplaced.length > 0 && (
@@ -615,23 +738,34 @@ function Step2({
 }
 
 const ROOM_COLORS = [
-  "bg-blue-950/40",
-  "bg-green-950/40",
-  "bg-purple-950/40",
-  "bg-orange-950/40",
-  "bg-teal-950/40",
-  "bg-indigo-950/40",
-  "bg-rose-950/40",
-  "bg-amber-950/40",
-  "bg-lime-950/40",
+  "bg-blue-100/20",
+  "bg-green-100/20",
+  "bg-purple-100/20",
+  "bg-rose-100/20",
+  "bg-amber-100/20",
+  "bg-teal-100/20",
+  "bg-indigo-100/20",
+  "bg-fuchsia-100/20",
+  "bg-emerald-100/20",
 ];
 
-function Step3({ clues, setClues }: { clues: Clue[]; setClues: (v: Clue[]) => void }) {
-  const { t } = useI18n();
+function Step3({
+  clues,
+  setClues,
+  characters,
+}: {
+  clues: Clue[];
+  setClues: (v: Clue[]) => void;
+  characters: Character[];
+}) {
+  const { t, lang } = useI18n();
   const clueTypes: ClueType[] = ["fact", "elimination"];
 
   const addClue = () => {
-    setClues([...clues, { id: `clue-${clues.length}`, text: "", type: "fact" }]);
+    setClues([
+      ...clues,
+      { id: `clue-${clues.length}`, text: { es: "", en: "", eu: "" }, type: "fact" },
+    ]);
   };
 
   const removeClue = (id: string) => {
@@ -650,7 +784,7 @@ function Step3({ clues, setClues }: { clues: Clue[]; setClues: (v: Clue[]) => vo
         <button
           type="button"
           onClick={addClue}
-          className="text-xs text-neon-cyan hover:text-neon-pink"
+          className="text-xs text-secondary hover:text-primary"
         >
           + {t("creator.addClue")}
         </button>
@@ -671,12 +805,37 @@ function Step3({ clues, setClues }: { clues: Clue[]; setClues: (v: Clue[]) => vo
               ))}
             </select>
             <textarea
-              value={clue.text}
-              onChange={(e) => updateClue(clue.id, { text: e.target.value })}
+              value={clue.text[lang] ?? ""}
+              onChange={(e) =>
+                updateClue(clue.id, {
+                  text: {
+                    ...clue.text,
+                    [lang]: e.target.value,
+                  },
+                })
+              }
               placeholder={`${t("creator.clueText")} ${idx + 1}`}
               rows={2}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-neon-pink"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
             />
+            <select
+              value={clue.characterId ?? ""}
+              onChange={(e) =>
+                updateClue(clue.id, {
+                  characterId: e.target.value || undefined,
+                })
+              }
+              className="text-xs text-muted-foreground"
+            >
+              <option value="">
+                {t("creator.minItems", { category: "character association" })}
+              </option>
+              {characters.map((char) => (
+                <option key={char.id} value={char.id}>
+                  {char.name}
+                </option>
+              ))}
+            </select>
             <div className="flex justify-end">
               <button
                 type="button"
@@ -712,7 +871,7 @@ function TextFieldSimple({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-neon-pink"
+        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
       />
     </div>
   );
@@ -737,7 +896,7 @@ function NumberField({
         min={min}
         value={value}
         onChange={(e) => onChange(parseInt(e.target.value, 10) || min)}
-        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-neon-pink"
+        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
       />
     </div>
   );
@@ -760,12 +919,12 @@ function SelectField({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-neon-pink"
+        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
       >
         <option value="">—</option>
         {options.map((opt) => (
           <option key={opt.id} value={opt.id}>
-            {opt.emoji ?? ""} {opt.name}
+            {opt.name}
           </option>
         ))}
       </select>

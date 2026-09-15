@@ -1,3 +1,4 @@
+import { useI18n } from "@/platform/i18n";
 import type { Clue } from "../data/gameSchema";
 import { ClueTypeBadge } from "./ClueTypeBadge";
 
@@ -10,6 +11,7 @@ export function CluesView({
   readClues: Set<string>;
   onToggleRead: (clueId: string) => void;
 }) {
+  const { lang } = useI18n();
   if (clues.length === 0) {
     return <div className="p-4 text-center text-sm text-muted-foreground">{""}</div>;
   }
@@ -19,18 +21,22 @@ export function CluesView({
       <ul className="space-y-2">
         {clues.map((clue) => {
           const isRead = readClues.has(clue.id);
+          const clueText =
+            typeof clue.text === "string"
+              ? clue.text
+              : (clue.text[lang] ?? Object.values(clue.text)[0] ?? "");
           return (
             <li
               key={clue.id}
               onClick={() => onToggleRead(clue.id)}
-              className={`cursor-pointer rounded-lg border border-border bg-card p-3 text-sm transition-all hover:border-neon-pink/60 ${
+              className={`cursor-pointer rounded-lg border border-border bg-card p-3 text-sm transition-all hover:border-muted-foreground/40 ${
                 isRead ? "bg-muted/30 opacity-60" : ""
               }`}
             >
               <div className="flex items-start gap-2">
                 <span
                   className={`mt-0.5 text-xs font-semibold ${
-                    isRead ? "line-through decoration-muted-foreground" : "text-neon-pink"
+                    isRead ? "line-through decoration-muted-foreground" : "text-primary"
                   }`}
                 >
                   #
@@ -40,7 +46,7 @@ export function CluesView({
                   <p
                     className={`mt-1 ${isRead ? "line-through text-muted-foreground/50" : "text-foreground"}`}
                   >
-                    {clue.text}
+                    {clueText}
                   </p>
                 </div>
               </div>

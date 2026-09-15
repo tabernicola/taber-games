@@ -5,26 +5,36 @@ export type Position = {
   col: number;
 };
 
+export type RoomElement = {
+  name: string;
+  icon: string;
+  position: Position;
+  walkable: boolean;
+};
+
 export type Room = {
   id: string;
   name: string;
   emoji?: string;
+  elements?: RoomElement[];
   cells: Position[];
 };
 
 export type Character = {
   id: string;
   name: string;
-  emoji?: string;
   image?: string;
+  description?: Record<string, string>;
 };
 
-export type ClueType = "fact" | "elimination";
+export type ClueType = "fact" | "elimination" | "clue";
 
 export type Clue = {
   id: string;
-  text: string;
+  text: Record<string, string>;
+  i18nKey?: string;
   type: ClueType;
+  characterId?: string;
 };
 
 export type Placement = {
@@ -304,7 +314,8 @@ export function isCaseSolvable(content: CaseContent): SolvabilityResult {
       return { solvable: false, reason: `Duplicate clue ID: ${clue.id}` };
     }
     seenClueIds.add(clue.id);
-    if (!clue.text.trim()) {
+    const clueTexts = Object.values(clue.text) as string[];
+    if (!clueTexts.some((v) => v.trim())) {
       return { solvable: false, reason: `Clue "${clue.id}" has empty text` };
     }
   }

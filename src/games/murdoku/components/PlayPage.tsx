@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { SiteHeader } from "@/platform/layout/SiteHeader";
 import { useI18n } from "@/platform/i18n";
 import { fetchApprovedCases, fetchCase, type MurdokuCase } from "@/games/murdoku/logic/cases";
+import { SAMPLE_CASE } from "@/games/murdoku/data/gameSchema";
 import { MurdokuGame } from "./MurdokuGame";
+import "@/games/murdoku/light-theme.css";
 
 type PlaySearch = {
   caseId?: string;
@@ -15,8 +16,11 @@ export function PlayPage() {
   const navigate = useNavigate();
   const search = useSearch({ strict: false }) as PlaySearch;
   const caseId = search?.caseId;
+  const isDemoCase = caseId === SAMPLE_CASE.id;
 
-  const [selectedCase, setSelectedCase] = useState<MurdokuCase | null>(null);
+  const [selectedCase, setSelectedCase] = useState<MurdokuCase | null>(
+    isDemoCase ? SAMPLE_CASE : null,
+  );
 
   const {
     data: approvedCases = [],
@@ -25,7 +29,7 @@ export function PlayPage() {
   } = useQuery({
     queryKey: ["murdoku-approved"],
     queryFn: fetchApprovedCases,
-    enabled: !caseId,
+    enabled: !caseId || isDemoCase,
   });
 
   const {
@@ -34,21 +38,30 @@ export function PlayPage() {
     refetch: refetchCase,
   } = useQuery({
     queryKey: ["murdoku-case", caseId],
-    queryFn: () => (caseId ? fetchCase(caseId) : Promise.resolve(null)),
-    enabled: !!caseId,
+    queryFn: () => (caseId && !isDemoCase ? fetchCase(caseId) : Promise.resolve(null)),
+    enabled: !!caseId && !isDemoCase,
   });
 
+  // When a specific case is requested from Supabase
   useEffect(() => {
     if (caseId && fetchedCase && fetchedCase.content) {
       setSelectedCase(fetchedCase);
     }
   }, [caseId, fetchedCase]);
 
+  // Auto-select first approved case when no specific case requested
   useEffect(() => {
     if (!caseId && approvedCases.length > 0) {
       setSelectedCase(approvedCases[0]);
     }
   }, [caseId, approvedCases]);
+
+  // Fallback: if no approved cases from Supabase, use the sample case
+  useEffect(() => {
+    if (!caseId && !casesLoading && approvedCases.length === 0 && !selectedCase) {
+      setSelectedCase(SAMPLE_CASE);
+    }
+  }, [caseId, casesLoading, approvedCases, selectedCase]);
 
   const isLoading = casesLoading || caseLoading;
 
@@ -58,15 +71,15 @@ export function PlayPage() {
       setSelectedCase(approvedCases[idx]);
     } else if (fetchedCase) {
       setSelectedCase(fetchedCase);
+    } else if (!caseId) {
+      setSelectedCase(SAMPLE_CASE);
     } else {
       setSelectedCase(null);
     }
   };
 
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
-
+    <div className="murdoku-light min-h-screen pt-4">
       {!selectedCase && (
         <div className="flex min-h-[50vh] items-center justify-center">
           {isLoading ? (
@@ -77,7 +90,7 @@ export function PlayPage() {
               <button
                 type="button"
                 onClick={() => void refetchCases()}
-                className="rounded-lg border border-neon-pink bg-neon-pink/15 px-4 py-2 text-sm font-semibold text-neon-pink hover:bg-neon-pink/25"
+                className="rounded-lg border border-primary bg-primary/10 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/20"
               >
                 {t("murdoku.loading")}
               </button>
@@ -87,16 +100,6 @@ export function PlayPage() {
       )}
 
       {selectedCase && <MurdokuGame case={selectedCase} onPlayAgain={handlePlayAgain} />}
-
-      {!caseId && approvedCases.length > 0 && (
-        <button
-          type="button"
-          onClick={() => navigate({ to: "/$lang/murdoku", params: { lang: slug } })}
-          className="fixed bottom-20 left-1/2 -translate-x-1/2 rounded-lg border border-border bg-background/90 px-3 py-1.5 text-xs font-semibold backdrop-blur"
-        >
-          {t("common.back")}
-        </button>
-      )}
     </div>
   );
 }

@@ -36,10 +36,10 @@ export function AccusationModal({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/70" />
         <Dialog.Content
-          className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-background p-6 shadow-lg focus:outline-none"
+          className="murdoku-light fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-background p-6 shadow-lg focus:outline-none"
           aria-label={t("murdoku.accuse")}
         >
-          <Dialog.Title className="text-center text-lg font-bold tracking-wider text-neon-pink">
+          <Dialog.Title className="text-center text-lg font-bold tracking-wider text-primary">
             {t("murdoku.accuse")}
           </Dialog.Title>
 
@@ -72,7 +72,7 @@ export function AccusationModal({
               type="button"
               onClick={handleSubmit}
               disabled={disabled}
-              className="flex-1 rounded-lg border border-neon-pink bg-neon-pink/15 px-4 py-2 text-sm font-semibold text-neon-pink transition-colors hover:bg-neon-pink/25 disabled:opacity-50"
+              className="flex-1 rounded-lg border border-primary bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
             >
               {t("murdoku.submit")}
             </button>
@@ -96,22 +96,33 @@ function SelectField({
   label: string;
   value: string;
   onChange: (v: string) => void;
-  options: { id: string; name: string; emoji?: string }[];
+  options: { id: string; name: string; image?: string }[];
 }) {
   return (
     <div className="space-y-1">
       <label className="block text-xs font-semibold text-muted-foreground">{label}</label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-neon-pink"
-      >
-        {options.map((opt) => (
-          <option key={opt.id} value={opt.id}>
-            {opt.emoji ?? ""} {opt.name}
-          </option>
-        ))}
-      </select>
+      <div className="relative">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+        >
+          {options.map((opt) => (
+            <option key={opt.id} value={opt.id}>
+              {opt.name}
+            </option>
+          ))}
+        </select>
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full overflow-hidden">
+          {options.find((o) => o.id === value)?.image && (
+            <img
+              src={options.find((o) => o.id === value)!.image}
+              alt=""
+              className="h-full w-full object-top object-cover"
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 }

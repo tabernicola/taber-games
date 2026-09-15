@@ -1,15 +1,15 @@
 import { useState, useMemo } from "react";
-import { HelpCircle } from "lucide-react";
+import { ChevronLeft, HelpCircle } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import type { CaseContent, MurdokuCase, Position } from "../data/gameSchema";
 import type { GuessResult } from "../logic/game";
 import { posKey, getRoomForCell, getPlacement } from "../logic/game";
-import type { Mark } from "./deductionState";
-import { BottomNavigation, type MurdokuTab } from "./BottomNavigation";
+import type { GameMode } from "./BottomNavigation";
+import { BottomNavigation } from "./BottomNavigation";
 import { MapView } from "./MapView";
-import { CluesView } from "./CluesView";
-import { DeductionGrid } from "./DeductionGrid";
 import { AccusationModal } from "./AccusationModal";
 import { useI18n } from "@/platform/i18n";
+import "@/games/murdoku/light-theme.css";
 
 export function MurdokuGame({
   case: activeCase,
@@ -18,17 +18,143 @@ export function MurdokuGame({
   case: MurdokuCase;
   onPlayAgain?: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, slug } = useI18n();
+  const navigate = useNavigate();
   const { content } = activeCase;
 
-  const [activeTab, setActiveTab] = useState<MurdokuTab>("map");
-  const [readClues, setReadClues] = useState<Set<string>>(new Set());
+  const [mode, setMode] = useState<GameMode>("place");
   const [placements, setPlacements] = useState<Record<string, Position>>({});
+  const [tentativeMarks, setTentativeMarks] = useState<Set<string>>(new Set());
+  const [manualCrosses, setManualCrosses] = useState<Set<string>>(new Set());
   const [selectedCharId, setSelectedCharId] = useState<string | null>(null);
-  const [cellMarks, setCellMarks] = useState<Record<string, Mark>>({});
   const [accusationOpen, setAccusationOpen] = useState(false);
   const [guessResult, setGuessResult] = useState<GuessResult | null>(null);
   const [showSolution, setShowSolution] = useState(false);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
+
+  const handleSelectCharacter = (charId: string) => {
+    if (showSolution) return;
+    setSelectedCharId(selectedCharId === charId ? null : charId);
+  };
+
+  const handleCellAction = (pos: Position) => {
+    if (showSolution) return;
+    const pkey = posKey(pos.row, pos.col);
+    const hasChar = Object.values(placements).some((p) => p.row === pos.row && p.col === pos.col);
+
+    if (mode === "place" && selectedCharId) {
+      const existing = placements[selectedCharId];
+
+      // Toggle off: same character at same cell
+      if (existing && existing.row === pos.row && existing.col === pos.col) {
+        setPlacements((prev) => {
+          const next = { ...prev };
+          delete next[selectedCharId];
+          return next;
+        });
+        return;
+      }
+
+      // Place character (remove existing character at this cell first)
+      setPlacements((prev) => {
+        const next = { ...prev };
+        for (const id of Object.keys(next)) {
+          if (id !== selectedCharId && next[id].row === pos.row && next[id].col === pos.col) {
+            delete next[id];
+          }
+        }
+        next[selectedCharId] = pos;
+        return next;
+      });
+
+      // Remove manual cross at this cell
+      setManualCrosses((prev) => {
+        const next = new Set(prev);
+        next.delete(pkey);
+        return next;
+      });
+    } else if (mode === "notes") {
+      setTentativeMarks((prev) => {
+        const next = new Set(prev);
+        if (next.has(pkey)) next.delete(pkey);
+        else if (!hasChar) next.add(pkey);
+        return next;
+      });
+    } else if (mode === "crosses") {
+      if (hasChar) return;
+      setManualCrosses((prev) => {
+        const next = new Set(prev);
+        if (next.has(pkey)) next.delete(pkey);
+        else next.add(pkey);
+        return next;
+      });
+    } else if (mode === "erase") {
+      setManualCrosses((prev) => {
+        const next = new Set(prev);
+        next.delete(pkey);
+        return next;
+      });
+      setTentativeMarks((prev) => {
+        const next = new Set(prev);
+        next.delete(pkey);
+        return next;
+      });
+    }
+  };
+
+  const autoCrosses = useMemo(() => {
+    const crosses = new Set<string>();
+    const entries = Object.entries(placements);
+    for (const [, pos] of entries) {
+      for (let c = 0; c < content.gridCols; c++) {
+        if (c !== pos.col) {
+          const key = posKey(pos.row, c);
+          const hasChar = entries.some(([, p]) => p.row === pos.row && p.col === c);
+          if (!hasChar) crosses.add(key);
+        }
+      }
+      for (let r = 0; r < content.gridRows; r++) {
+        if (r !== pos.row) {
+          const key = posKey(r, pos.col);
+          const hasChar = entries.some(([, p]) => p.row === r && p.col === pos.col);
+          if (!hasChar) crosses.add(key);
+        }
+      }
+    }
+    return crosses;
+  }, [placements, content.gridRows, content.gridCols]);
+
+  // Displayed crosses = auto + manual, minus cells with characters
+  const crossedCells = useMemo(() => {
+    const combined = new Set([...autoCrosses, ...manualCrosses]);
+    for (const [, p] of Object.entries(placements)) {
+      combined.delete(posKey(p.row, p.col));
+    }
+    return combined;
+  }, [autoCrosses, manualCrosses, placements]);
+
+  const violationMap = useMemo(() => {
+    const violations: Record<string, boolean> = {};
+    const entries = Object.entries(placements);
+    for (let i = 0; i < entries.length; i++) {
+      for (let j = i + 1; j < entries.length; j++) {
+        const [, posA] = entries[i];
+        const [, posB] = entries[j];
+        if (posA.row === posB.row && posA.col === posB.col) continue;
+        if (posA.row === posB.row || posA.col === posB.col) {
+          violations[posKey(posA.row, posA.col)] = true;
+          violations[posKey(posB.row, posB.col)] = true;
+        }
+        const roomA = getRoomForCell(content.rooms, posA);
+        const roomB = getRoomForCell(content.rooms, posB);
+        if (roomA && roomB && roomA.id === roomB.id) {
+          violations[posKey(posA.row, posA.col)] = true;
+          violations[posKey(posB.row, posB.col)] = true;
+        }
+      }
+    }
+    return violations;
+  }, [placements, content.rooms]);
 
   const solutionPlacements: Record<string, Position> | null = useMemo(() => {
     if (!showSolution) return null;
@@ -49,59 +175,6 @@ export function MurdokuGame({
     return { row: killerPlacement.row, col: killerPlacement.col };
   }, [showSolution, content.solution]);
 
-  const violationMap = useMemo(() => {
-    const violations: Record<string, boolean> = {};
-    const entries = Object.entries(placements);
-    for (let i = 0; i < entries.length; i++) {
-      for (let j = i + 1; j < entries.length; j++) {
-        const [idA, posA] = entries[i];
-        const [idB, posB] = entries[j];
-        if (posA.row === posB.row && posA.col === posB.col) continue;
-        if (posA.row === posB.row || posA.col === posB.col) {
-          violations[posKey(posA.row, posA.col)] = true;
-          violations[posKey(posB.row, posB.col)] = true;
-        }
-        const roomA = getRoomForCell(content.rooms, posA);
-        const roomB = getRoomForCell(content.rooms, posB);
-        if (roomA && roomB && roomA.id === roomB.id) {
-          violations[posKey(posA.row, posA.col)] = true;
-          violations[posKey(posB.row, posB.col)] = true;
-        }
-      }
-    }
-    return violations;
-  }, [placements, content.rooms]);
-
-  const toggleRead = (clueId: string) => {
-    const next = new Set(readClues);
-    if (next.has(clueId)) next.delete(clueId);
-    else next.add(clueId);
-    setReadClues(next);
-  };
-
-  const handleTogglePlacement = (pos: Position) => {
-    if (showSolution || !selectedCharId) return;
-    setPlacements((prev) => {
-      const next = { ...prev };
-      const existing = next[selectedCharId];
-      if (existing && existing.row === pos.row && existing.col === pos.col) {
-        delete next[selectedCharId];
-      } else {
-        next[selectedCharId] = pos;
-      }
-      return next;
-    });
-  };
-
-  const handleSelectCharacter = (charId: string) => {
-    if (showSolution) return;
-    setSelectedCharId(selectedCharId === charId ? null : charId);
-  };
-
-  const handleMarkChange = (key: string, mark: Mark) => {
-    setCellMarks((prev) => ({ ...prev, [key]: mark }));
-  };
-
   const handleAccuse = (result: GuessResult) => {
     setGuessResult(result);
     setAccusationOpen(false);
@@ -109,78 +182,85 @@ export function MurdokuGame({
   };
 
   const handlePlayAgain = () => {
-    setReadClues(new Set());
+    setMode("place");
     setPlacements({});
+    setTentativeMarks(new Set());
+    setManualCrosses(new Set());
     setSelectedCharId(null);
-    setCellMarks({});
     setGuessResult(null);
     setShowSolution(false);
-    setActiveTab("map");
     onPlayAgain?.();
   };
 
   if (guessResult?.correct) {
     return (
-      <WinScreen activeCase={activeCase} onPlayAgain={handlePlayAgain} content={content} t={t} />
+      <div className="murdoku-light min-h-screen">
+        <WinScreen activeCase={activeCase} onPlayAgain={handlePlayAgain} content={content} t={t} />
+      </div>
     );
   }
 
   if (guessResult && !guessResult.correct) {
     return (
-      <LoseScreen
-        activeCase={activeCase}
-        result={guessResult}
-        onPlayAgain={handlePlayAgain}
-        content={content}
-        t={t}
-      />
+      <div className="murdoku-light min-h-screen">
+        <LoseScreen
+          activeCase={activeCase}
+          result={guessResult}
+          onPlayAgain={handlePlayAgain}
+          content={content}
+          t={t}
+        />
+      </div>
     );
   }
 
   return (
-    <>
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/80 px-4 py-3 backdrop-blur">
-        <h1 className="text-lg font-bold tracking-widest text-neon-pink">
+    <div className="murdoku-light min-h-screen">
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/80 px-3 py-2 backdrop-blur">
+        <button
+          type="button"
+          onClick={() => void navigate({ to: "/$lang/murdoku", params: { lang: slug } })}
+          className="rounded-lg p-1 text-muted-foreground hover:text-foreground hover:bg-muted"
+          aria-label={t("common.back")}
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+        <h1 className="text-lg font-bold tracking-widest text-primary">
           {activeCase.title || t("murdoku.title")}
         </h1>
         <button
           type="button"
-          onClick={() => setAccusationOpen(true)}
-          className="flex items-center gap-1 rounded-lg border border-neon-pink bg-neon-pink/15 px-3 py-1.5 text-xs font-semibold text-neon-pink transition-colors hover:bg-neon-pink/25"
+          onClick={() => setTutorialOpen(true)}
+          className="rounded-lg p-1 text-muted-foreground hover:text-foreground hover:bg-muted"
+          aria-label={t("murdoku.help")}
         >
-          <HelpCircle className="h-4 w-4" />
-          {t("murdoku.accuse")}
+          <HelpCircle className="h-5 w-5" />
         </button>
       </header>
 
-      <main className="pb-14">
-        {activeTab === "map" && (
-          <MapView
-            content={content}
-            placements={placements}
-            selectedCharId={selectedCharId}
-            onCellToggle={handleTogglePlacement}
-            onSelectCharacter={handleSelectCharacter}
-            showSolution={showSolution}
-            solutionPositions={solutionPlacements}
-            killerVictimCell={killerVictimCell}
-            violationMap={violationMap}
-          />
-        )}
-        {activeTab === "clues" && (
-          <CluesView clues={content.clues} readClues={readClues} onToggleRead={toggleRead} />
-        )}
-        {activeTab === "notes" && (
-          <DeductionGrid
-            content={content}
-            marks={cellMarks}
-            onMarkChange={handleMarkChange}
-            disabled={showSolution}
-          />
-        )}
+      <main className="pb-24">
+        <MapView
+          content={content}
+          placements={placements}
+          tentativeMarks={tentativeMarks}
+          crossedCells={crossedCells}
+          selectedCharId={selectedCharId}
+          onSelectCharacter={handleSelectCharacter}
+          onCellAction={handleCellAction}
+          mode={mode}
+          showSolution={showSolution}
+          solutionPositions={solutionPlacements}
+          killerVictimCell={killerVictimCell}
+          violationMap={violationMap}
+        />
       </main>
 
-      <BottomNavigation activeTab={activeTab} onChange={setActiveTab} />
+      <BottomNavigation
+        mode={mode}
+        onChangeMode={setMode}
+        onAccuse={() => setAccusationOpen(true)}
+        accusationOpen={accusationOpen}
+      />
 
       <AccusationModal
         content={content}
@@ -188,7 +268,33 @@ export function MurdokuGame({
         onClose={() => setAccusationOpen(false)}
         onAccuse={handleAccuse}
       />
-    </>
+
+      {tutorialOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur"
+          onClick={() => setTutorialOpen(false)}
+        >
+          <div
+            className="relative mx-4 max-w-sm rounded-xl border border-border bg-card/95 p-6 text-center shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="mb-3 text-lg font-bold tracking-widest text-secondary">
+              {t("murdoku.tutorial.title")}
+            </h3>
+            <p className="mb-4 whitespace-pre-line text-xs text-muted-foreground">
+              {t("murdoku.tutorial.rules")}
+            </p>
+            <button
+              type="button"
+              onClick={() => setTutorialOpen(false)}
+              className="rounded-lg border border-secondary bg-secondary/10 px-4 py-2 text-xs font-semibold text-secondary hover:bg-secondary/20"
+            >
+              {t("murdoku.tutorial.close")}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -208,7 +314,7 @@ function WinScreen({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-4 text-center">
       <div
-        className="text-4xl font-bold tracking-widest text-neon-pink"
+        className="text-4xl font-bold tracking-widest text-primary"
         style={{ fontFamily: "var(--font-display)" }}
       >
         {t("murdoku.youWin")}
@@ -218,7 +324,7 @@ function WinScreen({
       <button
         type="button"
         onClick={onPlayAgain}
-        className="rounded-lg border border-neon-pink bg-neon-pink/15 px-6 py-3 text-sm font-semibold text-neon-pink transition-colors hover:bg-neon-pink/25"
+        className="rounded-lg border border-primary bg-primary/10 px-6 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary/20"
       >
         {t("murdoku.playAgain")}
       </button>
@@ -274,7 +380,6 @@ function SolutionRow({
   t: (key: string, vars?: Record<string, string | number>) => string;
 }) {
   const killerPos = getPlacement(content.solution.placements, content.solution.killerId);
-  const victimPos = getPlacement(content.solution.placements, content.solution.victimId);
   const room = killerPos
     ? getRoomForCell(content.rooms, { row: killerPos.row, col: killerPos.col })
     : null;
@@ -286,7 +391,7 @@ function SolutionRow({
       </div>
       {room && (
         <p className="text-xs text-muted-foreground">
-          {t("murdoku.murder")}: {room.emoji} {room.name}
+          {t("murdoku.murder")}: {room.name}
         </p>
       )}
     </div>
@@ -298,13 +403,21 @@ function SolutionItem({
   char,
 }: {
   label: string;
-  char: { id: string; name: string; emoji?: string } | undefined;
+  char: { id: string; name: string; emoji?: string; image?: string } | undefined;
 }) {
   return (
     <div>
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="text-lg font-semibold">
-        {char?.emoji ?? ""} {char?.name ?? "\u2014"}
+        {char?.image ? (
+          <img
+            src={char.image}
+            alt={char.name}
+            className="h-8 w-8 rounded-full object-top object-cover"
+          />
+        ) : (
+          <>{char?.name ?? "\u2014"}</>
+        )}
       </p>
     </div>
   );

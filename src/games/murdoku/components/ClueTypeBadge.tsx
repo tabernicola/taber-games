@@ -5,12 +5,16 @@ export function ClueTypeBadge({ type }: { type: ClueType }) {
   const { t } = useI18n();
   const config: Record<ClueType, { color: string; labelKey: string }> = {
     fact: {
-      color: "bg-neon-cyan/20 text-neon-cyan border-neon-cyan/30",
+      color: "bg-secondary/15 text-secondary border-secondary/30",
       labelKey: "murdoku.clueType.fact",
     },
     elimination: {
-      color: "bg-red-500/20 text-red-400 border-red-500/30",
+      color: "bg-destructive/15 text-destructive border-destructive/30",
       labelKey: "murdoku.clueType.elimination",
+    },
+    clue: {
+      color: "bg-primary/15 text-primary border-primary/30",
+      labelKey: "murdoku.clueType.clue",
     },
   };
 
