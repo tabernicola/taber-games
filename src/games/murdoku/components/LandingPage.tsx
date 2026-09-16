@@ -42,6 +42,8 @@ export function LandingPage() {
             </p>
           </header>
 
+          <ModeSelect slug={slug} />
+
           <section className="mt-8 flex justify-center gap-3">
             <Link
               to="/$lang/murdoku/create"
@@ -124,6 +126,65 @@ export function LandingPage() {
 
       </div>
     </div>
+  );
+}
+
+function ModeSelect({ slug }: { slug: "eus" | "es" | "en" }) {
+  const { t } = useI18n();
+  const levels = ["easy", "medium", "hard", "expert"] as const;
+  const sizes = [6, 7, 8, 9] as const;
+
+  return (
+    <section className="mt-10 grid gap-4 sm:grid-cols-3">
+      <div className="rounded-xl border border-border bg-card p-4">
+        <h3 className="text-lg font-semibold text-foreground">{t("murdoku.mode.sudoku")}</h3>
+        <p className="mt-1 text-xs text-muted-foreground">{t("murdoku.mode.sudokuDesc")}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {levels.map((level) => (
+            <Link
+              key={level}
+              to="/$lang/murdoku/play"
+              params={{ lang: slug }}
+              search={{ mode: "sudoku", level }}
+              className="rounded-lg border border-primary bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/20"
+            >
+              {t(`murdoku.level.${level}`)}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-4">
+        <h3 className="text-lg font-semibold text-foreground">{t("murdoku.mode.meowdoku")}</h3>
+        <p className="mt-1 text-xs text-muted-foreground">{t("murdoku.mode.meowdokuDesc")}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {sizes.map((size) => (
+            <Link
+              key={size}
+              to="/$lang/murdoku/play"
+              params={{ lang: slug }}
+              search={{ mode: "meowdoku", size }}
+              className="rounded-lg border border-primary bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/20"
+            >
+              {size}×{size}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-4">
+        <h3 className="text-lg font-semibold text-foreground">{t("murdoku.mode.case")}</h3>
+        <p className="mt-1 text-xs text-muted-foreground">{t("murdoku.mode.caseDesc")}</p>
+        <Link
+          to="/$lang/murdoku/play"
+          params={{ lang: slug }}
+          search={{ mode: "case" }}
+          className="mt-3 inline-block rounded-lg border border-primary bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/20"
+        >
+          {t("murdoku.solve")}
+        </Link>
+      </div>
+    </section>
   );
 }
 

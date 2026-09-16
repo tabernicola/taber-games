@@ -161,6 +161,23 @@ export const dict: Dict = {
   "suspects.back": "Murdukura itzuli",
   "suspects.button": "Susmagarriak ikusi",
   "suspects.count": "{n} susmagarri",
+  "murdoku.mode.sudoku": "Pertsonaien sudokua",
+  "murdoku.mode.sudokuDesc": "9×9 sudoku klasikoa, zenbakien ordez bederatzi pertsonaiekin.",
+  "murdoku.mode.meowdoku": "Meowdoku",
+  "murdoku.mode.meowdokuDesc": "Pertsonaia bat errenkadako, zutabeko eta gelako. Ezin dira elkarren ondoan egon.",
+  "murdoku.mode.case": "Ikerketa",
+  "murdoku.mode.caseDesc": "Ebatzi kasuak arrastoen bidez eta salatu hiltzailea eta biktima.",
+  "murdoku.level.easy": "Erraza",
+  "murdoku.level.medium": "Ertaina",
+  "murdoku.level.hard": "Zaila",
+  "murdoku.level.expert": "Aditua",
+  "murdoku.generating": "Taula sortzen…",
+  "murdoku.solvedIn": "{time}-tan ebatzia!",
+  "murdoku.meowdokuRules": "Pertsonaia bat errenkadako, zutabeko eta gelako. Bi pertsonaia ezin dira inoiz ondoko laukietan egon (diagonalak barne).",
+  "murdoku.back": "Atzera",
+  "murdoku.reset": "Berrabiarazi",
+  "murdoku.newBoard": "Beste taula bat",
+  "murdoku.needNineCharacters": "Modu honek bederatzi pertsonaia behar ditu.",
 };
 
 export default dict;

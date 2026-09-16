@@ -2,9 +2,21 @@ import { createFileRoute } from "@tanstack/react-router";
 import { pageMeta } from "@/platform/seo";
 import { PlayPage } from "@/games/murdoku/components/PlayPage";
 
+export type MurdokuPlaySearch = {
+  caseId?: string | undefined;
+  mode?: "case" | "sudoku" | "meowdoku" | undefined;
+  level?: string | undefined;
+  size?: number | undefined;
+  puzzle?: string | undefined;
+};
+
 export const Route = createFileRoute("/$lang/murdoku/play")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): MurdokuPlaySearch => ({
     caseId: search["caseId"] as string | undefined,
+    mode: search["mode"] as "case" | "sudoku" | "meowdoku" | undefined,
+    level: search["level"] as string | undefined,
+    size: search["size"] === undefined ? undefined : Number(search["size"]),
+    puzzle: search["puzzle"] as string | undefined,
   }),
   head: () => ({
     meta: pageMeta({
