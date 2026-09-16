@@ -5,6 +5,10 @@ import { PlayPage } from "@/games/murdoku/components/PlayPage";
 export const Route = createFileRoute("/$lang/murdoku/play")({
   validateSearch: (search: Record<string, unknown>) => ({
     caseId: search["caseId"] as string | undefined,
+    mode: search["mode"] as "case" | "sudoku" | "meowdoku" | undefined,
+    level: search["level"] as string | undefined,
+    size: search["size"] === undefined ? undefined : Number(search["size"]),
+    puzzle: search["puzzle"] as string | undefined,
   }),
   head: () => ({
     meta: pageMeta({

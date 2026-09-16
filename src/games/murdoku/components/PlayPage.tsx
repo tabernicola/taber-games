@@ -1,21 +1,98 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { useSearch } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useI18n } from "@/platform/i18n";
 import { fetchApprovedCases, fetchCase, type MurdokuCase } from "@/games/murdoku/logic/cases";
 import { SAMPLE_CASE } from "@/games/murdoku/data/gameSchema";
+import { fetchSuspects } from "@/games/murdoku/logic/characters";
 import { MurdokuGame } from "./MurdokuGame";
+import { SudokuBoard } from "./SudokuBoard";
+import { MeowdokuBoard } from "./MeowdokuBoard";
+import { findMeowdokuPuzzle, meowdokuPuzzlesBySize } from "@/games/murdoku/logic/meowdokuPuzzles";
+import type { SudokuLevel } from "@/games/murdoku/logic/sudoku";
 import "@/games/murdoku/light-theme.css";
 
 type PlaySearch = {
   caseId?: string;
+  mode?: string;
+  level?: string;
+  size?: number;
+  puzzle?: string;
 };
 
 export function PlayPage() {
-  const { t, slug } = useI18n();
-  const navigate = useNavigate();
   const search = useSearch({ strict: false }) as PlaySearch;
-  const caseId = search?.caseId;
+  const mode = search?.mode ?? "case";
+
+  if (mode === "sudoku") {
+    return <SudokuPlay level={(search?.level as SudokuLevel) ?? "easy"} />;
+  }
+  if (mode === "meowdoku") {
+    return <MeowdokuPlay size={Number(search?.size) || 6} puzzleId={search?.puzzle} />;
+  }
+  return <CasePlay caseId={search?.caseId} />;
+}
+
+function useCharacters() {
+  return useQuery({ queryKey: ["murdoku-suspects"], queryFn: fetchSuspects });
+}
+
+function SudokuPlay({ level }: { level: SudokuLevel }) {
+  const { t } = useI18n();
+  const { data: characters = [], isPending } = useCharacters();
+
+  if (isPending) {
+    return (
+      <div className="murdoku-light flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">{t("murdoku.loading")}</p>
+      </div>
+    );
+  }
+  if (characters.length < 9) {
+    return (
+      <div className="murdoku-light flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">{t("murdoku.needNineCharacters")}</p>
+      </div>
+    );
+  }
+  return <SudokuBoard level={level} characters={characters.slice(0, 9)} />;
+}
+
+function MeowdokuPlay({ size, puzzleId }: { size: number; puzzleId?: string }) {
+  const { t } = useI18n();
+  const { data: characters = [], isPending } = useCharacters();
+  const [index, setIndex] = useState(0);
+
+  const list = useMemo(() => meowdokuPuzzlesBySize(size), [size]);
+  const puzzle = (puzzleId ? findMeowdokuPuzzle(puzzleId) : undefined) ?? list[index % list.length];
+
+  if (isPending) {
+    return (
+      <div className="murdoku-light flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">{t("murdoku.loading")}</p>
+      </div>
+    );
+  }
+  if (!puzzle || characters.length < size) {
+    return (
+      <div className="murdoku-light flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">{t("murdoku.noCases")}</p>
+      </div>
+    );
+  }
+
+  return (
+    <MeowdokuBoard
+      key={puzzle.id}
+      puzzle={puzzle}
+      characters={characters}
+      onNewBoard={() => setIndex((i) => i + 1)}
+    />
+  );
+}
+
+function CasePlay({ caseId }: { caseId?: string }) {
+  const { t } = useI18n();
   const isDemoCase = caseId === SAMPLE_CASE.id;
 
   const [selectedCase, setSelectedCase] = useState<MurdokuCase | null>(
@@ -32,31 +109,24 @@ export function PlayPage() {
     enabled: !caseId || isDemoCase,
   });
 
-  const {
-    data: fetchedCase,
-    isPending: caseLoading,
-    refetch: refetchCase,
-  } = useQuery({
+  const { data: fetchedCase, isPending: caseLoading } = useQuery({
     queryKey: ["murdoku-case", caseId],
     queryFn: () => (caseId && !isDemoCase ? fetchCase(caseId) : Promise.resolve(null)),
     enabled: !!caseId && !isDemoCase,
   });
 
-  // When a specific case is requested from Supabase
   useEffect(() => {
     if (caseId && fetchedCase && fetchedCase.content) {
       setSelectedCase(fetchedCase);
     }
   }, [caseId, fetchedCase]);
 
-  // Auto-select first approved case when no specific case requested
   useEffect(() => {
     if (!caseId && approvedCases.length > 0) {
       setSelectedCase(approvedCases[0]);
     }
   }, [caseId, approvedCases]);
 
-  // Fallback: if no approved cases from Supabase, use the sample case
   useEffect(() => {
     if (!caseId && !casesLoading && approvedCases.length === 0 && !selectedCase) {
       setSelectedCase(SAMPLE_CASE);
