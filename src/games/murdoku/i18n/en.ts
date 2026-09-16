@@ -161,6 +161,23 @@ export const dict: Dict = {
   "suspects.back": "Back to Murdoku",
   "suspects.button": "View suspects",
   "suspects.count": "{n} suspects",
+  "murdoku.mode.sudoku": "Character sudoku",
+  "murdoku.mode.sudokuDesc": "Classic 9×9 sudoku using the nine characters instead of numbers.",
+  "murdoku.mode.meowdoku": "Meowdoku",
+  "murdoku.mode.meowdokuDesc": "One character per row, column and room. They can never touch each other.",
+  "murdoku.mode.case": "Investigation",
+  "murdoku.mode.caseDesc": "Solve cases from the clues and accuse the killer and the victim.",
+  "murdoku.level.easy": "Easy",
+  "murdoku.level.medium": "Medium",
+  "murdoku.level.hard": "Hard",
+  "murdoku.level.expert": "Expert",
+  "murdoku.generating": "Generating board…",
+  "murdoku.solvedIn": "Solved in {time}!",
+  "murdoku.meowdokuRules": "One character per row, column and room. Two characters can never sit on touching cells (diagonals included).",
+  "murdoku.back": "Back",
+  "murdoku.reset": "Reset",
+  "murdoku.newBoard": "New board",
+  "murdoku.needNineCharacters": "This mode needs nine characters.",
 };
 
 export default dict;
