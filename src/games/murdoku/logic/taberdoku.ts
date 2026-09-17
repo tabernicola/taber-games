@@ -1,8 +1,8 @@
-// Meowdoku mode: place one character per row, column and room on an irregular
+// Taberdoku mode: place one character per row, column and room on an irregular
 // board. Two characters can never stand on touching cells (diagonals included).
 // No clues, no killer: the board is solved once every character sits right.
 
-export type MeowdokuPuzzle = {
+export type TaberdokuPuzzle = {
   id: string;
   size: number;
   /** room index per cell, length size*size */
@@ -33,7 +33,7 @@ function touching(size: number, a: number, b: number): boolean {
 }
 
 /** Occupied cells that break one of the four rules. */
-export function meowdokuConflicts(puzzle: MeowdokuPuzzle, occupied: number[]): Set<number> {
+export function taberdokuConflicts(puzzle: TaberdokuPuzzle, occupied: number[]): Set<number> {
   const { size, rooms } = puzzle;
   const conflicts = new Set<number>();
   for (let i = 0; i < occupied.length; i++) {
@@ -54,21 +54,21 @@ export function meowdokuConflicts(puzzle: MeowdokuPuzzle, occupied: number[]): S
   return conflicts;
 }
 
-export function isMeowdokuSolved(puzzle: MeowdokuPuzzle, occupied: number[]): boolean {
+export function isTaberdokuSolved(puzzle: TaberdokuPuzzle, occupied: number[]): boolean {
   if (occupied.length !== puzzle.size) return false;
   const expected = new Set(puzzle.solution);
   return occupied.every((cell) => expected.has(cell));
 }
 
 /** Counts solutions of a board, stopping at `limit`. Used by tests. */
-export function countMeowdokuSolutions(puzzle: MeowdokuPuzzle, limit = 2): number {
+export function countTaberdokuSolutions(puzzle: TaberdokuPuzzle, limit = 2): number {
   const { size, rooms, givens } = puzzle;
   const fixedByRow = new Map<number, number>();
   for (const g of givens) fixedByRow.set(cellRow(size, g), cellCol(size, g));
 
   const usedCols = new Array<boolean>(size).fill(false);
   const usedRooms = new Array<boolean>(size).fill(false);
-  let previousCol = -10;
+  const previousCol = -10;
   let found = 0;
 
   const rec = (row: number, prevCol: number): void => {

@@ -5,8 +5,17 @@ import { taberSquareGame } from "@/games/taber-square/manifest";
 import { tabersStarGame } from "@/games/tabers-star/manifest";
 import { eternityIIGame } from "@/games/eternity-ii/manifest";
 import { murdokuGame } from "@/games/murdoku/manifest";
+import { tabersSudokuGame } from "@/games/tabers-sudoku/manifest";
+import { tabersTaberdokuGame } from "@/games/tabers-taberdoku/manifest";
 
-export const games: GameModule[] = [tabersStarGame, eternityIIGame, taberSquareGame, murdokuGame];
+export const games: GameModule[] = [
+  tabersStarGame,
+  eternityIIGame,
+  taberSquareGame,
+  murdokuGame,
+  tabersSudokuGame,
+  tabersTaberdokuGame,
+];
 export const externalGames: ExternalGameEntry[] = [
   {
     id: "taber-study",

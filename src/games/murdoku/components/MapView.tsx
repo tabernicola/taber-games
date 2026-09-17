@@ -203,7 +203,9 @@ export function MapView({
                 <button
                   key={key}
                   type="button"
-                  disabled={showSolution || (mode === "place" && selectedCharId && cellHasNonWalkable)}
+                  disabled={
+                    showSolution || (mode === "place" && selectedCharId && cellHasNonWalkable)
+                  }
                   onClick={handleCellClick}
                   className={`relative flex aspect-square items-center justify-center text-xs font-medium transition-all ${
                     ROOM_COLORS[roomIdx % ROOM_COLORS.length]

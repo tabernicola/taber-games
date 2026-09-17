@@ -1,0 +1,33 @@
+@import "tailwindcss" source(none);
+
+.tabers-sudoku-light {
+  --background: #f8fafc;
+  --card: #ffffff;
+  --card-foreground: #1e293b;
+  --border: #e2e8f0;
+  --foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #10b981;
+  --secondary-foreground: #ffffff;
+  --accent: #10b981;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  --neon-pink: #db2749;
+  --neon-cyan: #3b82f6;
+  --neon-yellow: #f59e0b;
+  --neon-violet: #8b5cf6;
+  --neon-green: #10b981;
+  --neon-orange: #f59e0b;
+  --neon-red: #dc2626;
+  --neon-blue: #3b82f6;
+
+  --input: #e2e8f0;
+  --ring: #2563eb;
+
+  background-color: #f8fafc;
+}

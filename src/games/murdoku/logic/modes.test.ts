@@ -6,8 +6,8 @@ import {
   sudokuConflicts,
   SUDOKU_LEVELS,
 } from "./sudoku";
-import { countMeowdokuSolutions, isMeowdokuSolved, meowdokuConflicts } from "./meowdoku";
-import { MEOWDOKU_PUZZLES } from "./meowdokuPuzzles";
+import { countTaberdokuSolutions, isTaberdokuSolved, taberdokuConflicts } from "./taberdoku";
+import { TABERDOKU_PUZZLES } from "./taberdokuPuzzles";
 
 describe("sudoku", () => {
   it("generates a unique-solution puzzle per level", () => {
@@ -30,25 +30,25 @@ describe("sudoku", () => {
   });
 });
 
-describe("meowdoku", () => {
+describe("taberdoku", () => {
   it("ships boards of every size with a single solution", () => {
-    expect(MEOWDOKU_PUZZLES.length).toBeGreaterThan(0);
+    expect(TABERDOKU_PUZZLES.length).toBeGreaterThan(0);
     for (const size of [6, 7, 8, 9]) {
-      expect(MEOWDOKU_PUZZLES.filter((p) => p.size === size).length).toBeGreaterThan(0);
+      expect(TABERDOKU_PUZZLES.filter((p) => p.size === size).length).toBeGreaterThan(0);
     }
-    for (const puzzle of MEOWDOKU_PUZZLES) {
+    for (const puzzle of TABERDOKU_PUZZLES) {
       expect(puzzle.rooms).toHaveLength(puzzle.size * puzzle.size);
       expect(puzzle.solution).toHaveLength(puzzle.size);
-      expect(countMeowdokuSolutions(puzzle, 3)).toBe(1);
-      expect(meowdokuConflicts(puzzle, puzzle.solution).size).toBe(0);
-      expect(isMeowdokuSolved(puzzle, puzzle.solution)).toBe(true);
+      expect(countTaberdokuSolutions(puzzle, 3)).toBe(1);
+      expect(taberdokuConflicts(puzzle, puzzle.solution).size).toBe(0);
+      expect(isTaberdokuSolved(puzzle, puzzle.solution)).toBe(true);
     }
   });
 
   it("rejects characters on touching cells", () => {
-    const puzzle = MEOWDOKU_PUZZLES[0];
+    const puzzle = TABERDOKU_PUZZLES[0];
     const a = 0;
     const b = puzzle.size + 1; // diagonal neighbour
-    expect(meowdokuConflicts(puzzle, [a, b]).size).toBe(2);
+    expect(taberdokuConflicts(puzzle, [a, b]).size).toBe(2);
   });
 });

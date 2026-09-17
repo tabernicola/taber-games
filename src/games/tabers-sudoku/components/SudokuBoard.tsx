@@ -13,7 +13,7 @@ import {
   type SudokuPuzzle,
 } from "../logic/sudoku";
 import { CharacterTray } from "./CharacterTray";
-import "@/games/murdoku/light-theme.css";
+import "@/games/tabers-sudoku/light-theme.css";
 
 export function SudokuBoard({
   level,
@@ -75,18 +75,18 @@ export function SudokuBoard({
   const selectedCharId = selected !== null ? (characters[selected]?.id ?? null) : null;
 
   return (
-    <div className="murdoku-light min-h-screen">
+    <div className="tabers-sudoku-light min-h-screen">
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/80 px-3 py-2 backdrop-blur">
         <button
           type="button"
-          onClick={() => void navigate({ to: "/$lang/murdoku", params: { lang: slug } })}
+          onClick={() => void navigate({ to: "/$lang/tabers-sudoku", params: { lang: slug } })}
           className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
           aria-label={t("common.back")}
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
         <h1 className="text-base font-bold tracking-widest text-primary">
-          {t("murdoku.mode.sudoku")} · {t(`murdoku.level.${level}`)}
+          {t("sudoku.title")} · {t(`sudoku.level.${level}`)}
         </h1>
         <span className="flex items-center gap-1 text-sm font-semibold text-muted-foreground">
           <Clock className="h-4 w-4" />
@@ -96,14 +96,14 @@ export function SudokuBoard({
 
       <main className="px-2 pb-32 pt-4">
         {!puzzle && (
-          <p className="py-20 text-center text-muted-foreground">{t("murdoku.generating")}</p>
+          <p className="py-20 text-center text-muted-foreground">{t("sudoku.generating")}</p>
         )}
 
         {puzzle && (
           <>
             {solved && (
               <p className="mb-3 text-center text-lg font-bold text-primary">
-                {t("murdoku.solvedIn", { time: formatTime(seconds) })}
+                {t("sudoku.solvedIn", { time: formatTime(seconds) })}
               </p>
             )}
             <div className="mx-auto grid max-w-[480px] grid-cols-9 overflow-hidden rounded-xl border-2 border-slate-700 bg-slate-700">
@@ -175,7 +175,7 @@ export function SudokuBoard({
             }`}
           >
             <Eraser className="h-5 w-5" />
-            {t("murdoku.erase")}
+            {t("sudoku.reset")}
           </button>
           <button
             type="button"

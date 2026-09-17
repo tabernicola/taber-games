@@ -14,7 +14,7 @@ Sudoku clásico 9x9 donde los números se sustituyen por los 9 personajes de la 
 - Se avisa en rojo cuando un personaje repite fila, columna o caja.
 - Se gana al completar el tablero correctamente; cronómetro visible.
 
-## 2. Modo Meowdoku (nuevo)
+## 2. Modo Taberdoku (nuevo)
 
 Parecido al modo actual pero sin pistas ni asesinato: solo lógica de colocación.
 
@@ -31,16 +31,16 @@ El modo que ya existe (casos con pistas, asesino y víctima) se mantiene igual, 
 
 ## Página inicial
 
-La página de Murdoku muestra tres tarjetas de modo. Al elegir Sudoku se pide la dificultad; al elegir Meowdoku, el tamaño y el tablero; al elegir Investigación se listan los casos como ahora.
+La página de Murdoku muestra tres tarjetas de modo. Al elegir Sudoku se pide la dificultad; al elegir Taberdoku, el tamaño y el tablero; al elegir Investigación se listan los casos como ahora.
 
 ## Detalles técnicos
 
-- Rutas: `/$lang/murdoku/play` acepta `mode=sudoku|meowdoku|case`, más `level` (sudoku) o `puzzle` (meowdoku); sin parámetros se comporta como hoy.
+- Rutas: `/$lang/murdoku/play` acepta `mode=sudoku|taberdoku|case`, más `level` (sudoku) o `puzzle` (taberdoku); sin parámetros se comporta como hoy.
 - Nueva lógica en `src/games/murdoku/logic/`:
   - `sudoku.ts`: generación de solución completa por backtracking, vaciado de casillas según dificultad y verificación de unicidad; validación de conflictos.
-  - `meowdoku.ts`: tipos del puzle, comprobación de las cuatro restricciones (fila, columna, sala, adyacencia incl. diagonal) y detección de victoria.
-  - `meowdokuPuzzles.ts`: colección fija de tableros 6x6–9x9 con sus salas y solución, validados por test.
-- Nuevos componentes en `src/games/murdoku/components/`: `SudokuBoard.tsx`, `MeowdokuBoard.tsx`, `CharacterTray.tsx` (selector de personaje compartido) y `ModeSelect` dentro de `LandingPage.tsx`. `MapView` y `MurdokuGame` no se tocan.
+  - `taberdoku.ts`: tipos del puzle, comprobación de las cuatro restricciones (fila, columna, sala, adyacencia incl. diagonal) y detección de victoria.
+  - `taberdokuPuzzles.ts`: colección fija de tableros 6x6–9x9 con sus salas y solución, validados por test.
+- Nuevos componentes en `src/games/murdoku/components/`: `SudokuBoard.tsx`, `TaberdokuBoard.tsx`, `CharacterTray.tsx` (selector de personaje compartido) y `ModeSelect` dentro de `LandingPage.tsx`. `MapView` y `MurdokuGame` no se tocan.
 - Los personajes se leen con `fetchSuspects()` de `logic/characters.ts`; si la lista no llega a 9 se muestra aviso.
 - Textos nuevos en `i18n/es.ts`, `eu.ts` y `en.ts`.
-- Tests con Vitest para el generador de sudoku (unicidad) y para las reglas y soluciones de los tableros meowdoku.
+- Tests con Vitest para el generador de sudoku (unicidad) y para las reglas y soluciones de los tableros taberdoku.

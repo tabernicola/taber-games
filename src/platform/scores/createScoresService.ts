@@ -12,7 +12,8 @@ export type ScoreTable =
   | "scores_taber_square"
   | "scores_tabers_star"
   | "scores_eternity_ii"
-  | "scores_murdoku";
+  | "scores_murdoku"
+  | "scores_tabers_sudoku";
 
 export type ScoresService = {
   /** Supabase table backing this service (one per game). */

@@ -112,18 +112,17 @@ export function LandingPage() {
           </section>
 
           <section className="mt-10 flex justify-center">
-          <Link
-            to="/$lang/murdoku/sospechosos"
-            params={{ lang: slug }}
-            className="inline-flex items-center justify-center rounded-lg border border-neon-pink bg-neon-pink/10 px-6 py-3 text-sm font-semibold text-neon-pink transition-all hover:bg-neon-pink/20"
-          >
-            {t("suspects.button")}
-          </Link>
-        </section>
+            <Link
+              to="/$lang/murdoku/sospechosos"
+              params={{ lang: slug }}
+              className="inline-flex items-center justify-center rounded-lg border border-neon-pink bg-neon-pink/10 px-6 py-3 text-sm font-semibold text-neon-pink transition-all hover:bg-neon-pink/20"
+            >
+              {t("suspects.button")}
+            </Link>
+          </section>
 
           <GameFooter basedOn="Murdoku — Sudoku-style deduction puzzle in the style of Clue/Cluedo." />
         </main>
-
       </div>
     </div>
   );
@@ -131,47 +130,9 @@ export function LandingPage() {
 
 function ModeSelect({ slug }: { slug: "eus" | "es" | "en" }) {
   const { t } = useI18n();
-  const levels = ["easy", "medium", "hard", "expert"] as const;
-  const sizes = [6, 7, 8, 9] as const;
 
   return (
-    <section className="mt-10 grid gap-4 sm:grid-cols-3">
-      <div className="rounded-xl border border-border bg-card p-4">
-        <h3 className="text-lg font-semibold text-foreground">{t("murdoku.mode.sudoku")}</h3>
-        <p className="mt-1 text-xs text-muted-foreground">{t("murdoku.mode.sudokuDesc")}</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {levels.map((level) => (
-            <Link
-              key={level}
-              to="/$lang/murdoku/play"
-              params={{ lang: slug }}
-              search={{ mode: "sudoku", level }}
-              className="rounded-lg border border-primary bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/20"
-            >
-              {t(`murdoku.level.${level}`)}
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      <div className="rounded-xl border border-border bg-card p-4">
-        <h3 className="text-lg font-semibold text-foreground">{t("murdoku.mode.meowdoku")}</h3>
-        <p className="mt-1 text-xs text-muted-foreground">{t("murdoku.mode.meowdokuDesc")}</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {sizes.map((size) => (
-            <Link
-              key={size}
-              to="/$lang/murdoku/play"
-              params={{ lang: slug }}
-              search={{ mode: "meowdoku", size }}
-              className="rounded-lg border border-primary bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/20"
-            >
-              {size}×{size}
-            </Link>
-          ))}
-        </div>
-      </div>
-
+    <section className="mt-10 grid gap-4 sm:grid-cols-2">
       <div className="rounded-xl border border-border bg-card p-4">
         <h3 className="text-lg font-semibold text-foreground">{t("murdoku.mode.case")}</h3>
         <p className="mt-1 text-xs text-muted-foreground">{t("murdoku.mode.caseDesc")}</p>
