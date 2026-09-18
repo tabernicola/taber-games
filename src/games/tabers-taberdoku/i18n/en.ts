@@ -15,6 +15,8 @@ export const dict: Dict = {
   "taberdoku.reset": "Reset",
   "taberdoku.newBoard": "New board",
   "taberdoku.erase": "Erase",
+  "taberdoku.errors": "Errors: {count}",
+  "taberdoku.characters": "Characters",
 };
 
 export default dict;
