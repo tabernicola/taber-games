@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, Clock, RotateCcw, X } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
@@ -32,6 +32,7 @@ export function TaberdokuBoard({
   const { t, slug } = useI18n();
   const navigate = useNavigate();
   const size = puzzle.size;
+  const characterColumns = size === 6 ? 3 : size <= 8 ? 4 : 5;
   const cast = useMemo(() => characters.slice(0, size), [characters, size]);
 
   // Map each character to their correct cell and room color
@@ -49,23 +50,41 @@ export function TaberdokuBoard({
 
   const initial = useMemo(() => {
     const map: Record<string, number> = {};
-    puzzle.givens.forEach((cell, i) => {
-      const info = charInfo[i];
+    const cellToCharacterIndex = new Map<number, number>();
+    puzzle.solution.forEach((cell, characterIndex) => {
+      cellToCharacterIndex.set(cell, characterIndex);
+    });
+
+    puzzle.givens.forEach((cell) => {
+      const characterIndex = cellToCharacterIndex.get(cell);
+      const info = characterIndex === undefined ? undefined : charInfo[characterIndex];
       if (info) map[info.char.id] = cell;
     });
     return map;
-  }, [puzzle.givens, charInfo]);
+  }, [puzzle.givens, puzzle.solution, charInfo]);
 
   const [placements, setPlacements] = useState<Record<string, number>>(initial);
   const [crosses, setCrosses] = useState<Set<number>>(new Set());
+  const [errorCells, setErrorCells] = useState<Set<number>>(new Set());
   const [errors, setErrors] = useState(0);
   const [lastErrorCell, setLastErrorCell] = useState<number | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragMarking, setDragMarking] = useState<boolean | null>(null);
-  const dragStartCell = useRef<number | null>(null);
+  const clickTimers = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
+  const touchStartCell = useRef<number | null>(null);
+  const touchCell = useRef<number | null>(null);
+  const touchStartCellHasCross = useRef(false);
+  const touchMoved = useRef(false);
+  const lastTouchEndTime = useRef(0);
+
+  useEffect(
+    () => () => {
+      clickTimers.current.forEach((timer) => clearTimeout(timer));
+      clickTimers.current.clear();
+    },
+    [],
+  );
 
   const occupied = useMemo(() => Object.values(placements), [placements]);
-  const solved = isTaberdokuSolved(puzzle, occupied);
+  const solved = errorCells.size === 0 && isTaberdokuSolved(puzzle, occupied);
   const { seconds } = useTimer(!solved);
   const conflicts = useMemo(() => taberdokuConflicts(puzzle, occupied), [puzzle, occupied]);
 
@@ -81,20 +100,8 @@ export function TaberdokuBoard({
   const handleCellClick = (cell: number) => {
     if (solved) return;
     if (isGiven(cell)) return;
+    if (errorCells.has(cell)) return;
 
-    const existing = charAt(cell);
-
-    // If there's a character here, remove it
-    if (existing) {
-      setPlacements((prev) => {
-        const next = { ...prev };
-        delete next[existing.char.id];
-        return next;
-      });
-      return;
-    }
-
-    // Toggle cross on single click
     setCrosses((prev) => {
       const next = new Set(prev);
       if (next.has(cell)) {
@@ -109,88 +116,152 @@ export function TaberdokuBoard({
   const handleCellDoubleClick = (cell: number) => {
     if (solved) return;
     if (isGiven(cell)) return;
+    if (errorCells.has(cell)) return;
 
     const existing = charAt(cell);
-    if (existing) return; // Already handled by click
+    if (existing) return;
 
-    // Find which character belongs to this cell
     const charForCell = charInfo.find((c) => c.correctCell === cell);
-    if (!charForCell) return;
+    if (!charForCell) {
+      setErrors((e) => e + 1);
+      setErrorCells((prev) => {
+        const next = new Set(prev);
+        next.add(cell);
+        return next;
+      });
+      setCrosses((prev) => {
+        const next = new Set(prev);
+        next.delete(cell);
+        return next;
+      });
+      setLastErrorCell(cell);
+      setTimeout(() => setLastErrorCell(null), 800);
+      return;
+    }
 
-    // Check if character is already placed elsewhere
     const currentCell = placements[charForCell.char.id];
     if (currentCell !== undefined) {
-      // Move character to new cell
       if (currentCell === cell) return;
       setPlacements((prev) => {
         const next = { ...prev };
         next[charForCell.char.id] = cell;
         return next;
       });
+      setCrosses((prev) => {
+        const next = new Set(prev);
+        next.delete(cell);
+        next.delete(currentCell);
+        return next;
+      });
       return;
     }
 
-    // Try to place character
-    if (cell === charForCell.correctCell) {
-      // Correct position
-      setPlacements((prev) => ({ ...prev, [charForCell.char.id]: cell }));
-    } else {
-      // Wrong position - count error, show temporary X
-      setErrors((e) => e + 1);
-      setLastErrorCell(cell);
-      setTimeout(() => setLastErrorCell(null), 800);
+    setPlacements((prev) => ({ ...prev, [charForCell.char.id]: cell }));
+    setCrosses((prev) => {
+      const next = new Set(prev);
+      next.delete(cell);
+      return next;
+    });
+  };
+
+  const scheduleSingleClick = (cell: number) => {
+    const existingTimer = clickTimers.current.get(cell);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+      clickTimers.current.delete(cell);
+      return;
     }
+
+    const timer = setTimeout(() => {
+      clickTimers.current.delete(cell);
+      handleCellClick(cell);
+    }, 500);
+    clickTimers.current.set(cell, timer);
+  };
+
+  const handleMouseClick = (cell: number) => {
+    if (Date.now() - lastTouchEndTime.current < 500) {
+      lastTouchEndTime.current = 0;
+      return;
+    }
+
+    scheduleSingleClick(cell);
+  };
+
+  const setCrossForTouch = (cell: number, shouldMark: boolean) => {
+    if (solved || isGiven(cell) || errorCells.has(cell) || charAt(cell)) return;
+
+    setCrosses((prev) => {
+      const next = new Set(prev);
+      if (shouldMark) {
+        next.add(cell);
+      } else {
+        next.delete(cell);
+      }
+      return next;
+    });
   };
 
   const handleTouchStart = (cell: number) => {
-    if (solved) return;
-    if (isGiven(cell)) return;
-
-    const hasCross = crosses.has(cell);
-    setDragMarking(!hasCross); // If not marked, we'll mark; if marked, we'll unmark
-    setIsDragging(true);
-    dragStartCell.current = cell;
-
-    // Apply immediately on touch start
-    setCrosses((prev) => {
-      const next = new Set(prev);
-      if (hasCross) {
-        next.delete(cell);
-      } else {
-        next.add(cell);
-      }
-      return next;
-    });
+    touchStartCell.current = cell;
+    touchCell.current = cell;
+    touchStartCellHasCross.current = crosses.has(cell);
+    touchMoved.current = false;
+    setCrossForTouch(cell, !touchStartCellHasCross.current);
   };
 
-  const handleTouchMove = (cell: number) => {
-    if (!isDragging || dragMarking === null || solved) return;
-    if (isGiven(cell)) return;
-    if (cell === dragStartCell.current) return;
+  const handleTouchMove = (event: React.TouchEvent<HTMLButtonElement>) => {
+    if (touchStartCell.current === null) return;
 
-    const existing = charAt(cell);
-    if (existing) return; // Don't mark cells with characters
+    const touch = event.touches[0] ?? event.changedTouches[0];
+    if (!touch) return;
 
-    setCrosses((prev) => {
-      const next = new Set(prev);
-      if (dragMarking) {
-        next.add(cell);
-      } else {
-        next.delete(cell);
-      }
-      return next;
-    });
+    const currentCellButton = document
+      .elementFromPoint(touch.clientX, touch.clientY)
+      ?.closest<HTMLButtonElement>("button[data-cell]");
+    if (!currentCellButton) return;
+
+    const currentCell = Number(currentCellButton.dataset.cell);
+    if (Number.isNaN(currentCell) || currentCell === touchCell.current) return;
+
+    touchMoved.current = true;
+    setCrossForTouch(currentCell, !touchStartCellHasCross.current);
+    touchCell.current = currentCell;
   };
 
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-    setDragMarking(null);
-    dragStartCell.current = null;
+  const handleTouchEnd = (cell: number) => {
+    const startCell = touchStartCell.current;
+    const wasTap = startCell === cell && !touchMoved.current;
+    const currentTime = Date.now();
+
+    if (wasTap && currentTime - lastTouchEndTime.current < 300) {
+      touchStartCell.current = null;
+      touchMoved.current = false;
+      lastTouchEndTime.current = currentTime;
+      handleCellDoubleClick(cell);
+      return;
+    }
+
+    lastTouchEndTime.current = currentTime;
+    touchStartCell.current = null;
+    touchMoved.current = false;
+
+    if (wasTap) {
+      //handleCellClick(cell);
+    } else if (startCell !== null) {
+      setCrossForTouch(startCell, !touchStartCellHasCross.current);
+    }
+  };
+
+  const handleTouchCancel = () => {
+    touchStartCell.current = null;
+    touchMoved.current = false;
   };
 
   const reset = () => {
     setPlacements(initial);
     setCrosses(new Set());
+    setErrorCells(new Set());
     setErrors(0);
     setLastErrorCell(null);
   };
@@ -240,25 +311,29 @@ export function TaberdokuBoard({
             const charInfo_cell = charAt(cell);
             const given = isGiven(cell);
             const bad = conflicts.has(cell);
-            const hasCross = crosses.has(cell);
+            const hasError = errorCells.has(cell);
+            const hasCross = crosses.has(cell) && !hasError;
             const isErrorCell = lastErrorCell === cell;
             const roomColor = ROOM_COLORS[puzzle.rooms[cell] % ROOM_COLORS.length];
 
-            const onClick = () => handleCellClick(cell);
+            const onClick = () => handleMouseClick(cell);
             const onDoubleClick = () => handleCellDoubleClick(cell);
             const onTouchStart = () => handleTouchStart(cell);
-            const onTouchMove = () => handleTouchMove(cell);
-            const onTouchEnd = handleTouchEnd;
+            const onTouchMove = (event: React.TouchEvent<HTMLButtonElement>) =>
+              handleTouchMove(event);
+            const onTouchEnd = () => handleTouchEnd(cell);
 
             return (
               <button
                 key={cell}
                 type="button"
+                data-cell={cell}
                 onClick={onClick}
                 onDoubleClick={onDoubleClick}
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
+                onTouchCancel={handleTouchCancel}
                 className={`relative aspect-square border border-slate-400/70 touch-none ${
                   bad ? "ring-2 ring-inset ring-rose-500" : ""
                 } ${isErrorCell ? "ring-2 ring-inset ring-red-800 animate-pulse" : ""}`}
@@ -291,6 +366,9 @@ export function TaberdokuBoard({
                   </>
                 )}
 
+                {hasError && (
+                  <X className="absolute inset-0 mx-auto my-auto h-3/4 w-3/4 text-red-950 stroke-[3] pointer-events-none" />
+                )}
                 {hasCross && !charInfo_cell && (
                   <X className="absolute inset-0 mx-auto my-auto h-3/4 w-3/4 text-destructive/70 stroke-2 pointer-events-none" />
                 )}
@@ -300,18 +378,29 @@ export function TaberdokuBoard({
         </div>
 
         {/* Character legend - shows each character with their room color, not selectable */}
-        <div className="mt-4 mx-auto max-w-[480px]">
-          <p className="mb-2 text-center text-xs text-muted-foreground">
+        <div
+          className="mt-4 grid mx-auto max-w-[480px] gap-2"
+          style={{ gridTemplateColumns: `repeat(${characterColumns}, minmax(0, 1fr))` }}
+        >
+          <p
+            className="mb-2 text-center text-xs text-muted-foreground"
+            style={{ gridColumn: "1 / -1" }}
+          >
             {t("taberdoku.characters")}
           </p>
-          <div className="flex flex-wrap justify-center gap-1.5">
-            {charInfo.map(({ char, roomColor }) => (
+          {charInfo.map(({ char, roomColor }) => {
+            const isPlaced = placements[char.id] !== undefined;
+            const isGivenChar = puzzle.givens.includes(placements[char.id] ?? -1);
+            return (
               <div
                 key={char.id}
-                className="flex items-center gap-1.5 rounded-lg bg-card border border-border px-2 py-1.5 text-xs"
+                className={`flex items-center justify-center rounded-lg border border-border px-2 py-1.5 text-xs transition-all ${
+                  isPlaced ? "opacity-60 border-primary/50" : "opacity-100"
+                }`}
+                style={{ background: roomColor }}
               >
                 <span
-                  className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                  className="flex h-[72px] w-[72px] items-center justify-center rounded-full text-[10px] font-bold text-white relative"
                   style={{ background: roomColor }}
                 >
                   {char.image ? (
@@ -323,11 +412,15 @@ export function TaberdokuBoard({
                   ) : (
                     char.name.slice(0, 2)
                   )}
+                  {isPlaced && (
+                    <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px]">
+                      ✓
+                    </span>
+                  )}
                 </span>
-                <span className="text-foreground truncate max-w-[80px]">{char.name}</span>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </main>
 
