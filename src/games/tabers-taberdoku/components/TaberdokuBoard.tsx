@@ -7,6 +7,7 @@ import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
 import { formatTime } from "@/platform/scores/formatTime";
 import type { MurdokuCharacter } from "../logic/characters";
 import { isTaberdokuSolved, taberdokuConflicts, type TaberdokuPuzzle } from "../logic/taberdoku";
+import { TaberdokuRules } from "./TaberdokuRules";
 import "@/games/tabers-taberdoku/light-theme.css";
 
 const ROOM_COLORS = [
@@ -170,7 +171,7 @@ export function TaberdokuBoard({
     }
 
     setPlacements((prev) => ({ ...prev, [charForCell.char.id]: cell }));
-    
+
     playSound("place");
     setCrosses((prev) => {
       const next = new Set(prev);
@@ -252,7 +253,12 @@ export function TaberdokuBoard({
     const wasTap = startCell === cell && !touchMoved.current;
     const currentTime = Date.now();
 
-    console.log("touch end", { cell, startCell, wasTap, lastTouchEndTime: lastTouchEndTime.current });
+    console.log("touch end", {
+      cell,
+      startCell,
+      wasTap,
+      lastTouchEndTime: lastTouchEndTime.current,
+    });
     if (wasTap && currentTime - lastTouchEndTime.current < 300) {
       console.log("double tap detected");
       touchStartCell.current = null;
@@ -317,8 +323,10 @@ export function TaberdokuBoard({
           </p>
         )}
 
+        <TaberdokuRules characters={cast} />
+
         <p className="mx-auto mb-3 max-w-[480px] text-center text-xs text-muted-foreground">
-          {t("taberdoku.rules")}
+          {t("taberdoku.doubleClick")}
         </p>
 
         {errors > 0 && (

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import type { Tri } from "../logic/geometry";
-import { triCentroid} from "../logic/geometry";
+import { triCentroid } from "../logic/geometry";
 import { DICE } from "../logic/dice";
 import { getNumberForCell } from "../logic/numberMapping";
 import { BOARD } from "../logic/game";
@@ -125,7 +125,7 @@ export function DiceRollAnimation({
         const temp = faces[0];
         faces[0] = faces[rolledIdx];
         faces[rolledIdx] = temp;
-      } 
+      }
       // Format each face as a number string
       return faces.map(formatNumber);
     });
@@ -180,7 +180,6 @@ export function DiceRollAnimation({
             const finalLeft = centerX + cellCx * scale;
             const finalTop = centerY + cellCy * scale;
 
-
             const isTransformed = phase === "transforming" && i < activeTransformIndex;
             const isTransformingNow = phase === "transforming" && i === activeTransformIndex;
             const targetX = isTransformed || isTransformingNow ? finalLeft : currentX;
@@ -206,7 +205,7 @@ export function DiceRollAnimation({
                   {
                     left: `${targetX}px`,
                     top: `${targetY}px`,
-                     width: `${dieSize}px`,
+                    width: `${dieSize}px`,
                     height: `${dieSize}px`,
                     "--die-half": `${dieHalf}px`,
                     "--random-spin-x": `${randomOffsets[i].spinX}deg`,
@@ -238,7 +237,6 @@ export function DiceRollAnimation({
                 )}
 
                 <div className={`dice-triangle-shape ${cell.d === 0 ? "tri-down" : "tri-up"}`}>
-
                   <div className="dice-triangle-number">{cellNumber || ""}</div>
                 </div>
               </div>

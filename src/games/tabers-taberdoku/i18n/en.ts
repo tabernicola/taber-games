@@ -9,6 +9,10 @@ export const dict: Dict = {
   "taberdoku.desc": "One character per row, column, and room. They can never touch each other.",
   "taberdoku.rules":
     "One character per row, column and room. Two characters can never sit on touching cells (diagonals included).",
+  "taberdoku.rule1": "1 per color",
+  "taberdoku.rule2": "1 per row/column",
+  "taberdoku.rule3": "No touching",
+  "taberdoku.doubleClick": "Double-click a cell to place a character.",
   "taberdoku.generating": "Generating board…",
   "taberdoku.solvedIn": "Solved in {time}!",
   "taberdoku.back": "Back",

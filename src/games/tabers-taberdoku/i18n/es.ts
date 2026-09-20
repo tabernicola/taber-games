@@ -9,6 +9,10 @@ export const dict: Dict = {
   "taberdoku.desc": "Un personaje por fila, columna y sala. No pueden tocarse entre sí.",
   "taberdoku.rules":
     "Un personaje por fila, columna y sala. Dos personajes nunca pueden estar en casillas contiguas (ni en diagonal).",
+  "taberdoku.rule1": "1 por color",
+  "taberdoku.rule2": "1 por fila/columna",
+  "taberdoku.rule3": "No tocarse",
+  "taberdoku.doubleClick": "Para colocar un personaje, haz doble clic en la casilla.",
   "taberdoku.generating": "Generando tablero…",
   "taberdoku.solvedIn": "¡Resuelto en {time}!",
   "taberdoku.back": "Volver",

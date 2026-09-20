@@ -10,6 +10,10 @@ export const dict: Dict = {
     "Pertsonaia bat errenkadako, zutabeko eta gelako. Ezin dira elkarren ondoan egon.",
   "taberdoku.rules":
     "Pertsonaia bat errenkadako, zutabeko eta gelako. Bi pertsonaia ezin dira inoiz ondoko laukietan egon (diagonalak barne).",
+  "taberdoku.rule1": "1 koloreko",
+  "taberdoku.rule2": "1 errenkada/zutabeko",
+  "taberdoku.rule3": "Ez elkar ukitu",
+  "taberdoku.doubleClick": "Pertsonaia jartzeko, egin klik bikoitza gelan.",
   "taberdoku.generating": "Taula sortzen…",
   "taberdoku.solvedIn": "{time}-tan ebatzia!",
   "taberdoku.back": "Atzera",
