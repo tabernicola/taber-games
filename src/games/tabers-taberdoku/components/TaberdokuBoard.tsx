@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, Clock, RotateCcw, X } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
 import { useTimer } from "@/platform/hooks/useTimer";
+import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
 import { formatTime } from "@/platform/scores/formatTime";
 import type { MurdokuCharacter } from "../logic/characters";
 import { isTaberdokuSolved, taberdokuConflicts, type TaberdokuPuzzle } from "../logic/taberdoku";
@@ -30,6 +31,7 @@ export function TaberdokuBoard({
   onNewBoard: () => void;
 }) {
   const { t, slug } = useI18n();
+  const { playSound } = useSoundEffects();
   const navigate = useNavigate();
   const size = puzzle.size;
   const characterColumns = size === 6 ? 3 : size <= 8 ? 4 : 5;
@@ -86,6 +88,11 @@ export function TaberdokuBoard({
   const occupied = useMemo(() => Object.values(placements), [placements]);
   const solved = errorCells.size === 0 && isTaberdokuSolved(puzzle, occupied);
   const { seconds } = useTimer(!solved);
+  useEffect(() => {
+    if (solved) {
+      playSound("win");
+    }
+  }, [playSound, solved]);
   const conflicts = useMemo(() => taberdokuConflicts(puzzle, occupied), [puzzle, occupied]);
 
   const charAt = useCallback(
@@ -102,18 +109,22 @@ export function TaberdokuBoard({
     if (isGiven(cell)) return;
     if (errorCells.has(cell)) return;
 
+    const shouldAddCross = !crosses.has(cell);
     setCrosses((prev) => {
       const next = new Set(prev);
-      if (next.has(cell)) {
-        next.delete(cell);
-      } else {
+      if (shouldAddCross) {
         next.add(cell);
+        playSound("click");
+      } else {
+        next.delete(cell);
+        playSound("roll");
       }
       return next;
     });
   };
 
   const handleCellDoubleClick = (cell: number) => {
+    console.log("double click", cell);
     if (solved) return;
     if (isGiven(cell)) return;
     if (errorCells.has(cell)) return;
@@ -124,6 +135,7 @@ export function TaberdokuBoard({
     const charForCell = charInfo.find((c) => c.correctCell === cell);
     if (!charForCell) {
       setErrors((e) => e + 1);
+      playSound("error");
       setErrorCells((prev) => {
         const next = new Set(prev);
         next.add(cell);
@@ -147,6 +159,7 @@ export function TaberdokuBoard({
         next[charForCell.char.id] = cell;
         return next;
       });
+      playSound("place");
       setCrosses((prev) => {
         const next = new Set(prev);
         next.delete(cell);
@@ -157,6 +170,8 @@ export function TaberdokuBoard({
     }
 
     setPlacements((prev) => ({ ...prev, [charForCell.char.id]: cell }));
+    
+    playSound("place");
     setCrosses((prev) => {
       const next = new Set(prev);
       next.delete(cell);
@@ -190,13 +205,16 @@ export function TaberdokuBoard({
 
   const setCrossForTouch = (cell: number, shouldMark: boolean) => {
     if (solved || isGiven(cell) || errorCells.has(cell) || charAt(cell)) return;
+    if (crosses.has(cell) === shouldMark) return;
 
     setCrosses((prev) => {
       const next = new Set(prev);
       if (shouldMark) {
         next.add(cell);
+        playSound("click");
       } else {
         next.delete(cell);
+        playSound("roll");
       }
       return next;
     });
@@ -234,7 +252,9 @@ export function TaberdokuBoard({
     const wasTap = startCell === cell && !touchMoved.current;
     const currentTime = Date.now();
 
+    console.log("touch end", { cell, startCell, wasTap, lastTouchEndTime: lastTouchEndTime.current });
     if (wasTap && currentTime - lastTouchEndTime.current < 300) {
+      console.log("double tap detected");
       touchStartCell.current = null;
       touchMoved.current = false;
       lastTouchEndTime.current = currentTime;
@@ -247,7 +267,7 @@ export function TaberdokuBoard({
     touchMoved.current = false;
 
     if (wasTap) {
-      //handleCellClick(cell);
+      handleCellClick(cell);
     } else if (startCell !== null) {
       setCrossForTouch(startCell, !touchStartCellHasCross.current);
     }
@@ -259,6 +279,7 @@ export function TaberdokuBoard({
   };
 
   const reset = () => {
+    playSound("click");
     setPlacements(initial);
     setCrosses(new Set());
     setErrorCells(new Set());
@@ -271,7 +292,10 @@ export function TaberdokuBoard({
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/80 px-3 py-2 backdrop-blur">
         <button
           type="button"
-          onClick={() => void navigate({ to: "/$lang/tabers-taberdoku", params: { lang: slug } })}
+          onClick={() => {
+            playSound("click");
+            void navigate({ to: "/$lang/tabers-taberdoku", params: { lang: slug } });
+          }}
           className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
           aria-label={t("common.back")}
         >
@@ -436,7 +460,10 @@ export function TaberdokuBoard({
           </button>
           <button
             type="button"
-            onClick={onNewBoard}
+            onClick={() => {
+              playSound("click");
+              onNewBoard();
+            }}
             className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-muted-foreground"
           >
             <RotateCcw className="h-5 w-5 rotate-180" />

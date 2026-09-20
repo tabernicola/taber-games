@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react";
 
-type SoundType = "click" | "place" | "rotate" | "win" | "roll";
+type SoundType = "click" | "place" | "rotate" | "win" | "roll" | "error";
 
 let sharedAudioContext: AudioContext | null = null;
 
@@ -91,6 +91,21 @@ export function useSoundEffects() {
           osc2.start(now);
           osc1.stop(now + 0.2);
           osc2.stop(now + 0.2);
+          break;
+        }
+
+        case "error": {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.exponentialRampToValueAtTime(160, now + 0.22);
+          osc.type = "sawtooth";
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+          osc.start(now);
+          osc.stop(now + 0.25);
           break;
         }
 

@@ -1,3 +1,4 @@
+import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
 import type { MurdokuCharacter } from "../logic/characters";
 
 export function CharacterTray({
@@ -12,6 +13,7 @@ export function CharacterTray({
   /** optional remaining count badge per character id */
   counts?: Record<string, number>;
 }) {
+  const { playSound } = useSoundEffects();
   return (
     <div className="mx-auto flex max-w-[480px] flex-wrap items-center justify-center gap-2 px-2">
       {characters.map((char) => {
@@ -22,7 +24,10 @@ export function CharacterTray({
           <button
             key={char.id}
             type="button"
-            onClick={() => onSelect(char.id)}
+            onClick={() => {
+              playSound("click");
+              onSelect(char.id);
+            }}
             aria-pressed={active}
             title={char.name}
             className={`relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border-2 transition-all ${

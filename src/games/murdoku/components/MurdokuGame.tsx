@@ -9,6 +9,7 @@ import { BottomNavigation } from "./BottomNavigation";
 import { MapView } from "./MapView";
 import { AccusationModal } from "./AccusationModal";
 import { useI18n } from "@/platform/i18n";
+import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
 import "@/games/murdoku/light-theme.css";
 
 export function MurdokuGame({
@@ -19,6 +20,7 @@ export function MurdokuGame({
   onPlayAgain?: () => void;
 }) {
   const { t, slug } = useI18n();
+  const { playSound } = useSoundEffects();
   const navigate = useNavigate();
   const { content } = activeCase;
 
@@ -34,6 +36,7 @@ export function MurdokuGame({
 
   const handleSelectCharacter = (charId: string) => {
     if (showSolution) return;
+    playSound("click");
     setSelectedCharId(selectedCharId === charId ? null : charId);
   };
 
@@ -47,58 +50,54 @@ export function MurdokuGame({
 
       // Toggle off: same character at same cell
       if (existing && existing.row === pos.row && existing.col === pos.col) {
-        setPlacements((prev) => {
-          const next = { ...prev };
-          delete next[selectedCharId];
-          return next;
-        });
+        const next = { ...placements };
+        delete next[selectedCharId];
+        setPlacements(next);
+        playSound("click");
         return;
       }
 
       // Place character (remove existing character at this cell first)
-      setPlacements((prev) => {
-        const next = { ...prev };
-        for (const id of Object.keys(next)) {
-          if (id !== selectedCharId && next[id].row === pos.row && next[id].col === pos.col) {
-            delete next[id];
-          }
+      const nextPlacements = { ...placements };
+      for (const id of Object.keys(nextPlacements)) {
+        if (
+          id !== selectedCharId &&
+          nextPlacements[id].row === pos.row &&
+          nextPlacements[id].col === pos.col
+        ) {
+          delete nextPlacements[id];
         }
-        next[selectedCharId] = pos;
-        return next;
-      });
+      }
+      nextPlacements[selectedCharId] = pos;
+      setPlacements(nextPlacements);
+      playSound("place");
 
       // Remove manual cross at this cell
-      setManualCrosses((prev) => {
-        const next = new Set(prev);
-        next.delete(pkey);
-        return next;
-      });
+      const nextCrosses = new Set(manualCrosses);
+      nextCrosses.delete(pkey);
+      setManualCrosses(nextCrosses);
     } else if (mode === "notes") {
-      setTentativeMarks((prev) => {
-        const next = new Set(prev);
-        if (next.has(pkey)) next.delete(pkey);
-        else if (!hasChar) next.add(pkey);
-        return next;
-      });
+      const nextMarks = new Set(tentativeMarks);
+      if (nextMarks.has(pkey)) nextMarks.delete(pkey);
+      else if (!hasChar) nextMarks.add(pkey);
+      setTentativeMarks(nextMarks);
+      playSound("click");
     } else if (mode === "crosses") {
       if (hasChar) return;
-      setManualCrosses((prev) => {
-        const next = new Set(prev);
-        if (next.has(pkey)) next.delete(pkey);
-        else next.add(pkey);
-        return next;
-      });
+      const nextCrosses = new Set(manualCrosses);
+      if (nextCrosses.has(pkey)) nextCrosses.delete(pkey);
+      else nextCrosses.add(pkey);
+      setManualCrosses(nextCrosses);
+      playSound("click");
     } else if (mode === "erase") {
-      setManualCrosses((prev) => {
-        const next = new Set(prev);
-        next.delete(pkey);
-        return next;
-      });
-      setTentativeMarks((prev) => {
-        const next = new Set(prev);
-        next.delete(pkey);
-        return next;
-      });
+      const nextCrosses = new Set(manualCrosses);
+      nextCrosses.delete(pkey);
+      setManualCrosses(nextCrosses);
+
+      const nextMarks = new Set(tentativeMarks);
+      nextMarks.delete(pkey);
+      setTentativeMarks(nextMarks);
+      playSound("click");
     }
   };
 
@@ -176,12 +175,14 @@ export function MurdokuGame({
   }, [showSolution, content.solution]);
 
   const handleAccuse = (result: GuessResult) => {
+    playSound(result.correct ? "win" : "error");
     setGuessResult(result);
     setAccusationOpen(false);
     setShowSolution(true);
   };
 
   const handlePlayAgain = () => {
+    playSound("click");
     setMode("place");
     setPlacements({});
     setTentativeMarks(new Set());
@@ -190,6 +191,18 @@ export function MurdokuGame({
     setGuessResult(null);
     setShowSolution(false);
     onPlayAgain?.();
+  };
+
+  const handleModeChange = (nextMode: GameMode) => {
+    if (nextMode !== mode) {
+      playSound("click");
+    }
+    setMode(nextMode);
+  };
+
+  const handleOpenAccusation = () => {
+    playSound("click");
+    setAccusationOpen(true);
   };
 
   if (guessResult?.correct) {
@@ -219,7 +232,10 @@ export function MurdokuGame({
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/80 px-3 py-2 backdrop-blur">
         <button
           type="button"
-          onClick={() => void navigate({ to: "/$lang/murdoku", params: { lang: slug } })}
+          onClick={() => {
+            playSound("click");
+            void navigate({ to: "/$lang/murdoku", params: { lang: slug } });
+          }}
           className="rounded-lg p-1 text-muted-foreground hover:text-foreground hover:bg-muted"
           aria-label={t("common.back")}
         >
@@ -230,7 +246,10 @@ export function MurdokuGame({
         </h1>
         <button
           type="button"
-          onClick={() => setTutorialOpen(true)}
+          onClick={() => {
+            playSound("click");
+            setTutorialOpen(true);
+          }}
           className="rounded-lg p-1 text-muted-foreground hover:text-foreground hover:bg-muted"
           aria-label={t("murdoku.help")}
         >
@@ -257,15 +276,18 @@ export function MurdokuGame({
 
       <BottomNavigation
         mode={mode}
-        onChangeMode={setMode}
-        onAccuse={() => setAccusationOpen(true)}
+        onChangeMode={handleModeChange}
+        onAccuse={handleOpenAccusation}
         accusationOpen={accusationOpen}
       />
 
       <AccusationModal
         content={content}
         open={accusationOpen}
-        onClose={() => setAccusationOpen(false)}
+        onClose={() => {
+          playSound("click");
+          setAccusationOpen(false);
+        }}
         onAccuse={handleAccuse}
       />
 
@@ -286,7 +308,10 @@ export function MurdokuGame({
             </p>
             <button
               type="button"
-              onClick={() => setTutorialOpen(false)}
+              onClick={() => {
+                playSound("click");
+                setTutorialOpen(false);
+              }}
               className="rounded-lg border border-secondary bg-secondary/10 px-4 py-2 text-xs font-semibold text-secondary hover:bg-secondary/20"
             >
               {t("murdoku.tutorial.close")}

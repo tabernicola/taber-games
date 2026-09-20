@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, Clock, Eraser, RotateCcw } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
 import { useTimer } from "@/platform/hooks/useTimer";
+import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
 import { formatTime } from "@/platform/scores/formatTime";
 import type { MurdokuCharacter } from "../logic/characters";
 import {
@@ -23,6 +24,7 @@ export function SudokuBoard({
   characters: MurdokuCharacter[];
 }) {
   const { t, slug } = useI18n();
+  const { playSound } = useSoundEffects();
   const navigate = useNavigate();
 
   const [puzzle, setPuzzle] = useState<SudokuPuzzle | null>(null);
@@ -49,6 +51,11 @@ export function SudokuBoard({
     () => (grid.length === 81 ? sudokuConflicts(grid) : new Set<number>()),
     [grid],
   );
+  useEffect(() => {
+    if (solved) {
+      playSound("win");
+    }
+  }, [playSound, solved]);
 
   const counts = useMemo(() => {
     const out: Record<string, number> = {};
@@ -60,16 +67,21 @@ export function SudokuBoard({
 
   const handleCell = (index: number) => {
     if (!puzzle || solved || puzzle.fixed.has(index)) return;
-    setGrid((prev) => {
-      const next = [...prev];
-      if (erasing) {
-        next[index] = null;
-        return next;
-      }
-      if (selected === null) return prev;
-      next[index] = next[index] === selected ? null : selected;
-      return next;
-    });
+
+    const nextGrid = [...grid];
+    if (erasing) {
+      nextGrid[index] = null;
+      setGrid(nextGrid);
+      playSound("click");
+      return;
+    }
+    if (selected === null) return;
+
+    const nextValue = nextGrid[index] === selected ? null : selected;
+    const isPlacing = nextValue === selected;
+    nextGrid[index] = nextValue;
+    setGrid(nextGrid);
+    playSound(isPlacing ? (sudokuConflicts(nextGrid).has(index) ? "error" : "place") : "click");
   };
 
   const selectedCharId = selected !== null ? (characters[selected]?.id ?? null) : null;
@@ -79,7 +91,10 @@ export function SudokuBoard({
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/80 px-3 py-2 backdrop-blur">
         <button
           type="button"
-          onClick={() => void navigate({ to: "/$lang/tabers-sudoku", params: { lang: slug } })}
+          onClick={() => {
+            playSound("click");
+            void navigate({ to: "/$lang/tabers-sudoku", params: { lang: slug } });
+          }}
           className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
           aria-label={t("common.back")}
         >
@@ -167,6 +182,7 @@ export function SudokuBoard({
           <button
             type="button"
             onClick={() => {
+              playSound("click");
               setErasing((v) => !v);
               setSelected(null);
             }}
@@ -179,7 +195,10 @@ export function SudokuBoard({
           </button>
           <button
             type="button"
-            onClick={() => setRound((r) => r + 1)}
+            onClick={() => {
+              playSound("click");
+              setRound((r) => r + 1);
+            }}
             className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-muted-foreground"
           >
             <RotateCcw className="h-5 w-5" />
