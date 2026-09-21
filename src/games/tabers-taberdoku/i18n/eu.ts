@@ -22,6 +22,13 @@ export const dict: Dict = {
   "taberdoku.erase": "Ezabatu",
   "taberdoku.errors": "Akatsak: {count}",
   "taberdoku.characters": "Pertsonaiak",
+  "taberdoku.levelProgress": "Maila {current}/{total}",
+  "taberdoku.play": "Jolastu",
+  "taberdoku.levelOf": "Maila {current}/{total}",
+  "taberdoku.levelCleared": "Maila {level} gainditua! Hurrengo maila…",
+  "taberdoku.allCleared": "Eguneratu guztia osatu duzu!",
+  "taberdoku.allLevelsCleared": "Eguneratu guztia osatu duzu.",
+  "taberdoku.loading": "Kargatzen…",
 };
 
 export default dict;

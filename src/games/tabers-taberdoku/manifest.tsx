@@ -18,7 +18,11 @@ function Card({ lang }: GameCardProps) {
         style={{ background: "var(--primary)" }}
       />
       <div className="mb-3 flex justify-center">
-        <TabersTaberdokuLogo className="h-24 w-24" />
+        <img
+          src="/taberdoku/logo.png"
+          alt="Taberdoku"
+          className="h-24 w-24 object-contain drop-shadow-[0_0_20px_oklch(0.72_0.30_350/0.5)]"
+        />
       </div>
       <span className="text-[10px] uppercase tracking-widest text-primary">
         {t("home.card.taberdoku.tag")}
@@ -31,23 +35,6 @@ function Card({ lang }: GameCardProps) {
         {t("home.play")} <span aria-hidden>→</span>
       </div>
     </Link>
-  );
-}
-
-function TabersTaberdokuLogo({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <circle cx="32" cy="32" r="28" fill="currentColor" />
-      <path d="M20 44l4-4 4 4 8-8 6 6 10-10 4 4v4H20z" fill="currentColor" />
-      <circle cx="32" cy="24" r="6" fill="currentColor" />
-      <circle cx="44" cy="40" r="3" fill="currentColor" />
-    </svg>
   );
 }
 

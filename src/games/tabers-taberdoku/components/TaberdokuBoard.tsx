@@ -25,17 +25,20 @@ const ROOM_COLORS = [
 export function TaberdokuBoard({
   puzzle,
   characters,
-  onNewBoard,
+  onSolve,
+  level,
+  totalLevels,
 }: {
   puzzle: TaberdokuPuzzle;
   characters: MurdokuCharacter[];
-  onNewBoard: () => void;
+  onSolve: (time: string) => void;
+  level: number;
+  totalLevels: number;
 }) {
   const { t, slug } = useI18n();
   const { playSound } = useSoundEffects();
   const navigate = useNavigate();
   const size = puzzle.size;
-  const characterColumns = size === 6 ? 3 : size <= 8 ? 4 : 5;
   const cast = useMemo(() => characters.slice(0, size), [characters, size]);
 
   // Map each character to their correct cell and room color
@@ -87,13 +90,17 @@ export function TaberdokuBoard({
   );
 
   const occupied = useMemo(() => Object.values(placements), [placements]);
-  const solved = errorCells.size === 0 && isTaberdokuSolved(puzzle, occupied);
+  const solved = isTaberdokuSolved(puzzle, occupied);
   const { seconds } = useTimer(!solved);
   useEffect(() => {
     if (solved) {
       playSound("win");
+      const timer = setTimeout(() => {
+        onSolve(formatTime(seconds));
+      }, 500);
+      return () => clearTimeout(timer);
     }
-  }, [playSound, solved]);
+  }, [playSound, solved, onSolve, seconds]);
   const conflicts = useMemo(() => taberdokuConflicts(puzzle, occupied), [puzzle, occupied]);
 
   const charAt = useCallback(
@@ -308,7 +315,7 @@ export function TaberdokuBoard({
           <ChevronLeft className="h-5 w-5" />
         </button>
         <h1 className="text-base font-bold tracking-widest text-primary">
-          {t("taberdoku.title")} · {size}×{size}
+          {t("taberdoku.title")} · {t("taberdoku.levelOf", { current: level, total: totalLevels })}
         </h1>
         <span className="flex items-center gap-1 text-sm font-semibold text-muted-foreground">
           <Clock className="h-4 w-4" />
@@ -323,11 +330,44 @@ export function TaberdokuBoard({
           </p>
         )}
 
-        <TaberdokuRules characters={cast} />
+        
 
-        <p className="mx-auto mb-3 max-w-[480px] text-center text-xs text-muted-foreground">
-          {t("taberdoku.doubleClick")}
-        </p>
+        {/* Character legend - shows each character with their room color, not selectable */}
+        <div className="mx-auto flex max-w-[480px] flex-nowrap gap-1.5 justify-center mb-3">
+          {charInfo.map(({ char, roomColor }) => {
+            const isPlaced = placements[char.id] !== undefined;
+            const isGivenChar = puzzle.givens.includes(placements[char.id] ?? -1);
+            return (
+              <div
+                key={char.id}
+                className={`flex items-center justify-center rounded-lg border border-border px-1.5 py-1 text-[10px] transition-all ${
+                  isPlaced ? "opacity-60 border-primary/50" : "opacity-100"
+                }`}
+                style={{ background: roomColor }}
+              >
+                <span
+                  className="flex h-[32px] w-[32px] items-center justify-center rounded-full text-[8px] font-bold text-white relative"
+                  style={{ background: roomColor }}
+                >
+                  {char.image ? (
+                    <img
+                      src={char.image}
+                      alt={char.name}
+                      className="h-full w-full rounded-full object-cover object-top"
+                    />
+                  ) : (
+                    char.name.slice(0, 2)
+                  )}
+                  {isPlaced && (
+                    <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-primary text-[6px]">
+                      ✓
+                    </span>
+                  )}
+                </span>
+              </div>
+            );
+          })}
+        </div>
 
         {errors > 0 && (
           <p className="mx-auto mb-3 max-w-[480px] text-center text-xs text-destructive">
@@ -336,7 +376,7 @@ export function TaberdokuBoard({
         )}
 
         <div
-          className="mx-auto grid max-w-[480px] overflow-hidden rounded-xl border-2 border-slate-700"
+          className="mx-auto mb-3 grid max-w-[480px] overflow-hidden rounded-xl border-2 border-slate-700"
           style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
         >
           {Array.from({ length: size * size }, (_, cell) => {
@@ -409,73 +449,22 @@ export function TaberdokuBoard({
           })}
         </div>
 
-        {/* Character legend - shows each character with their room color, not selectable */}
-        <div
-          className="mt-4 grid mx-auto max-w-[480px] gap-2"
-          style={{ gridTemplateColumns: `repeat(${characterColumns}, minmax(0, 1fr))` }}
-        >
-          <p
-            className="mb-2 text-center text-xs text-muted-foreground"
-            style={{ gridColumn: "1 / -1" }}
-          >
-            {t("taberdoku.characters")}
-          </p>
-          {charInfo.map(({ char, roomColor }) => {
-            const isPlaced = placements[char.id] !== undefined;
-            const isGivenChar = puzzle.givens.includes(placements[char.id] ?? -1);
-            return (
-              <div
-                key={char.id}
-                className={`flex items-center justify-center rounded-lg border border-border px-2 py-1.5 text-xs transition-all ${
-                  isPlaced ? "opacity-60 border-primary/50" : "opacity-100"
-                }`}
-                style={{ background: roomColor }}
-              >
-                <span
-                  className="flex h-[72px] w-[72px] items-center justify-center rounded-full text-[10px] font-bold text-white relative"
-                  style={{ background: roomColor }}
-                >
-                  {char.image ? (
-                    <img
-                      src={char.image}
-                      alt={char.name}
-                      className="h-full w-full rounded-full object-cover object-top"
-                    />
-                  ) : (
-                    char.name.slice(0, 2)
-                  )}
-                  {isPlaced && (
-                    <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px]">
-                      ✓
-                    </span>
-                  )}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+        <p className="mx-auto mb-3 max-w-[480px] text-center text-xs text-muted-foreground">
+          {t("taberdoku.doubleClick")}
+        </p>
+
+        <TaberdokuRules characters={cast} />
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
-        <div className="mx-auto flex max-w-md items-stretch justify-around gap-2 px-3 py-2">
+        <div className="mx-auto flex max-w-md items-center justify-center px-3 py-2">
           <button
             type="button"
             onClick={reset}
-            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-muted-foreground"
+            className="flex flex-col items-center gap-1 rounded-lg px-6 py-1.5 text-[10px] font-semibold text-muted-foreground"
           >
             <RotateCcw className="h-5 w-5" />
             {t("taberdoku.reset")}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              playSound("click");
-              onNewBoard();
-            }}
-            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-muted-foreground"
-          >
-            <RotateCcw className="h-5 w-5 rotate-180" />
-            {t("taberdoku.newBoard")}
           </button>
         </div>
       </nav>

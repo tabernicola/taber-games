@@ -8,7 +8,7 @@ export const Route = createFileRoute("/$lang/tabers-taberdoku/")({
       title: "Taberdoku — The Taber Games",
       ogTitle: "Taberdoku",
       description:
-        "One character per row, column, and room. No two characters can touch — not even diagonally. Choose your board size and play.",
+        "One character per row, column, and room. No two characters can touch — not even diagonally.",
     }),
   }),
   component: LandingPage,

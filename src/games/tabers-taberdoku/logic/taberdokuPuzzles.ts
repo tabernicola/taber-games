@@ -181,3 +181,11 @@ export function taberdokuPuzzlesBySize(size: number): TaberdokuPuzzle[] {
 export function findTaberdokuPuzzle(id: string): TaberdokuPuzzle | undefined {
   return TABERDOKU_PUZZLES.find((p) => p.id === id);
 }
+
+/** All puzzles in level order (level 1 = first, level 16 = last). */
+export function taberdokuAllPuzzlesSorted(): TaberdokuPuzzle[] {
+  return [...TABERDOKU_PUZZLES];
+}
+
+/** Total number of levels available. */
+export const TABERDOKU_TOTAL_LEVELS = TABERDOKU_PUZZLES.length;

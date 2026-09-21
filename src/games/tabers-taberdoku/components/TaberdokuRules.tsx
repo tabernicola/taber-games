@@ -12,7 +12,7 @@ interface MiniBoardProps {
   cellSize?: number;
 }
 
-function MiniBoard({ size, cellColors, characters, crosses, cellSize = 36 }: MiniBoardProps) {
+function MiniBoard({ size, cellColors, characters, crosses, cellSize = 24 }: MiniBoardProps) {
   const charAt = (cell: number) => characters.find((c) => c.cell === cell);
 
   return (
@@ -50,7 +50,7 @@ function MiniBoard({ size, cellColors, characters, crosses, cellSize = 36 }: Min
             ) : char ? (
               <span
                 className="relative z-10 font-bold text-white"
-                style={{ fontSize: Math.max(8, cellSize * 0.28) }}
+                style={{ fontSize: Math.max(7, cellSize * 0.28) }}
               >
                 {char.name.slice(0, 2)}
               </span>
@@ -92,11 +92,11 @@ interface RuleCardProps {
 
 function RuleCard({ title, children }: RuleCardProps) {
   return (
-    <div className="flex flex-col items-center gap-1.5">
-      <h4 className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+    <div className="flex flex-col items-center gap-1">
+      {children}
+      <h4 className="text-[12px] font-semibold uppercase tracking-wide text-muted-foreground whitespace-nowrap">
         {title}
       </h4>
-      {children}
     </div>
   );
 }
@@ -112,8 +112,8 @@ export function TaberdokuRules({ characters }: { characters: MurdokuCharacter[] 
   };
 
   // Rule 1: One character per room — two colors.
-  // Room A (cells 0,1,2) and Room B (cells 3,4,5,6,7,8).
-  // Character in room A (cell 0), X on other cells of room A (cells 1,2).
+  // Room A (cells 0,1,2,3,4) and Room B (cells 5,6,7,8).
+  // Character in room A (cell 0), X on other cells of room A (cells 1,2,3,4).
   const rule1Colors = [
     BOARD_COLOR, BOARD_COLOR, BOARD_COLOR,
     BOARD_COLOR, BOARD_COLOR, OTHER_COLOR,
@@ -136,15 +136,15 @@ export function TaberdokuRules({ characters }: { characters: MurdokuCharacter[] 
 
   return (
     <div className="mx-auto mb-3 max-w-[480px]">
-      <div className="flex items-start justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-center gap-2">
         <RuleCard title={t("taberdoku.rule1")}>
-          <MiniBoard size={3} cellColors={rule1Colors} characters={rule1Chars} crosses={rule1Crosses} cellSize={36} />
+          <MiniBoard size={3} cellColors={rule1Colors} characters={rule1Chars} crosses={rule1Crosses} cellSize={24} />
         </RuleCard>
         <RuleCard title={t("taberdoku.rule2")}>
-          <MiniBoard size={3} cellColors={rule2Colors} characters={rule2Chars} crosses={rule2Crosses} cellSize={36} />
+          <MiniBoard size={3} cellColors={rule2Colors} characters={rule2Chars} crosses={rule2Crosses} cellSize={24} />
         </RuleCard>
         <RuleCard title={t("taberdoku.rule3")}>
-          <MiniBoard size={3} cellColors={rule3Colors} characters={rule3Chars} crosses={rule3Crosses} cellSize={36} />
+          <MiniBoard size={3} cellColors={rule3Colors} characters={rule3Chars} crosses={rule3Crosses} cellSize={24} />
         </RuleCard>
       </div>
     </div>

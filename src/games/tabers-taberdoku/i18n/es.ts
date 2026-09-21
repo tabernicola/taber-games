@@ -21,6 +21,14 @@ export const dict: Dict = {
   "taberdoku.erase": "Borrar",
   "taberdoku.errors": "Errores: {count}",
   "taberdoku.characters": "Personajes",
+  "taberdoku.levelProgress": "Nivel {current} de {total}",
+  "taberdoku.play": "Jugar",
+  "taberdoku.levelOf": "Nivel {current}/{total}",
+  "taberdoku.levelCleared": "¡Nivel {level} superado! Siguiente nivel…",
+  "taberdoku.allCleared": "¡Has completado todos los niveles!",
+  "taberdoku.allLevelsCleared": "Has completado todos los niveles.",
+  "taberdoku.loading": "Cargando…",
+  "taberdoku.nextLevel": "Siguiente nivel",
 };
 
 export default dict;
