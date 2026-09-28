@@ -63,13 +63,13 @@ function SpriteAnimation({ src, frameDuration = 160 }: { src: string; frameDurat
     let lastTime = 0;
     let animId: number;
 
-    const cols = img.width / img.height;
     const animate = (time: number) => {
       if (time - lastTime >= frameDuration && loaded) {
         frame = (frame + 1) % totalFrames;
         lastTime = time;
       }
       if (loaded && canvas.width > 0 && canvas.height > 0 && img.complete) {
+        const cols = img.width / img.height;
         const frameWidth = img.width / cols;
         const frameHeight = img.height / rows;
         const col = frame % cols;

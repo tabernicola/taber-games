@@ -67,10 +67,10 @@ export function useSoundEffects() {
           filter.frequency.value = 900 + Math.random() * 400;
           osc.type = "triangle";
           osc.frequency.value = 180 + Math.random() * 120;
-          gain.gain.setValueAtTime(0.06, now);
-          gain.gain.exponentialRampToValueAtTime(0.005, now + 0.06);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
           osc.start(now);
-          osc.stop(now + 0.06);
+          osc.stop(now + 0.15);
           break;
         }
 
