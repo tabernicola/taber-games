@@ -78,16 +78,11 @@ export function LevelCompleteModal({
             <Check className="h-7 w-7" />
           </div>
 
-          <h2
-            className="text-lg font-bold"
-            style={{ color: "var(--primary)" }}
-          >
+          <h2 className="text-lg font-bold" style={{ color: "var(--primary)" }}>
             {isLastLevel ? t("taberdoku.allCleared") : t("taberdoku.levelCleared", { level })}
           </h2>
 
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t("taberdoku.solvedIn", { time })}
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">{t("taberdoku.solvedIn", { time })}</p>
 
           <p className="mt-3 text-xs text-muted-foreground">
             {t("taberdoku.levelOf", { current: level, total: totalLevels })}

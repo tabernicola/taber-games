@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, Clock, RotateCcw, X } from "lucide-react";
+import { ChevronLeft, Clock, HelpCircle, Lock, RotateCcw, X } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
 import { useTimer } from "@/platform/hooks/useTimer";
 import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
@@ -8,7 +8,14 @@ import { formatTime } from "@/platform/scores/formatTime";
 import type { MurdokuCharacter } from "../logic/characters";
 import { isTaberdokuSolved, taberdokuConflicts, type TaberdokuPuzzle } from "../logic/taberdoku";
 import { TaberdokuRules } from "./TaberdokuRules";
+import { TaberdokuTutorial } from "./TaberdokuTutorial";
+import { TaberdokuLevelSelector } from "./TaberdokuLevelSelector";
 import "@/games/tabers-taberdoku/light-theme.css";
+
+function spritePathFor(image: string | undefined): string | undefined {
+  if (!image) return undefined;
+  return image.replace(/\.png$/, "-sprite.png");
+}
 
 const ROOM_COLORS = [
   "#fde68a",
@@ -22,18 +29,115 @@ const ROOM_COLORS = [
   "#e5e7eb",
 ];
 
+function SpriteAnimation({ src, frameDuration = 160 }: { src: string; frameDuration?: number }) {
+  const rows = 1;
+  const cols = 6;
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const totalFrames = cols * rows;
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const img = new Image();
+    img.src = src;
+    let loaded = false;
+
+    const resize = () => {
+      const rect = container.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    };
+
+    resize();
+
+    const observer = new ResizeObserver(() => resize());
+    observer.observe(container);
+
+    let frame = 0;
+    let lastTime = 0;
+    let animId: number;
+
+    const cols = img.width / img.height;
+    const animate = (time: number) => {
+      if (time - lastTime >= frameDuration && loaded) {
+        frame = (frame + 1) % totalFrames;
+        lastTime = time;
+      }
+      if (loaded && canvas.width > 0 && canvas.height > 0 && img.complete) {
+        const frameWidth = img.width / cols;
+        const frameHeight = img.height / rows;
+        const col = frame % cols;
+        const row = Math.floor(frame / cols);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(
+          img,
+          col * frameWidth,
+          row * frameHeight,
+          frameWidth,
+          frameHeight,
+          0,
+          0,
+          canvas.width,
+          canvas.height,
+        );
+      }
+      animId = requestAnimationFrame(animate);
+    };
+
+    img.onload = () => {
+      loaded = true;
+      resize();
+    };
+
+    animId = requestAnimationFrame(animate);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      observer.disconnect();
+    };
+  }, [src, cols, rows, frameDuration, totalFrames]);
+
+  return (
+    <div ref={containerRef} className="absolute inset-0 overflow-hidden">
+      <canvas ref={canvasRef} className="block h-full w-full" />
+    </div>
+  );
+}
+
 export function TaberdokuBoard({
   puzzle,
   characters,
   onSolve,
   level,
   totalLevels,
+  tutorialOpen,
+  onTutorialClose,
+  onHelpClick,
+  levelSelectorOpen,
+  onLevelSelectorClose,
+  onLevelSelect,
+  onOpenLevelSelector,
+  maxLevel,
 }: {
   puzzle: TaberdokuPuzzle;
   characters: MurdokuCharacter[];
   onSolve: (time: string) => void;
   level: number;
   totalLevels: number;
+  maxLevel: number;
+  tutorialOpen?: boolean;
+  onTutorialClose?: () => void;
+  onHelpClick?: () => void;
+  levelSelectorOpen?: boolean;
+  onLevelSelectorClose?: () => void;
+  onLevelSelect?: (level: number) => void;
+  onOpenLevelSelector?: () => void;
 }) {
   const { t, slug } = useI18n();
   const { playSound } = useSoundEffects();
@@ -74,6 +178,8 @@ export function TaberdokuBoard({
   const [errorCells, setErrorCells] = useState<Set<number>>(new Set());
   const [errors, setErrors] = useState(0);
   const [lastErrorCell, setLastErrorCell] = useState<number | null>(null);
+  const lives = 3 - errors;
+  const gameOver = errors >= 3;
   const clickTimers = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
   const touchStartCell = useRef<number | null>(null);
   const touchCell = useRef<number | null>(null);
@@ -114,6 +220,7 @@ export function TaberdokuBoard({
 
   const handleCellClick = (cell: number) => {
     if (solved) return;
+    if (gameOver) return;
     if (isGiven(cell)) return;
     if (errorCells.has(cell)) return;
 
@@ -132,15 +239,16 @@ export function TaberdokuBoard({
   };
 
   const handleCellDoubleClick = (cell: number) => {
-    console.log("double click", cell);
+    console.log("double click on cell", cell);
     if (solved) return;
+    if (gameOver) return;
     if (isGiven(cell)) return;
     if (errorCells.has(cell)) return;
 
     const existing = charAt(cell);
-    if (existing) return;
-
+    console.log("looking for char for cell", cell, charInfo);
     const charForCell = charInfo.find((c) => c.correctCell === cell);
+    console.log("char for cell", cell, charForCell);
     if (!charForCell) {
       setErrors((e) => e + 1);
       playSound("error");
@@ -160,8 +268,8 @@ export function TaberdokuBoard({
     }
 
     const currentCell = placements[charForCell.char.id];
+    if (currentCell === cell) return;
     if (currentCell !== undefined) {
-      if (currentCell === cell) return;
       setPlacements((prev) => {
         const next = { ...prev };
         next[charForCell.char.id] = cell;
@@ -198,7 +306,7 @@ export function TaberdokuBoard({
     const timer = setTimeout(() => {
       clickTimers.current.delete(cell);
       handleCellClick(cell);
-    }, 500);
+    }, 50);
     clickTimers.current.set(cell, timer);
   };
 
@@ -260,12 +368,6 @@ export function TaberdokuBoard({
     const wasTap = startCell === cell && !touchMoved.current;
     const currentTime = Date.now();
 
-    console.log("touch end", {
-      cell,
-      startCell,
-      wasTap,
-      lastTouchEndTime: lastTouchEndTime.current,
-    });
     if (wasTap && currentTime - lastTouchEndTime.current < 300) {
       console.log("double tap detected");
       touchStartCell.current = null;
@@ -280,7 +382,7 @@ export function TaberdokuBoard({
     touchMoved.current = false;
 
     if (wasTap) {
-      handleCellClick(cell);
+      //handleCellClick(cell);
     } else if (startCell !== null) {
       setCrossForTouch(startCell, !touchStartCellHasCross.current);
     }
@@ -321,6 +423,19 @@ export function TaberdokuBoard({
           <Clock className="h-4 w-4" />
           {formatTime(seconds)}
         </span>
+        {onHelpClick && (
+          <button
+            type="button"
+            onClick={() => {
+              playSound("click");
+              onHelpClick();
+            }}
+            className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+            aria-label={t("taberdoku.tutorial.title")}
+          >
+            <HelpCircle className="h-5 w-5" />
+          </button>
+        )}
       </header>
 
       <main className="px-2 pb-32 pt-4">
@@ -330,49 +445,55 @@ export function TaberdokuBoard({
           </p>
         )}
 
-        
-
-        {/* Character legend - shows each character with their room color, not selectable */}
-        <div className="mx-auto flex max-w-[480px] flex-nowrap gap-1.5 justify-center mb-3">
-          {charInfo.map(({ char, roomColor }) => {
-            const isPlaced = placements[char.id] !== undefined;
-            const isGivenChar = puzzle.givens.includes(placements[char.id] ?? -1);
-            return (
-              <div
-                key={char.id}
-                className={`flex items-center justify-center rounded-lg border border-border px-1.5 py-1 text-[10px] transition-all ${
-                  isPlaced ? "opacity-60 border-primary/50" : "opacity-100"
-                }`}
-                style={{ background: roomColor }}
-              >
-                <span
-                  className="flex h-[32px] w-[32px] items-center justify-center rounded-full text-[8px] font-bold text-white relative"
+        {/* Character legend + lives */}
+        <div className="mx-auto mb-3 flex max-w-[480px] items-center justify-between gap-2">
+          <div className="flex flex-nowrap gap-1 overflow-x-auto py-0.5 sm:gap-1.5">
+            {charInfo.map(({ char, roomColor }) => {
+              const isPlaced = placements[char.id] !== undefined;
+              const isGivenChar = puzzle.givens.includes(placements[char.id] ?? -1);
+              return (
+                <div
+                  key={char.id}
+                  className={`flex items-center justify-center rounded-lg border border-border px-1.5 py-1 text-[10px] transition-all ${
+                    isPlaced ? "opacity-60 border-primary/50" : "opacity-100"
+                  }`}
                   style={{ background: roomColor }}
                 >
-                  {char.image ? (
-                    <img
-                      src={char.image}
-                      alt={char.name}
-                      className="h-full w-full rounded-full object-cover object-top"
-                    />
-                  ) : (
-                    char.name.slice(0, 2)
-                  )}
-                  {isPlaced && (
-                    <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-primary text-[6px]">
-                      ✓
-                    </span>
-                  )}
-                </span>
-              </div>
-            );
-          })}
+                  <span
+                    className="flex h-[24px] w-[24px] items-center justify-center rounded-full text-[8px] font-bold text-white relative"
+                    style={{ background: roomColor }}
+                  >
+                    {char.image ? (
+                      <img
+                        src={char.image}
+                        alt={char.name}
+                        className="h-full w-full rounded-full object-cover object-top"
+                      />
+                    ) : (
+                      char.name.slice(0, 2)
+                    )}
+                    {isPlaced && (
+                      <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-primary text-[6px]">
+                        ✓
+                      </span>
+                    )}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex gap-0.5 text-base">
+            {[0, 1, 2].map((i) => (
+              <span key={i}>{i < lives ? "❤️" : "💔"}</span>
+            ))}
+          </div>
         </div>
 
-        {errors > 0 && (
-          <p className="mx-auto mb-3 max-w-[480px] text-center text-xs text-destructive">
-            {t("taberdoku.errors", { count: errors })}
-          </p>
+        {gameOver && (
+          <div className="mx-auto mb-3 max-w-[480px] rounded-xl bg-destructive/10 border border-destructive/40 px-4 py-3 text-center">
+            <p className="text-sm font-bold text-destructive">{t("taberdoku.gameOver")}</p>
+            <p className="text-xs text-destructive/70 mt-0.5">{t("taberdoku.restartLevel")}</p>
+          </div>
         )}
 
         <div
@@ -381,6 +502,7 @@ export function TaberdokuBoard({
         >
           {Array.from({ length: size * size }, (_, cell) => {
             const charInfo_cell = charAt(cell);
+            const spritePath = spritePathFor(charInfo_cell?.char.image);
             const given = isGiven(cell);
             const bad = conflicts.has(cell);
             const hasError = errorCells.has(cell);
@@ -418,7 +540,9 @@ export function TaberdokuBoard({
                       className="absolute inset-0 flex items-center justify-center"
                       style={{ background: charInfo_cell.roomColor }}
                     >
-                      {charInfo_cell.char.image ? (
+                      {spritePath ? (
+                        <SpriteAnimation src={spritePath} />
+                      ) : charInfo_cell.char.image ? (
                         <img
                           src={charInfo_cell.char.image}
                           alt={charInfo_cell.char.name}
@@ -454,10 +578,36 @@ export function TaberdokuBoard({
         </p>
 
         <TaberdokuRules characters={cast} />
+
+        {levelSelectorOpen && onLevelSelectorClose && onLevelSelect && onOpenLevelSelector && (
+          <TaberdokuLevelSelector
+            open={levelSelectorOpen}
+            currentLevel={level}
+            maxLevel={maxLevel}
+            onSelect={onLevelSelect}
+            onClose={onLevelSelectorClose}
+          />
+        )}
       </main>
 
+      {tutorialOpen && onTutorialClose && (
+        <TaberdokuTutorial open={tutorialOpen} characters={characters} onClose={onTutorialClose} />
+      )}
+
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
-        <div className="mx-auto flex max-w-md items-center justify-center px-3 py-2">
+        <div className="mx-auto flex max-w-md items-center justify-center gap-2 px-3 py-2">
+          <button
+            type="button"
+            onClick={() => {
+              playSound("click");
+              onOpenLevelSelector?.();
+            }}
+            className="flex flex-col items-center gap-1 rounded-lg px-4 py-1.5 text-[10px] font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
+            aria-label={t("taberdoku.levels")}
+          >
+            <Lock className="h-5 w-5" />
+            {t("taberdoku.levels")}
+          </button>
           <button
             type="button"
             onClick={reset}

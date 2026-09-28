@@ -192,7 +192,7 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
     {
       id: "colonel",
       name: "Coronel Hayes",
-      image: "/tabers-murdoku/characters/p1.png",
+      image: "/characters/p1.png",
       description: {
         es: "Un hombre militar retirado con temperamento violento.",
         en: "A retired military man with a violent temper.",
@@ -202,7 +202,7 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
     {
       id: "maid",
       name: "Camarera",
-      image: "/tabers-murdoku/characters/p2.png",
+      image: "/characters/p2.png",
       description: {
         es: "Ayudante recién contratada, nerviosa y fácilmente asustadiza.",
         en: "Newly hired help, nervous and easily startled.",
@@ -212,7 +212,7 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
     {
       id: "butler",
       name: "Mayordomo Blackwell",
-      image: "/tabers-murdoku/characters/p3.png",
+      image: "/characters/p3.png",
       description: {
         es: "Mayordomo leal durante 20 años, conoce cada secreto de la casa.",
         en: "Loyal butler of 20 years, knows every household secret.",
@@ -222,7 +222,7 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
     {
       id: "gardener",
       name: "Jardinero Green",
-      image: "/tabers-murdoku/characters/p4.png",
+      image: "/characters/p4.png",
       description: {
         es: "Jardinero reservado que cuidaba los jardines solo.",
         en: "Reclusive gardener who tended the grounds alone.",
@@ -232,7 +232,7 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
     {
       id: "chef",
       name: "Chef Rodríguez",
-      image: "/tabers-murdoku/characters/p5.png",
+      image: "/characters/p5.png",
       description: {
         es: "Chef de temperamento caliente recientemente reprendido por el coronel.",
         en: "Hot-tempered chef recently reprimanded by the colonel.",
@@ -242,7 +242,7 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
     {
       id: "librarian",
       name: "Bibliotecaria Pearl",
-      image: "/tabers-murdoku/characters/p6.png",
+      image: "/characters/p6.png",
       description: {
         es: "Bibliotecaria aguda con un pasado misterioso.",
         en: "Sharp-eyed librarian with a mysterious past.",

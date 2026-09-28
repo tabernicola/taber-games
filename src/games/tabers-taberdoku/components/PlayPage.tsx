@@ -5,13 +5,12 @@ import { getStorageItem, setStorageItem } from "@/platform/storage";
 import { fetchSuspects } from "../logic/characters";
 import { TaberdokuBoard } from "./TaberdokuBoard";
 import { LevelCompleteModal } from "./LevelCompleteModal";
-import {
-  TABERDOKU_TOTAL_LEVELS,
-  taberdokuAllPuzzlesSorted,
-} from "../logic/taberdokuPuzzles";
+import { TABERDOKU_TOTAL_LEVELS, taberdokuAllPuzzlesSorted } from "../logic/taberdokuPuzzles";
 import "@/games/tabers-taberdoku/light-theme.css";
 
 const LEVEL_STORAGE_KEY = "taberdoku-level";
+const MAX_LEVEL_STORAGE_KEY = "taberdoku-max-level";
+const TUTORIAL_STORAGE_KEY = "taberdoku-tutorial-completed";
 
 function useCharacters() {
   return useQuery({ queryKey: ["murdoku-suspects"], queryFn: fetchSuspects });
@@ -23,6 +22,9 @@ export function PlayPage() {
   const [level, setLevel] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [solveTime, setSolveTime] = useState("0:00");
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [showLevelSelector, setShowLevelSelector] = useState(false);
+  const [maxLevel, setMaxLevel] = useState(1);
 
   // Load saved level on mount
   useEffect(() => {
@@ -30,6 +32,24 @@ export function PlayPage() {
     const initial = saved ? Number(saved) : 1;
     setLevel(initial);
   }, []);
+
+  // Load max level on mount
+  useEffect(() => {
+    const saved = getStorageItem(MAX_LEVEL_STORAGE_KEY);
+    if (saved) {
+      setMaxLevel(Number(saved));
+    }
+  }, []);
+
+  // Show tutorial on first visit
+  useEffect(() => {
+    if (level !== null) {
+      const completed = getStorageItem(TUTORIAL_STORAGE_KEY);
+      if (!completed) {
+        setShowTutorial(true);
+      }
+    }
+  }, [level]);
 
   if (level === null || isPending) {
     return (
@@ -60,8 +80,15 @@ export function PlayPage() {
     const nextLevel = level + 1;
     if (nextLevel <= TABERDOKU_TOTAL_LEVELS) {
       setStorageItem(LEVEL_STORAGE_KEY, String(nextLevel));
+      setMaxLevel(Math.max(maxLevel, nextLevel));
+      setStorageItem(MAX_LEVEL_STORAGE_KEY, String(Math.max(maxLevel, nextLevel)));
       setLevel(nextLevel);
     }
+  };
+
+  const handleTutorialClose = () => {
+    setShowTutorial(false);
+    setStorageItem(TUTORIAL_STORAGE_KEY, "1");
   };
 
   return (
@@ -73,6 +100,20 @@ export function PlayPage() {
         onSolve={handleSolve}
         level={level}
         totalLevels={TABERDOKU_TOTAL_LEVELS}
+        maxLevel={maxLevel}
+        tutorialOpen={showTutorial}
+        onTutorialClose={handleTutorialClose}
+        onHelpClick={() => setShowTutorial(true)}
+        levelSelectorOpen={showLevelSelector}
+        onLevelSelectorClose={() => setShowLevelSelector(false)}
+        onLevelSelect={(lvl) => {
+          setShowLevelSelector(false);
+          setMaxLevel(Math.max(maxLevel, lvl));
+          setStorageItem(MAX_LEVEL_STORAGE_KEY, String(Math.max(maxLevel, lvl)));
+          setStorageItem(LEVEL_STORAGE_KEY, String(lvl));
+          setLevel(lvl);
+        }}
+        onOpenLevelSelector={() => setShowLevelSelector(true)}
       />
       <LevelCompleteModal
         open={showModal}

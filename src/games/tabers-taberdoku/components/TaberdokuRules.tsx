@@ -115,9 +115,15 @@ export function TaberdokuRules({ characters }: { characters: MurdokuCharacter[] 
   // Room A (cells 0,1,2,3,4) and Room B (cells 5,6,7,8).
   // Character in room A (cell 0), X on other cells of room A (cells 1,2,3,4).
   const rule1Colors = [
-    BOARD_COLOR, BOARD_COLOR, BOARD_COLOR,
-    BOARD_COLOR, BOARD_COLOR, OTHER_COLOR,
-    OTHER_COLOR, OTHER_COLOR, OTHER_COLOR,
+    BOARD_COLOR,
+    BOARD_COLOR,
+    BOARD_COLOR,
+    BOARD_COLOR,
+    BOARD_COLOR,
+    OTHER_COLOR,
+    OTHER_COLOR,
+    OTHER_COLOR,
+    OTHER_COLOR,
   ];
   const rule1Chars = [{ cell: 0, ...char }];
   const rule1Crosses = [1, 2, 3, 4];
@@ -138,13 +144,31 @@ export function TaberdokuRules({ characters }: { characters: MurdokuCharacter[] 
     <div className="mx-auto mb-3 max-w-[480px]">
       <div className="flex flex-wrap items-center justify-center gap-2">
         <RuleCard title={t("taberdoku.rule1")}>
-          <MiniBoard size={3} cellColors={rule1Colors} characters={rule1Chars} crosses={rule1Crosses} cellSize={24} />
+          <MiniBoard
+            size={3}
+            cellColors={rule1Colors}
+            characters={rule1Chars}
+            crosses={rule1Crosses}
+            cellSize={24}
+          />
         </RuleCard>
         <RuleCard title={t("taberdoku.rule2")}>
-          <MiniBoard size={3} cellColors={rule2Colors} characters={rule2Chars} crosses={rule2Crosses} cellSize={24} />
+          <MiniBoard
+            size={3}
+            cellColors={rule2Colors}
+            characters={rule2Chars}
+            crosses={rule2Crosses}
+            cellSize={24}
+          />
         </RuleCard>
         <RuleCard title={t("taberdoku.rule3")}>
-          <MiniBoard size={3} cellColors={rule3Colors} characters={rule3Chars} crosses={rule3Crosses} cellSize={24} />
+          <MiniBoard
+            size={3}
+            cellColors={rule3Colors}
+            characters={rule3Chars}
+            crosses={rule3Crosses}
+            cellSize={24}
+          />
         </RuleCard>
       </div>
     </div>

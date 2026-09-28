@@ -20,6 +20,8 @@ export const dict: Dict = {
   "taberdoku.newBoard": "New board",
   "taberdoku.erase": "Erase",
   "taberdoku.errors": "Errors: {count}",
+  "taberdoku.gameOver": "Oh no! You lost all your lives!",
+  "taberdoku.restartLevel": "Press the restart button to try again.",
   "taberdoku.characters": "Characters",
   "taberdoku.levelProgress": "Level {current} of {total}",
   "taberdoku.play": "Play",
@@ -28,6 +30,9 @@ export const dict: Dict = {
   "taberdoku.allCleared": "You have completed all levels!",
   "taberdoku.allLevelsCleared": "You have completed all levels.",
   "taberdoku.loading": "Loading…",
+  "taberdoku.levels": "Levels",
+  "taberdoku.levelsHint": "Tap a level to play",
+  "taberdoku.close": "Close",
 };
 
 export default dict;

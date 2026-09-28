@@ -21,6 +21,8 @@ export const dict: Dict = {
   "taberdoku.newBoard": "Beste taula bat",
   "taberdoku.erase": "Ezabatu",
   "taberdoku.errors": "Akatsak: {count}",
+  "taberdoku.gameOver": "Aaah! Zure bizitza guztiak galdu dituzu!",
+  "taberdoku.restartLevel": "Berrabiarazi botoia sakatu saiakerarako.",
   "taberdoku.characters": "Pertsonaiak",
   "taberdoku.levelProgress": "Maila {current}/{total}",
   "taberdoku.play": "Jolastu",
@@ -29,6 +31,13 @@ export const dict: Dict = {
   "taberdoku.allCleared": "Eguneratu guztia osatu duzu!",
   "taberdoku.allLevelsCleared": "Eguneratu guztia osatu duzu.",
   "taberdoku.loading": "Kargatzen…",
+  "taberdoku.tutorial.title": "Nola jokatu",
+  "taberdoku.tutorial.desc":
+    "Pertsonaia bat errenkadako, zutabeko eta gelako. Ezin dira elkarren ondoan egon, diagonalean ere bai.",
+  "taberdoku.tutorial.gotIt": "Adostas",
+  "taberdoku.levels": "Mailak",
+  "taberdoku.levelsHint": "Urratu maila bat jolasteko",
+  "taberdoku.close": "Itxi",
 };
 
 export default dict;

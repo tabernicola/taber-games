@@ -20,6 +20,8 @@ export const dict: Dict = {
   "taberdoku.newBoard": "Otro tablero",
   "taberdoku.erase": "Borrar",
   "taberdoku.errors": "Errores: {count}",
+  "taberdoku.gameOver": "¡Oh no! ¡Perdiste todas tus vidas!",
+  "taberdoku.restartLevel": "Pulsa reiniciar para intentar de nuevo.",
   "taberdoku.characters": "Personajes",
   "taberdoku.levelProgress": "Nivel {current} de {total}",
   "taberdoku.play": "Jugar",
@@ -29,6 +31,13 @@ export const dict: Dict = {
   "taberdoku.allLevelsCleared": "Has completado todos los niveles.",
   "taberdoku.loading": "Cargando…",
   "taberdoku.nextLevel": "Siguiente nivel",
+  "taberdoku.tutorial.title": "Cómo jugar",
+  "taberdoku.tutorial.desc":
+    "Un personaje por fila, columna y sala. No pueden tocarse entre sí, ni siquiera en diagonal.",
+  "taberdoku.tutorial.gotIt": "Entendido",
+  "taberdoku.levels": "Niveles",
+  "taberdoku.levelsHint": "Pulsa un nivel para jugar",
+  "taberdoku.close": "Cerrar",
 };
 
 export default dict;

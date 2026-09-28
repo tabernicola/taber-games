@@ -44,13 +44,7 @@ export function LandingPage() {
   );
 }
 
-function ModeSelect({
-  slug,
-  currentLevel,
-}: {
-  slug: "eus" | "es" | "en";
-  currentLevel: number;
-}) {
+function ModeSelect({ slug, currentLevel }: { slug: "eus" | "es" | "en"; currentLevel: number }) {
   const { t } = useI18n();
 
   const handleStart = () => {
