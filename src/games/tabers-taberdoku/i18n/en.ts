@@ -26,13 +26,27 @@ export const dict: Dict = {
   "taberdoku.levelProgress": "Level {current} of {total}",
   "taberdoku.play": "Play",
   "taberdoku.levelOf": "Level {current}/{total}",
+  "taberdoku.level": "Level {current}",
+  "taberdoku.boardCleared": "Board {board}/{boardsPerLevel} of Level {level} solved!",
+  "taberdoku.levelProgressOf": "Level {level} · {progress}%",
   "taberdoku.levelCleared": "Level {level} cleared! Next level…",
+  "taberdoku.levelComplete": "Level {level} complete! Moving to Level {nextLevel}…",
+  "taberdoku.levelUnlocked": "Level {level} unlocked!",
+  "taberdoku.levelUnlockedDesc":
+    "You solved 40% of the previous level. Level {level} is now available!",
   "taberdoku.allCleared": "You have completed all levels!",
   "taberdoku.allLevelsCleared": "You have completed all levels.",
   "taberdoku.loading": "Loading…",
   "taberdoku.levels": "Levels",
   "taberdoku.levelsHint": "Tap a level to play",
   "taberdoku.close": "Close",
+  "taberdoku.nextLevel": "Next level",
+  "taberdoku.continue": "Continue",
+  "taberdoku.startFromBeginning": "Start from beginning",
+  "taberdoku.tutorial.title": "How to play",
+  "taberdoku.tutorial.desc":
+    "One character per row, column, and room. They can never touch each other, even diagonally.",
+  "taberdoku.tutorial.gotIt": "Got it",
 };
 
 export default dict;

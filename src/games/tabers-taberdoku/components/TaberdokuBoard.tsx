@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, Clock, HelpCircle, Lock, RotateCcw, X } from "lucide-react";
+import { ChevronLeft, Clock, HelpCircle, Lock, RotateCcw, TrendingUp, X } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
 import { useTimer } from "@/platform/hooks/useTimer";
 import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
@@ -115,7 +115,11 @@ export function TaberdokuBoard({
   characters,
   onSolve,
   level,
+  board,
+  progress,
   totalLevels,
+  boardsPerLevel,
+  completedBoards,
   tutorialOpen,
   onTutorialClose,
   onHelpClick,
@@ -123,20 +127,22 @@ export function TaberdokuBoard({
   onLevelSelectorClose,
   onLevelSelect,
   onOpenLevelSelector,
-  maxLevel,
 }: {
   puzzle: TaberdokuPuzzle;
   characters: MurdokuCharacter[];
   onSolve: (time: string) => void;
   level: number;
+  board: number;
+  progress: number;
   totalLevels: number;
-  maxLevel: number;
+  boardsPerLevel: number;
+  completedBoards: Set<number>;
   tutorialOpen?: boolean;
   onTutorialClose?: () => void;
   onHelpClick?: () => void;
   levelSelectorOpen?: boolean;
   onLevelSelectorClose?: () => void;
-  onLevelSelect?: (level: number) => void;
+  onLevelSelect?: (board: number) => void;
   onOpenLevelSelector?: () => void;
 }) {
   const { t, slug } = useI18n();
@@ -419,10 +425,25 @@ export function TaberdokuBoard({
         <h1 className="text-base font-bold tracking-widest text-primary">
           {t("taberdoku.title")} · {t("taberdoku.levelOf", { current: level, total: totalLevels })}
         </h1>
-        <span className="flex items-center gap-1 text-sm font-semibold text-muted-foreground">
-          <Clock className="h-4 w-4" />
-          {formatTime(seconds)}
-        </span>
+        <div className="flex items-center gap-4 text-sm font-semibold text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <TrendingUp className="h-4 w-4" />
+            <span>{progress}%</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <Clock className="h-4 w-4" />
+            {formatTime(seconds)}
+          </span>
+
+          <div className="w-24 max-w-[80px]">
+            <div className="h-1.5 rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        </div>
         {onHelpClick && (
           <button
             type="button"
@@ -583,7 +604,8 @@ export function TaberdokuBoard({
           <TaberdokuLevelSelector
             open={levelSelectorOpen}
             currentLevel={level}
-            maxLevel={maxLevel}
+            totalLevels={totalLevels}
+            completedBoards={completedBoards}
             onSelect={onLevelSelect}
             onClose={onLevelSelectorClose}
           />

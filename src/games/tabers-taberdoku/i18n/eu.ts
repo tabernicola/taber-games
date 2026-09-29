@@ -27,17 +27,27 @@ export const dict: Dict = {
   "taberdoku.levelProgress": "Maila {current}/{total}",
   "taberdoku.play": "Jolastu",
   "taberdoku.levelOf": "Maila {current}/{total}",
-  "taberdoku.levelCleared": "Maila {level} gainditua! Hurrengo maila…",
+  "taberdoku.level": "{current}. maila",
+  "taberdoku.boardCleared": "Tabula {board}/{boardsPerLevel} {level}. mailan ebatzia!",
+  "taberdoku.levelProgressOf": "{level}. maila · {progress}%",
+  "taberdoku.levelCleared": "{level}. maila gainditua! Hurrengo maila…",
+  "taberdoku.levelComplete": "{level}. maila osatu da! {nextLevel}. mailara pasatzen…",
+  "taberdoku.levelUnlocked": "{level}. maila desblokeatuta!",
+  "taberdoku.levelUnlockedDesc":
+    "Aurreko mailaren %40 ebatzi duzu. {level}. maila orain eskuragarri dago!",
   "taberdoku.allCleared": "Eguneratu guztia osatu duzu!",
   "taberdoku.allLevelsCleared": "Eguneratu guztia osatu duzu.",
   "taberdoku.loading": "Kargatzen…",
+  "taberdoku.nextLevel": "Hurrengo maila",
+  "taberdoku.continue": "Jarraian",
+  "taberdoku.startFromBeginning": "Hasieratik hasi",
+  "taberdoku.close": "Itxi",
+  "taberdoku.levels": "Mailak",
+  "taberdoku.levelsHint": "Urratu maila bat jolasteko",
   "taberdoku.tutorial.title": "Nola jokatu",
   "taberdoku.tutorial.desc":
     "Pertsonaia bat errenkadako, zutabeko eta gelako. Ezin dira elkarren ondoan egon, diagonalean ere bai.",
   "taberdoku.tutorial.gotIt": "Adostas",
-  "taberdoku.levels": "Mailak",
-  "taberdoku.levelsHint": "Urratu maila bat jolasteko",
-  "taberdoku.close": "Itxi",
 };
 
 export default dict;

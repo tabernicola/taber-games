@@ -11,6 +11,8 @@ export type TaberdokuPuzzle = {
   givens: number[];
   /** the cells of the unique solution */
   solution: number[];
+  /** difficulty score computed by computeTaberdokuDifficulty */
+  difficulty?: number;
 };
 
 export function cellIndex(size: number, row: number, col: number): number {
@@ -96,4 +98,117 @@ export function countTaberdokuSolutions(puzzle: TaberdokuPuzzle, limit = 2): num
 
   rec(0, previousCol);
   return found;
+}
+
+export interface TaberdokuDifficultyBreakdown {
+  score: number;
+  sizeBase: number;
+  givensPenalty: number;
+  searchNodes: number;
+  searchScore: number;
+  roomBorders: number;
+  minRoomSize: number;
+  maxRoomSize: number;
+  roomComplexity: number;
+}
+
+/**
+ * Computes a detailed breakdown of the difficulty of a Taberdoku board.
+ * Evaluates:
+ * 1. Grid size tier scaling (6x6: base 100, 7x7: base 3000, 8x8: base 7000, 9x9: base 12000)
+ * 2. Unassisted penalty (0 givens adds +1000 difficulty)
+ * 3. Search tree complexity / backtrack nodes (logarithmic scale)
+ * 4. Room geometry complexity (internal border length between rooms + minimum room size)
+ */
+export function analyzeTaberdokuDifficulty(puzzle: TaberdokuPuzzle): TaberdokuDifficultyBreakdown {
+  const { size, rooms, givens } = puzzle;
+  const fixedByRow = new Map<number, number>();
+  for (const g of givens) fixedByRow.set(cellRow(size, g), cellCol(size, g));
+
+  const usedCols = new Array<boolean>(size).fill(false);
+  const usedRooms = new Array<boolean>(size).fill(false);
+  let searchNodes = 0;
+
+  const rec = (row: number, prevCol: number): boolean => {
+    searchNodes++;
+    if (row === size) return true;
+    const fixed = fixedByRow.get(row);
+    for (let col = 0; col < size; col++) {
+      if (fixed !== undefined && col !== fixed) continue;
+      if (usedCols[col]) continue;
+      const cell = cellIndex(size, row, col);
+      const room = rooms[cell];
+      if (usedRooms[room]) continue;
+      if (row > 0 && Math.abs(prevCol - col) <= 1) continue;
+      usedCols[col] = true;
+      usedRooms[room] = true;
+      if (rec(row + 1, col)) return true;
+      usedCols[col] = false;
+      usedRooms[room] = false;
+    }
+    return false;
+  };
+
+  rec(0, -10);
+
+  const roomCounts = new Array<number>(size).fill(0);
+  for (const r of rooms) roomCounts[r]++;
+  const minRoomSize = Math.min(...roomCounts);
+  const maxRoomSize = Math.max(...roomCounts);
+
+  let roomBorders = 0;
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const idx = cellIndex(size, r, c);
+      if (r + 1 < size && rooms[idx] !== rooms[cellIndex(size, r + 1, c)]) {
+        roomBorders++;
+      }
+      if (c + 1 < size && rooms[idx] !== rooms[cellIndex(size, r, c + 1)]) {
+        roomBorders++;
+      }
+    }
+  }
+
+  // Non-overlapping size tier base:
+  // 6x6: base 100, 7x7: base 3000, 8x8: base 7000, 9x9: base 12000
+  const sizeBase = size === 6 ? 100 : size === 7 ? 3000 : size === 8 ? 7000 : 12000;
+  const givensPenalty = givens.length === 0 ? 1000 : 0;
+  const searchScore = Math.round(Math.log2(searchNodes + 1) * 50);
+  const roomComplexity = roomBorders * 2 + (minRoomSize - 2) * 10;
+
+  const score = Math.max(50, sizeBase + givensPenalty + searchScore + roomComplexity);
+
+  return {
+    score,
+    sizeBase,
+    givensPenalty,
+    searchNodes,
+    searchScore,
+    roomBorders,
+    minRoomSize,
+    maxRoomSize,
+    roomComplexity,
+  };
+}
+
+/**
+ * Computes an objective numerical difficulty score for a Taberdoku board.
+ * Can be reused to score and rank any existing or newly generated board.
+ */
+export function computeTaberdokuDifficulty(puzzle: TaberdokuPuzzle): number {
+  return analyzeTaberdokuDifficulty(puzzle).score;
+}
+
+/**
+ * Sorts an array of Taberdoku puzzles in ascending or descending order of difficulty.
+ */
+export function sortTaberdokuPuzzlesByDifficulty(
+  puzzles: TaberdokuPuzzle[],
+  order: "asc" | "desc" = "asc",
+): TaberdokuPuzzle[] {
+  return [...puzzles].sort((a, b) => {
+    const scoreA = a.difficulty ?? computeTaberdokuDifficulty(a);
+    const scoreB = b.difficulty ?? computeTaberdokuDifficulty(b);
+    return order === "asc" ? scoreA - scoreB : scoreB - scoreA;
+  });
 }

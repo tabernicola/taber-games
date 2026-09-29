@@ -5,10 +5,20 @@ import { getStorageItem, setStorageItem } from "@/platform/storage";
 import { fetchSuspects } from "../logic/characters";
 import { TaberdokuBoard } from "./TaberdokuBoard";
 import { LevelCompleteModal } from "./LevelCompleteModal";
-import { TABERDOKU_TOTAL_LEVELS, taberdokuAllPuzzlesSorted } from "../logic/taberdokuPuzzles";
+import {
+  TABERDOKU_BOARDS_PER_LEVEL,
+  TABERDOKU_TOTAL_BOARDS,
+  TABERDOKU_TOTAL_LEVELS,
+  boardToLevel,
+  boardInLevel,
+  isLevelUnlocked,
+  levelProgressFromCompleted,
+  taberdokuAllPuzzlesSorted,
+} from "../logic/taberdokuPuzzles";
 import "@/games/tabers-taberdoku/light-theme.css";
 
 const LEVEL_STORAGE_KEY = "taberdoku-level";
+const COMPLETED_BOARDS_KEY = "taberdoku-completed";
 const MAX_LEVEL_STORAGE_KEY = "taberdoku-max-level";
 const TUTORIAL_STORAGE_KEY = "taberdoku-tutorial-completed";
 
@@ -19,39 +29,46 @@ function useCharacters() {
 export function PlayPage() {
   const { t } = useI18n();
   const { data: characters = [], isPending } = useCharacters();
-  const [level, setLevel] = useState<number | null>(null);
+  const [board, setBoard] = useState<number | null>(null);
+  const [completedBoards, setCompletedBoards] = useState<Set<number>>(new Set());
   const [showModal, setShowModal] = useState(false);
   const [solveTime, setSolveTime] = useState("0:00");
   const [showTutorial, setShowTutorial] = useState(false);
   const [showLevelSelector, setShowLevelSelector] = useState(false);
-  const [maxLevel, setMaxLevel] = useState(1);
+  const [newlyUnlockedLevel, setNewlyUnlockedLevel] = useState<number | null>(null);
 
-  // Load saved level on mount
+  // Load saved board and completed boards on mount
   useEffect(() => {
-    const saved = getStorageItem(LEVEL_STORAGE_KEY);
-    const initial = saved ? Number(saved) : 1;
-    setLevel(initial);
-  }, []);
+    const savedBoard = getStorageItem(LEVEL_STORAGE_KEY);
+    const initial = savedBoard ? Number(savedBoard) : 1;
+    setBoard(initial);
 
-  // Load max level on mount
-  useEffect(() => {
-    const saved = getStorageItem(MAX_LEVEL_STORAGE_KEY);
-    if (saved) {
-      setMaxLevel(Number(saved));
+    const savedCompleted = getStorageItem(COMPLETED_BOARDS_KEY);
+    if (savedCompleted) {
+      setCompletedBoards(new Set<number>(JSON.parse(savedCompleted)));
+    } else {
+      // Migrate from old taberdoku-max-level storage (boards 1..max-1 are completed)
+      const savedMax = getStorageItem(MAX_LEVEL_STORAGE_KEY);
+      if (savedMax) {
+        const maxBoard = Number(savedMax);
+        const migrated = new Set<number>();
+        for (let i = 1; i < maxBoard; i++) migrated.add(i);
+        setCompletedBoards(migrated);
+      }
     }
   }, []);
 
   // Show tutorial on first visit
   useEffect(() => {
-    if (level !== null) {
+    if (board !== null) {
       const completed = getStorageItem(TUTORIAL_STORAGE_KEY);
       if (!completed) {
         setShowTutorial(true);
       }
     }
-  }, [level]);
+  }, [board]);
 
-  if (level === null || isPending) {
+  if (board === null || isPending) {
     return (
       <div className="tabers-taberdoku-light flex min-h-screen items-center justify-center">
         <p className="text-muted-foreground">{t("taberdoku.loading")}</p>
@@ -60,7 +77,7 @@ export function PlayPage() {
   }
 
   const puzzles = taberdokuAllPuzzlesSorted();
-  const puzzle = puzzles[level - 1];
+  const puzzle = puzzles[board - 1];
 
   if (!puzzle) {
     return (
@@ -70,25 +87,53 @@ export function PlayPage() {
     );
   }
 
+  const level = boardToLevel(board);
+  const currentBoard = boardInLevel(board);
+  const progress = levelProgressFromCompleted(completedBoards, level);
+  const isLastBoardOfLevel = currentBoard === TABERDOKU_BOARDS_PER_LEVEL;
+  const isLastLevel = level === TABERDOKU_TOTAL_LEVELS && isLastBoardOfLevel;
+
   const handleSolve = (time: string) => {
     setSolveTime(time);
+
+    // Add the just-solved board to the completed set
+    const newCompleted = new Set(completedBoards);
+    newCompleted.add(board);
+    setCompletedBoards(newCompleted);
+    setStorageItem(COMPLETED_BOARDS_KEY, JSON.stringify([...newCompleted]));
+
+    // Check if completing this board unlocks a new level
+    const nextLevel = level + 1;
+    if (nextLevel <= TABERDOKU_TOTAL_LEVELS) {
+      const wasUnlocked = isLevelUnlocked(nextLevel, completedBoards);
+      const isNowUnlocked = isLevelUnlocked(nextLevel, newCompleted);
+      if (!wasUnlocked && isNowUnlocked) {
+        setNewlyUnlockedLevel(nextLevel);
+      }
+    }
+
     setShowModal(true);
   };
 
   const handleAdvance = () => {
     setShowModal(false);
-    const nextLevel = level + 1;
-    if (nextLevel <= TABERDOKU_TOTAL_LEVELS) {
-      setStorageItem(LEVEL_STORAGE_KEY, String(nextLevel));
-      setMaxLevel(Math.max(maxLevel, nextLevel));
-      setStorageItem(MAX_LEVEL_STORAGE_KEY, String(Math.max(maxLevel, nextLevel)));
-      setLevel(nextLevel);
+    setNewlyUnlockedLevel(null);
+    const nextBoard = board + 1;
+    if (nextBoard <= TABERDOKU_TOTAL_BOARDS) {
+      setStorageItem(LEVEL_STORAGE_KEY, String(nextBoard));
+      setBoard(nextBoard);
     }
   };
 
   const handleTutorialClose = () => {
     setShowTutorial(false);
     setStorageItem(TUTORIAL_STORAGE_KEY, "1");
+  };
+
+  const handleBoardSelect = (boardNum: number) => {
+    setShowLevelSelector(false);
+    setStorageItem(LEVEL_STORAGE_KEY, String(boardNum));
+    setBoard(boardNum);
   };
 
   return (
@@ -99,28 +144,30 @@ export function PlayPage() {
         characters={characters}
         onSolve={handleSolve}
         level={level}
+        board={currentBoard}
+        progress={progress}
         totalLevels={TABERDOKU_TOTAL_LEVELS}
-        maxLevel={maxLevel}
+        boardsPerLevel={TABERDOKU_BOARDS_PER_LEVEL}
+        completedBoards={completedBoards}
         tutorialOpen={showTutorial}
         onTutorialClose={handleTutorialClose}
         onHelpClick={() => setShowTutorial(true)}
         levelSelectorOpen={showLevelSelector}
         onLevelSelectorClose={() => setShowLevelSelector(false)}
-        onLevelSelect={(lvl) => {
-          setShowLevelSelector(false);
-          setMaxLevel(Math.max(maxLevel, lvl));
-          setStorageItem(MAX_LEVEL_STORAGE_KEY, String(Math.max(maxLevel, lvl)));
-          setStorageItem(LEVEL_STORAGE_KEY, String(lvl));
-          setLevel(lvl);
-        }}
+        onLevelSelect={handleBoardSelect}
         onOpenLevelSelector={() => setShowLevelSelector(true)}
       />
       <LevelCompleteModal
         open={showModal}
         level={level}
+        board={currentBoard}
+        progress={progress}
         totalLevels={TABERDOKU_TOTAL_LEVELS}
+        boardsPerLevel={TABERDOKU_BOARDS_PER_LEVEL}
         time={solveTime}
-        isLastLevel={level >= TABERDOKU_TOTAL_LEVELS}
+        isLastBoardOfLevel={isLastBoardOfLevel}
+        isLastLevel={isLastLevel}
+        newlyUnlockedLevel={newlyUnlockedLevel}
         onAdvance={handleAdvance}
       />
     </div>

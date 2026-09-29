@@ -1,23 +1,33 @@
 import { useEffect, useState } from "react";
-import { Check, ChevronRight, X } from "lucide-react";
+import { Check, ChevronRight, Lock, Sparkles, X } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
 import "@/games/tabers-taberdoku/light-theme.css";
 
 interface LevelCompleteModalProps {
   open: boolean;
   level: number;
+  board: number;
+  progress: number;
   totalLevels: number;
+  boardsPerLevel: number;
   time: string;
+  isLastBoardOfLevel: boolean;
   isLastLevel: boolean;
+  newlyUnlockedLevel: number | null;
   onAdvance: () => void;
 }
 
 export function LevelCompleteModal({
   open,
   level,
+  board,
+  progress,
   totalLevels,
+  boardsPerLevel,
   time,
+  isLastBoardOfLevel,
   isLastLevel,
+  newlyUnlockedLevel,
   onAdvance,
 }: LevelCompleteModalProps) {
   const { t } = useI18n();
@@ -50,6 +60,22 @@ export function LevelCompleteModal({
 
   if (!visible) return null;
 
+  const showUnlock = newlyUnlockedLevel !== null;
+
+  const title = showUnlock
+    ? t("taberdoku.levelUnlocked", { level: newlyUnlockedLevel })
+    : isLastLevel
+      ? t("taberdoku.allCleared")
+      : isLastBoardOfLevel
+        ? t("taberdoku.levelCleared", { level })
+        : t("taberdoku.boardCleared", { board, boardsPerLevel, level });
+
+  const progressLabel = showUnlock
+    ? t("taberdoku.levelUnlockedHint")
+    : isLastBoardOfLevel
+      ? t("taberdoku.levelComplete", { level, nextLevel: level + 1 })
+      : t("taberdoku.levelProgressOf", { level, progress });
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -75,18 +101,26 @@ export function LevelCompleteModal({
             className="mb-3 flex h-14 w-14 items-center justify-center rounded-full"
             style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
           >
-            <Check className="h-7 w-7" />
+            {showUnlock ? (
+              <Sparkles className="h-7 w-7 text-yellow-400" />
+            ) : (
+              <Check className="h-7 w-7" />
+            )}
           </div>
 
           <h2 className="text-lg font-bold" style={{ color: "var(--primary)" }}>
-            {isLastLevel ? t("taberdoku.allCleared") : t("taberdoku.levelCleared", { level })}
+            {title}
           </h2>
+
+          {showUnlock && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              {t("taberdoku.levelUnlockedDesc", { level: newlyUnlockedLevel })}
+            </p>
+          )}
 
           <p className="mt-1 text-sm text-muted-foreground">{t("taberdoku.solvedIn", { time })}</p>
 
-          <p className="mt-3 text-xs text-muted-foreground">
-            {t("taberdoku.levelOf", { current: level, total: totalLevels })}
-          </p>
+          <p className="mt-3 text-xs text-muted-foreground">{progressLabel}</p>
         </div>
 
         <div className="mt-5 flex flex-col gap-2">
@@ -112,8 +146,8 @@ export function LevelCompleteModal({
                 color: "var(--primary-foreground)",
               }}
             >
-              {t("taberdoku.nextLevel")}
-              <ChevronRight className="h-4 w-4" />
+              {showUnlock ? t("taberdoku.continue") : t("taberdoku.nextLevel")}
+              {!showUnlock && <ChevronRight className="h-4 w-4" />}
             </button>
           )}
         </div>

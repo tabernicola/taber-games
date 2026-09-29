@@ -1,27 +1,55 @@
-import { Check, Lock } from "lucide-react";
+import { ChevronDown, Check, Lock } from "lucide-react";
+import { useState } from "react";
 import { useI18n } from "@/platform/i18n";
-import { TABERDOKU_TOTAL_LEVELS } from "../logic/taberdokuPuzzles";
+import {
+  TABERDOKU_BOARDS_PER_LEVEL,
+  boardsInLevel,
+  isLevelUnlocked,
+  levelProgressFromCompleted,
+  taberdokuAllPuzzlesSorted,
+} from "../logic/taberdokuPuzzles";
 
 interface TaberdokuLevelSelectorProps {
   open: boolean;
   currentLevel: number;
-  maxLevel: number;
-  onSelect: (level: number) => void;
+  totalLevels: number;
+  completedBoards: Set<number>;
+  onSelect: (board: number) => void;
   onClose: () => void;
+}
+
+function levelSizeLabel(levelNum: number): string {
+  const puzzles = taberdokuAllPuzzlesSorted();
+  const boards = boardsInLevel(levelNum);
+  const sizes = new Set<number>();
+  for (const b of boards) sizes.add(puzzles[b - 1].size);
+  const sorted = [...sizes].sort((a, b) => a - b);
+  if (sorted.length === 0) return "";
+  return sorted.length === 1
+    ? `${sorted[0]} × ${sorted[0]}`
+    : `${sorted[0]}–${sorted[sorted.length - 1]} ×`;
 }
 
 export function TaberdokuLevelSelector({
   open,
   currentLevel,
-  maxLevel,
+  totalLevels,
+  completedBoards,
   onSelect,
   onClose,
 }: TaberdokuLevelSelectorProps) {
   const { t } = useI18n();
+  const [expandedLevel, setExpandedLevel] = useState<number | null>(currentLevel);
 
   if (!open) return null;
 
-  const levels = Array.from({ length: TABERDOKU_TOTAL_LEVELS }, (_, i) => i + 1);
+  const levels = Array.from({ length: totalLevels }, (_, i) => i + 1);
+
+  const toggleLevel = (lvl: number) => {
+    const unlocked = isLevelUnlocked(lvl, completedBoards);
+    if (!unlocked) return;
+    setExpandedLevel((prev) => (prev === lvl ? null : lvl));
+  };
 
   return (
     <div
@@ -47,48 +75,88 @@ export function TaberdokuLevelSelector({
           {t("taberdoku.levels")}
         </h2>
 
-        <div className="mt-4 max-h-[60vh] space-y-4 overflow-y-auto pr-1">
-          {[
-            { size: "6 × 6", start: 1, end: 25 },
-            { size: "7 × 7", start: 26, end: 50 },
-            { size: "8 × 8", start: 51, end: 75 },
-            { size: "9 × 9", start: 76, end: 100 },
-          ].map((group) => (
-            <div key={group.size} className="space-y-1.5">
-              <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
-                <span className="font-mono">{group.size}</span>
-                <span className="text-[10px] opacity-75">
-                  {group.start} – {group.end}
-                </span>
-              </div>
-              <div className="grid grid-cols-5 gap-1.5">
-                {levels.slice(group.start - 1, group.end).map((lvl) => {
-                  const isCompleted = lvl < maxLevel;
-                  const isAvailable = lvl <= maxLevel;
-                  return (
-                    <button
-                      key={lvl}
-                      disabled={!isAvailable}
-                      onClick={() => onSelect(lvl)}
-                      className={`relative flex flex-col items-center justify-center rounded-lg border py-2 px-1 text-xs font-bold transition-all ${
-                        lvl === currentLevel
-                          ? "border-primary bg-primary/20 text-primary"
-                          : isCompleted
-                            ? "border-border bg-background/40 text-foreground hover:border-primary/30 hover:bg-background/60"
-                            : "border-border/30 bg-background/10 text-muted-foreground/40 cursor-not-allowed"
+        <div className="mt-4 space-y-2 overflow-y-auto pr-1" style={{ maxHeight: "60vh" }}>
+          {levels.map((lvl) => {
+            const unlocked = isLevelUnlocked(lvl, completedBoards);
+            const progress = levelProgressFromCompleted(completedBoards, lvl);
+            const isCompleted = progress >= 100;
+            const isCurrent = lvl === currentLevel;
+            const sizeLabel = levelSizeLabel(lvl);
+            const isExpanded = expandedLevel === lvl;
+
+            return (
+              <div key={lvl} className="space-y-1">
+                <button
+                  type="button"
+                  disabled={!unlocked}
+                  onClick={() => toggleLevel(lvl)}
+                  className={`flex w-full items-center justify-between rounded-lg border p-3 text-left transition-all ${
+                    !unlocked
+                      ? "cursor-not-allowed border-border/30 bg-background/10 text-muted-foreground/40"
+                      : isCurrent
+                        ? "border-primary bg-primary/20 text-primary"
+                        : isCompleted
+                          ? "border-border bg-background/40 text-foreground hover:border-primary/30 hover:bg-background/60"
+                          : "border-border bg-background/40 text-foreground hover:border-primary/30 hover:bg-background/60"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold ${
+                        unlocked ? "bg-muted" : "bg-muted/50"
                       }`}
                     >
                       {lvl}
-                      {isCompleted && <Check className="mt-0.5 h-3 w-3" />}
-                      {!isAvailable && (
-                        <Lock className="absolute -right-1 -top-1 h-3 w-3 text-destructive/60" />
-                      )}
-                    </button>
-                  );
-                })}
+                    </span>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold">
+                        {t("taberdoku.level", { current: lvl })}
+                      </span>
+                      <span className="text-xs text-muted-foreground">{sizeLabel}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold">{progress}%</span>
+                    {isCompleted && <Check className="h-4 w-4 text-green-500" />}
+                    {!unlocked && <Lock className="h-4 w-4 text-destructive/60" />}
+                    {unlocked && (
+                      <ChevronDown
+                        className={`h-4 w-4 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                      />
+                    )}
+                  </div>
+                </button>
+
+                {isExpanded && unlocked && (
+                  <div className="grid grid-cols-5 gap-1.5">
+                    {boardsInLevel(lvl).map((boardNum, idx) => {
+                      const isCompletedBoard = completedBoards.has(boardNum);
+
+                      return (
+                        <button
+                          key={boardNum}
+                          onClick={() => {
+                            onSelect(boardNum);
+                            onClose();
+                          }}
+                          className={`relative flex h-10 w-full items-center justify-center rounded-lg border text-sm font-bold transition-all ${
+                            isCompletedBoard
+                              ? "border-green-500/50 bg-green-500/20 text-green-700 hover:border-green-500/70 hover:bg-green-500/30"
+                              : "border-border bg-background/40 text-foreground hover:border-primary/30 hover:bg-background/60"
+                          }`}
+                        >
+                          {idx + 1}
+                          {isCompletedBoard && (
+                            <Check className="absolute -right-1 -top-1 h-3 w-3 text-green-500" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
