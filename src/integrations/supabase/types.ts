@@ -176,6 +176,7 @@ export type Database = {
           id: string
           last_completion_time: number | null
           level: number
+          level_progress: number | null
           max_level: number | null
           player_name: string
           seconds: number
@@ -186,6 +187,7 @@ export type Database = {
           id?: string
           last_completion_time?: number | null
           level?: number
+          level_progress?: number | null
           max_level?: number | null
           player_name: string
           seconds: number
@@ -196,6 +198,7 @@ export type Database = {
           id?: string
           last_completion_time?: number | null
           level?: number
+          level_progress?: number | null
           max_level?: number | null
           player_name?: string
           seconds?: number

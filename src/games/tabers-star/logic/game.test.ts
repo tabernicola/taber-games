@@ -12,6 +12,7 @@ import {
   TRI_INDEX,
 } from "./game";
 import { STAR_PIECES } from "./pieces";
+import type { Tri } from "./geometry";
 import {
   allTriOrientations,
   flipTri,
@@ -170,7 +171,7 @@ describe("generatePuzzle", () => {
         expect(index, `board index for ${piece.id} cell ${triKey(absTri)}`).toBeGreaterThanOrEqual(
           0,
         );
-        const color = getCellColor(index);
+        const color = getCellColor(index ?? 0);
         expect(validColors.has(color), `color ${color} for ${piece.id}`).toBe(true);
       }
     }
