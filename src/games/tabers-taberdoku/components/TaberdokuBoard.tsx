@@ -127,10 +127,11 @@ export function TaberdokuBoard({
   onLevelSelectorClose,
   onLevelSelect,
   onOpenLevelSelector,
+  totalScore,
 }: {
   puzzle: TaberdokuPuzzle;
   characters: MurdokuCharacter[];
-  onSolve: (time: string) => void;
+  onSolve: (time: string, unusedHearts: number) => void;
   level: number;
   board: number;
   progress: number;
@@ -144,6 +145,7 @@ export function TaberdokuBoard({
   onLevelSelectorClose?: () => void;
   onLevelSelect?: (board: number) => void;
   onOpenLevelSelector?: () => void;
+  totalScore?: number;
 }) {
   const { t, slug } = useI18n();
   const { playSound } = useSoundEffects();
@@ -208,11 +210,11 @@ export function TaberdokuBoard({
     if (solved) {
       playSound("win");
       const timer = setTimeout(() => {
-        onSolve(formatTime(seconds));
+        onSolve(formatTime(seconds), lives);
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [playSound, solved, onSolve, seconds]);
+  }, [playSound, solved, onSolve, seconds, lives]);
   const conflicts = useMemo(() => taberdokuConflicts(puzzle, occupied), [puzzle, occupied]);
 
   const charAt = useCallback(
@@ -434,6 +436,12 @@ export function TaberdokuBoard({
             <Clock className="h-4 w-4" />
             {formatTime(seconds)}
           </span>
+          {totalScore !== undefined && (
+            <span className="flex items-center gap-1">
+              <span className="text-base">⭐</span>
+              <span>{totalScore}</span>
+            </span>
+          )}
 
           <div className="w-24 max-w-[80px]">
             <div className="h-1.5 rounded-full bg-muted">

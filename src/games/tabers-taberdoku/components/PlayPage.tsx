@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useI18n } from "@/platform/i18n";
+import { useAuth } from "@/platform/hooks/useAuth";
 import { getStorageItem, setStorageItem } from "@/platform/storage";
+import { createScoresService } from "@/platform/scores/createScoresService";
 import { fetchSuspects } from "../logic/characters";
 import { TaberdokuBoard } from "./TaberdokuBoard";
 import { LevelCompleteModal } from "./LevelCompleteModal";
@@ -21,13 +23,41 @@ const LEVEL_STORAGE_KEY = "taberdoku-level";
 const COMPLETED_BOARDS_KEY = "taberdoku-completed";
 const MAX_LEVEL_STORAGE_KEY = "taberdoku-max-level";
 const TUTORIAL_STORAGE_KEY = "taberdoku-tutorial-completed";
+const SCORE_STORAGE_KEY = "taberdoku-score";
+const SESSION_ID_KEY = "taberdoku-session-id";
+const SESSION_HISTORY_KEY = "taberdoku-session-history";
+const PLAYER_NAME_KEY = "taberdoku-player-name";
+const scores = createScoresService("scores_taberdoku");
+
+type SessionHistoryEntry = {
+  sessionId: string;
+  board: number;
+  level: number;
+  time: string;
+  score: number;
+  timestamp: number;
+};
 
 function useCharacters() {
   return useQuery({ queryKey: ["murdoku-suspects"], queryFn: fetchSuspects });
 }
 
+function generateSessionId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+}
+
+function generateRandomPlayerName(): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let result = "";
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 export function PlayPage() {
   const { t } = useI18n();
+  const { user } = useAuth();
   const { data: characters = [], isPending } = useCharacters();
   const [board, setBoard] = useState<number | null>(null);
   const [completedBoards, setCompletedBoards] = useState<Set<number>>(new Set());
@@ -36,6 +66,10 @@ export function PlayPage() {
   const [showTutorial, setShowTutorial] = useState(false);
   const [showLevelSelector, setShowLevelSelector] = useState(false);
   const [newlyUnlockedLevel, setNewlyUnlockedLevel] = useState<number | null>(null);
+  const [totalScore, setTotalScore] = useState(0);
+  const [scoreEarned, setScoreEarned] = useState(0);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [playerName, setPlayerName] = useState<string | null>(null);
 
   // Load saved board and completed boards on mount
   useEffect(() => {
@@ -56,7 +90,32 @@ export function PlayPage() {
         setCompletedBoards(migrated);
       }
     }
-  }, []);
+
+    const savedScore = getStorageItem(SCORE_STORAGE_KEY);
+    if (savedScore) {
+      setTotalScore(Number(savedScore));
+    }
+
+    // Generate or load session ID
+    let currentSessionId = getStorageItem(SESSION_ID_KEY);
+    if (!currentSessionId) {
+      currentSessionId = generateSessionId();
+      setStorageItem(SESSION_ID_KEY, currentSessionId);
+    }
+    setSessionId(currentSessionId);
+
+    // Set player name (from auth or generate random)
+    if (user?.email) {
+      setPlayerName(user.email.split("@")[0]); // Use email prefix as name
+    } else {
+      let savedPlayerName = getStorageItem(PLAYER_NAME_KEY);
+      if (!savedPlayerName) {
+        savedPlayerName = generateRandomPlayerName();
+        setStorageItem(PLAYER_NAME_KEY, savedPlayerName);
+      }
+      setPlayerName(savedPlayerName);
+    }
+  }, [user]);
 
   // Show tutorial on first visit
   useEffect(() => {
@@ -93,14 +152,59 @@ export function PlayPage() {
   const isLastBoardOfLevel = currentBoard === TABERDOKU_BOARDS_PER_LEVEL;
   const isLastLevel = level === TABERDOKU_TOTAL_LEVELS && isLastBoardOfLevel;
 
-  const handleSolve = (time: string) => {
+  const handleSolve = async (time: string, unusedHearts: number) => {
     setSolveTime(time);
 
     // Add the just-solved board to the completed set
     const newCompleted = new Set(completedBoards);
+    const isFirstTimeSolve = !completedBoards.has(board);
     newCompleted.add(board);
     setCompletedBoards(newCompleted);
     setStorageItem(COMPLETED_BOARDS_KEY, JSON.stringify([...newCompleted]));
+
+    // Add score based on unused hearts (only on first completion)
+    let pointsEarned = 0;
+    if (isFirstTimeSolve && unusedHearts > 0) {
+      pointsEarned = unusedHearts;
+      const newScore = totalScore + pointsEarned;
+      setTotalScore(newScore);
+      setStorageItem(SCORE_STORAGE_KEY, String(newScore));
+    }
+    setScoreEarned(pointsEarned);
+
+    // Record completion history (only on first completion)
+    if (isFirstTimeSolve && sessionId) {
+      const historyEntry: SessionHistoryEntry = {
+        sessionId,
+        board,
+        level,
+        time,
+        score: pointsEarned,
+        timestamp: Date.now(),
+      };
+
+      const existingHistory = getStorageItem(SESSION_HISTORY_KEY);
+      const history: SessionHistoryEntry[] = existingHistory ? JSON.parse(existingHistory) : [];
+      history.push(historyEntry);
+      setStorageItem(SESSION_HISTORY_KEY, JSON.stringify(history));
+    }
+
+    // Save to database on every completion
+    if (sessionId && playerName) {
+      try {
+        // Convert time string to seconds (format: "MM:SS" or "M:SS")
+        const timeParts = time.split(":");
+        const timeInSeconds =
+          timeParts.length === 2
+            ? Number.parseInt(timeParts[0]) * 60 + Number.parseInt(timeParts[1])
+            : 0;
+
+        const currentMaxLevel = boardToLevel(board);
+        await scores.submit(0, playerName, totalScore, sessionId, timeInSeconds, currentMaxLevel);
+      } catch (error) {
+        console.error("Failed to save score to database:", error);
+      }
+    }
 
     // Check if completing this board unlocks a new level
     const nextLevel = level + 1;
@@ -156,6 +260,7 @@ export function PlayPage() {
         onLevelSelectorClose={() => setShowLevelSelector(false)}
         onLevelSelect={handleBoardSelect}
         onOpenLevelSelector={() => setShowLevelSelector(true)}
+        totalScore={totalScore}
       />
       <LevelCompleteModal
         open={showModal}
@@ -169,6 +274,8 @@ export function PlayPage() {
         isLastLevel={isLastLevel}
         newlyUnlockedLevel={newlyUnlockedLevel}
         onAdvance={handleAdvance}
+        scoreEarned={scoreEarned}
+        totalScore={totalScore}
       />
     </div>
   );

@@ -15,6 +15,8 @@ interface LevelCompleteModalProps {
   isLastLevel: boolean;
   newlyUnlockedLevel: number | null;
   onAdvance: () => void;
+  scoreEarned?: number;
+  totalScore?: number;
 }
 
 export function LevelCompleteModal({
@@ -29,6 +31,8 @@ export function LevelCompleteModal({
   isLastLevel,
   newlyUnlockedLevel,
   onAdvance,
+  scoreEarned,
+  totalScore,
 }: LevelCompleteModalProps) {
   const { t } = useI18n();
   const [visible, setVisible] = useState(false);
@@ -119,6 +123,18 @@ export function LevelCompleteModal({
           )}
 
           <p className="mt-1 text-sm text-muted-foreground">{t("taberdoku.solvedIn", { time })}</p>
+
+          {scoreEarned !== undefined && scoreEarned > 0 && (
+            <p className="mt-2 text-sm font-semibold text-primary">
+              +{scoreEarned} {t("taberdoku.points")} ⭐
+            </p>
+          )}
+
+          {totalScore !== undefined && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t("taberdoku.totalScore")}: {totalScore}
+            </p>
+          )}
 
           <p className="mt-3 text-xs text-muted-foreground">{progressLabel}</p>
         </div>

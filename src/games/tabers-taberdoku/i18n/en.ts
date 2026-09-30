@@ -43,10 +43,24 @@ export const dict: Dict = {
   "taberdoku.nextLevel": "Next level",
   "taberdoku.continue": "Continue",
   "taberdoku.startFromBeginning": "Start from beginning",
+  "taberdoku.points": "points",
+  "taberdoku.totalScore": "Total score",
+  "taberdoku.showHistory": "View history",
+  "taberdoku.sessionHistory": "Session history",
+  "taberdoku.sessionId": "Session ID",
+  "taberdoku.noHistory": "You haven't completed any boards in this session yet",
+  "taberdoku.board": "Board",
+  "taberdoku.time": "Time",
+  "taberdoku.startNewSession": "Start new session",
   "taberdoku.tutorial.title": "How to play",
   "taberdoku.tutorial.desc":
     "One character per row, column, and room. They can never touch each other, even diagonally.",
   "taberdoku.tutorial.gotIt": "Got it",
+  "taberdoku.levels": "Levels",
+  "taberdoku.levelsHint": "Tap a level to play",
+  "taberdoku.close": "Close",
+  "score.submitToRanking": "Submit to ranking",
+  "score.yourScore": "Your score: {score}",
 };
 
 export default dict;

@@ -21,7 +21,7 @@ function Card({ lang }: GameCardProps) {
         <img
           src="/taberdoku/logo.png"
           alt="Taberdoku"
-          className="h-24 w-24 object-contain drop-shadow-[0_0_20px_oklch(0.72_0.30_350/0.5)]"
+          className="h-32 w-32 object-contain drop-shadow-[0_0_20px_oklch(0.72_0.30_350/0.5)]"
         />
       </div>
       <span className="text-[10px] uppercase tracking-widest text-primary">

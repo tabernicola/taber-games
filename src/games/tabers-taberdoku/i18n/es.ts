@@ -40,6 +40,15 @@ export const dict: Dict = {
   "taberdoku.nextLevel": "Siguiente nivel",
   "taberdoku.continue": "Continuar",
   "taberdoku.startFromBeginning": "Empezar desde el principio",
+  "taberdoku.points": "puntos",
+  "taberdoku.totalScore": "Puntuación total",
+  "taberdoku.showHistory": "Ver historial",
+  "taberdoku.sessionHistory": "Historial de la sesión",
+  "taberdoku.sessionId": "ID de sesión",
+  "taberdoku.noHistory": "Aún no has completado ningún tablero en esta sesión",
+  "taberdoku.board": "Tablero",
+  "taberdoku.time": "Tiempo",
+  "taberdoku.startNewSession": "Iniciar nueva sesión",
   "taberdoku.tutorial.title": "Cómo jugar",
   "taberdoku.tutorial.desc":
     "Un personaje por fila, columna y sala. No pueden tocarse entre sí, ni siquiera en diagonal.",
@@ -47,6 +56,8 @@ export const dict: Dict = {
   "taberdoku.levels": "Niveles",
   "taberdoku.levelsHint": "Pulsa un nivel para jugar",
   "taberdoku.close": "Cerrar",
+  "score.submitToRanking": "Enviar al ranking",
+  "score.yourScore": "Tu puntuación: {score}",
 };
 
 export default dict;
