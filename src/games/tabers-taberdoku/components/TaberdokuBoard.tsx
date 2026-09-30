@@ -440,38 +440,28 @@ export function TaberdokuBoard({
 
   return (
     <div className="tabers-taberdoku-light min-h-screen">
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/80 px-3 py-2 backdrop-blur">
+      <header className="sticky top-0 z-30 flex flex-nowrap items-center gap-2 border-b border-border bg-background/80 px-3 py-2 backdrop-blur">
         <button
           type="button"
           onClick={() => {
             playSound("click");
             void navigate({ to: "/$lang/tabers-taberdoku", params: { lang: slug } });
           }}
-          className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="shrink-0 rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
           aria-label={t("common.back")}
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-base font-bold tracking-widest text-primary">
+        <h1 className="min-w-0 flex-1 truncate text-center text-sm font-bold tracking-widest text-primary sm:text-base">
           {t("taberdoku.title")} · {t("taberdoku.levelOf", { current: level, total: totalLevels })}
         </h1>
-        <div className="flex items-center gap-4 text-sm font-semibold text-muted-foreground">
+        <div className="flex shrink-0 items-center gap-3 whitespace-nowrap text-sm font-semibold text-muted-foreground sm:gap-4">
           <span className="flex items-center gap-1.5">
             <TrendingUp className="h-4 w-4" />
-            <span>{progress}%</span>
+            <span className="tabular-nums">{progress}%</span>
           </span>
-          <span className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            {formatTime(seconds)}
-          </span>
-          {totalScore !== undefined && (
-            <span className="flex items-center gap-1">
-              <span className="text-base">⭐</span>
-              <span>{totalScore}</span>
-            </span>
-          )}
 
-          <div className="w-24 max-w-[80px]">
+          <div className="w-20 sm:w-24">
             <div className="h-1.5 rounded-full bg-muted">
               <div
                 className="h-full rounded-full bg-primary transition-all"
@@ -487,7 +477,7 @@ export function TaberdokuBoard({
               playSound("click");
               onHelpClick();
             }}
-            className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="shrink-0 rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
             aria-label={t("taberdoku.tutorial.title")}
           >
             <HelpCircle className="h-5 w-5" />
@@ -653,7 +643,16 @@ export function TaberdokuBoard({
       )}
 
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
-        <div className="mx-auto flex max-w-md items-center justify-center gap-2 px-3 py-2">
+        <div
+          className={`mx-auto flex max-w-md items-center gap-2 px-3 py-2 ${
+            totalScore !== undefined ? "justify-between" : "justify-center"
+          }`}
+        >
+          <div className="flex flex-col items-center gap-1 text-[10px] font-semibold text-muted-foreground">
+            <Clock className="h-5 w-5" />
+            <span className="tabular-nums">{formatTime(seconds)}</span>
+          </div>
+
           <button
             type="button"
             onClick={() => {
@@ -669,11 +668,18 @@ export function TaberdokuBoard({
           <button
             type="button"
             onClick={reset}
-            className="flex flex-col items-center gap-1 rounded-lg px-6 py-1.5 text-[10px] font-semibold text-muted-foreground"
+            className="flex flex-col items-center gap-1 rounded-lg px-4 py-1.5 text-[10px] font-semibold text-muted-foreground"
           >
             <RotateCcw className="h-5 w-5" />
             {t("taberdoku.reset")}
           </button>
+
+          {totalScore !== undefined && (
+            <div className="flex flex-col items-center gap-1 text-[10px] font-semibold text-primary">
+              <span className="text-base leading-none">⭐</span>
+              <span className="tabular-nums">{totalScore}</span>
+            </div>
+          )}
         </div>
       </nav>
     </div>
