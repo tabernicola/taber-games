@@ -38,7 +38,7 @@ export type ScoresService = {
 
 /** Data access for a game's score table. One instance per game slice. */
 export function createScoresService(table: ScoreTable): ScoresService {
-  const fromScores = () => supabase.from(table as "scores_taber_square");
+  const fromScores = () => supabase.from(table as "scores_taberdoku");
 
   return {
     table,
