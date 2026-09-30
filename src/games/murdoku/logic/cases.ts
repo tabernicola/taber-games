@@ -9,6 +9,7 @@ type Row = Tables<"murdoku_cases">;
 function toCase(row: Row): MurdokuCase {
   return {
     ...row,
+    status: (row.status ?? "draft") as CaseStatus,
     content: row.content as unknown as CaseContent,
   };
 }
