@@ -56,9 +56,6 @@ export const dict: Dict = {
   "taberdoku.tutorial.desc":
     "One character per row, column, and room. They can never touch each other, even diagonally.",
   "taberdoku.tutorial.gotIt": "Got it",
-  "taberdoku.levels": "Levels",
-  "taberdoku.levelsHint": "Tap a level to play",
-  "taberdoku.close": "Close",
   "score.submitToRanking": "Submit to ranking",
   "score.yourScore": "Your score: {score}",
 };

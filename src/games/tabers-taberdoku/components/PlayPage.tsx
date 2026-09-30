@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useI18n } from "@/platform/i18n";
 import { useAuth } from "@/platform/hooks/useAuth";
 import { getStorageItem, setStorageItem } from "@/platform/storage";
 import { createScoresService } from "@/platform/scores/createScoresService";
+import { createTaberdokuHistoryService } from "@/platform/scores/createTaberdokuHistoryService";
 import { fetchSuspects } from "../logic/characters";
 import { TaberdokuBoard } from "./TaberdokuBoard";
 import { LevelCompleteModal } from "./LevelCompleteModal";
@@ -28,6 +29,7 @@ const SESSION_ID_KEY = "taberdoku-session-id";
 const SESSION_HISTORY_KEY = "taberdoku-session-history";
 const PLAYER_NAME_KEY = "taberdoku-player-name";
 const scores = createScoresService("scores_taberdoku");
+const history = createTaberdokuHistoryService();
 
 type SessionHistoryEntry = {
   sessionId: string;
@@ -70,6 +72,8 @@ export function PlayPage() {
   const [scoreEarned, setScoreEarned] = useState(0);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [playerName, setPlayerName] = useState<string | null>(null);
+  // Prevents the same board from being reported as solved more than once.
+  const solvingRef = useRef(false);
 
   // Load saved board and completed boards on mount
   useEffect(() => {
@@ -153,6 +157,8 @@ export function PlayPage() {
   const isLastLevel = level === TABERDOKU_TOTAL_LEVELS && isLastBoardOfLevel;
 
   const handleSolve = async (time: string, unusedHearts: number) => {
+    if (solvingRef.current) return;
+    solvingRef.current = true;
     setSolveTime(time);
 
     // Add the just-solved board to the completed set
@@ -201,6 +207,9 @@ export function PlayPage() {
 
         const currentMaxLevel = boardToLevel(board);
         await scores.submit(0, playerName, totalScore, sessionId, timeInSeconds, currentMaxLevel);
+
+        // Save game history to database
+        await history.submit(sessionId, playerName, board, level, timeInSeconds, pointsEarned);
       } catch (error) {
         console.error("Failed to save score to database:", error);
       }
@@ -222,6 +231,7 @@ export function PlayPage() {
   const handleAdvance = () => {
     setShowModal(false);
     setNewlyUnlockedLevel(null);
+    solvingRef.current = false;
     const nextBoard = board + 1;
     if (nextBoard <= TABERDOKU_TOTAL_BOARDS) {
       setStorageItem(LEVEL_STORAGE_KEY, String(nextBoard));
@@ -236,6 +246,8 @@ export function PlayPage() {
 
   const handleBoardSelect = (boardNum: number) => {
     setShowLevelSelector(false);
+    solvingRef.current = false;
+    setNewlyUnlockedLevel(null);
     setStorageItem(LEVEL_STORAGE_KEY, String(boardNum));
     setBoard(boardNum);
   };

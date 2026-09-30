@@ -206,15 +206,43 @@ export function TaberdokuBoard({
   const occupied = useMemo(() => Object.values(placements), [placements]);
   const solved = isTaberdokuSolved(puzzle, occupied);
   const { seconds } = useTimer(!solved);
+  // The win sound and the solve callback must fire exactly once per solved board.
+  // Without this guard the effect re-runs whenever onSolve changes identity
+  // (every parent render), replaying the sound and re-reporting the solve.
+  const solveHandledRef = useRef(false);
+  const solveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onSolveRef = useRef(onSolve);
   useEffect(() => {
-    if (solved) {
-      playSound("win");
-      const timer = setTimeout(() => {
-        onSolve(formatTime(seconds), lives);
-      }, 500);
-      return () => clearTimeout(timer);
+    onSolveRef.current = onSolve;
+  }, [onSolve]);
+
+  useEffect(() => {
+    if (!solved) {
+      solveHandledRef.current = false;
+      return;
     }
-  }, [playSound, solved, onSolve, seconds, lives]);
+    if (solveHandledRef.current) return;
+    solveHandledRef.current = true;
+    playSound("win");
+    const time = formatTime(seconds);
+    const unusedHearts = lives;
+    solveTimerRef.current = setTimeout(() => {
+      onSolveRef.current(time, unusedHearts);
+    }, 500);
+  }, [playSound, solved, seconds, lives]);
+
+  // Only cancel a pending solve callback when the board unmounts, never on
+  // effect re-runs (that would swallow the completion entirely).
+  useEffect(
+    () => () => {
+      if (solveTimerRef.current) {
+        clearTimeout(solveTimerRef.current);
+        solveTimerRef.current = null;
+      }
+    },
+    [],
+  );
+
   const conflicts = useMemo(() => taberdokuConflicts(puzzle, occupied), [puzzle, occupied]);
 
   const charAt = useCallback(

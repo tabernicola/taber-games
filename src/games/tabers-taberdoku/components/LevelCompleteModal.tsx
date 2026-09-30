@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, ChevronRight, Lock, Sparkles, X } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
 import "@/games/tabers-taberdoku/light-theme.css";
@@ -37,17 +37,32 @@ export function LevelCompleteModal({
   const { t } = useI18n();
   const [visible, setVisible] = useState(false);
   const [closing, setClosing] = useState(false);
+  // Guards against the close button and the auto-advance timer both firing,
+  // which would advance to the next board twice.
+  const advancingRef = useRef(false);
+  const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (open) {
+      advancingRef.current = false;
       setVisible(true);
       setClosing(false);
     }
   }, [open]);
 
+  useEffect(
+    () => () => {
+      if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    },
+    [],
+  );
+
   const handleAdvance = () => {
+    if (advancingRef.current) return;
+    advancingRef.current = true;
     setClosing(true);
-    setTimeout(() => {
+    advanceTimerRef.current = setTimeout(() => {
+      advanceTimerRef.current = null;
       setVisible(false);
       onAdvance();
     }, 200);
@@ -60,22 +75,21 @@ export function LevelCompleteModal({
       handleAdvance();
     }, 3000);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, isLastLevel]);
 
   if (!visible) return null;
 
   const showUnlock = newlyUnlockedLevel !== null;
 
-  const title = showUnlock
-    ? t("taberdoku.levelUnlocked", { level: newlyUnlockedLevel })
-    : isLastLevel
-      ? t("taberdoku.allCleared")
-      : isLastBoardOfLevel
-        ? t("taberdoku.levelCleared", { level })
-        : t("taberdoku.boardCleared", { board, boardsPerLevel, level });
+  const title = isLastLevel
+    ? t("taberdoku.allCleared")
+    : isLastBoardOfLevel
+      ? t("taberdoku.levelCleared", { level })
+      : t("taberdoku.boardCleared", { board, boardsPerLevel, level });
 
-  const progressLabel = showUnlock
-    ? t("taberdoku.levelUnlockedHint")
+  const progressLabel = isLastLevel
+    ? t("taberdoku.levelProgressOf", { level, progress })
     : isLastBoardOfLevel
       ? t("taberdoku.levelComplete", { level, nextLevel: level + 1 })
       : t("taberdoku.levelProgressOf", { level, progress });
@@ -117,9 +131,15 @@ export function LevelCompleteModal({
           </h2>
 
           {showUnlock && (
-            <p className="mt-2 text-sm text-muted-foreground">
-              {t("taberdoku.levelUnlockedDesc", { level: newlyUnlockedLevel })}
-            </p>
+            <div className="mt-3 w-full rounded-lg border border-yellow-400/50 bg-yellow-400/10 px-3 py-2">
+              <p className="flex items-center justify-center gap-1.5 text-sm font-bold text-yellow-500">
+                <Sparkles className="h-4 w-4" />
+                {t("taberdoku.levelUnlocked", { level: newlyUnlockedLevel })}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("taberdoku.levelUnlockedDesc", { level: newlyUnlockedLevel })}
+              </p>
+            </div>
           )}
 
           <p className="mt-1 text-sm text-muted-foreground">{t("taberdoku.solvedIn", { time })}</p>
