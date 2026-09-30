@@ -204,7 +204,8 @@ export function MapView({
                   key={key}
                   type="button"
                   disabled={
-                    showSolution || (mode === "place" && selectedCharId && cellHasNonWalkable)
+                    showSolution ||
+                    Boolean(mode === "place" && selectedCharId && cellHasNonWalkable)
                   }
                   onClick={handleCellClick}
                   className={`relative flex aspect-square items-center justify-center text-xs font-medium transition-all ${
