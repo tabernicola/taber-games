@@ -12,6 +12,7 @@ import {
   TRI_INDEX,
 } from "./game";
 import { STAR_PIECES } from "./pieces";
+import type { Tri } from "./geometry";
 import {
   allTriOrientations,
   flipTri,
