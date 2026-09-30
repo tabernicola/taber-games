@@ -6,7 +6,7 @@ export type GameCardProps = {
   lang: LangSlug;
 };
 
-export type TranslateFn = (key: string) => string;
+export type TranslateFn = (key: string, vars?: Record<string, string | number>) => string;
 
 /**
  * Contract every game slice fulfils so the platform (home, i18n, scores) can

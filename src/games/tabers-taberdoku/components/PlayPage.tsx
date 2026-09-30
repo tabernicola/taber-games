@@ -198,15 +198,24 @@ export function PlayPage() {
     // Save to database on every completion
     if (sessionId && playerName) {
       try {
-        // Convert time string to seconds (format: "MM:SS" or "M:SS")
-        const timeParts = time.split(":");
-        const timeInSeconds =
-          timeParts.length === 2
-            ? Number.parseInt(timeParts[0]) * 60 + Number.parseInt(timeParts[1])
-            : 0;
+        // Convert time string to seconds ("M:SS" or "H:MM:SS")
+        const timeInSeconds = time
+          .split(":")
+          .map((part) => Number.parseInt(part, 10) || 0)
+          .reduce((total, part) => total * 60 + part, 0);
 
-        const currentMaxLevel = boardToLevel(board);
-        await scores.submit(0, playerName, totalScore, sessionId, timeInSeconds, currentMaxLevel);
+        // Progress of the level once this board counts as solved
+        const levelProgressAfterSolve = levelProgressFromCompleted(newCompleted, level);
+
+        await scores.submit(
+          level,
+          playerName,
+          timeInSeconds,
+          sessionId,
+          timeInSeconds,
+          level,
+          levelProgressAfterSolve,
+        );
 
         // Save game history to database
         await history.submit(sessionId, playerName, board, level, timeInSeconds, pointsEarned);

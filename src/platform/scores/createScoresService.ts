@@ -8,6 +8,8 @@ export type Score = {
   session_id?: string;
   last_completion_time?: number;
   max_level?: number;
+  /** Percentage (0-100) of boards solved in `level`, when the game tracks it. */
+  level_progress?: number | null;
   created_at: string;
 };
 
@@ -30,6 +32,7 @@ export type ScoresService = {
     sessionId?: string,
     lastCompletionTime?: number,
     maxLevel?: number,
+    levelProgress?: number,
   ): Promise<void>;
 };
 
@@ -40,14 +43,16 @@ export function createScoresService(table: ScoreTable): ScoresService {
   return {
     table,
     async fetchTop(level?: number): Promise<Score[]> {
-      let query = fromScores().select("id, player_name, seconds, level, created_at");
+      let query = fromScores().select(
+        "id, player_name, seconds, level, created_at, max_level, level_progress",
+      );
       if (level !== undefined) {
         query = query.eq("level", level);
       }
       query = query.order("level", { ascending: false }).order("seconds", { ascending: true });
       const { data, error } = await query.limit(5);
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as unknown as Score[];
     },
 
     async submit(
@@ -57,25 +62,41 @@ export function createScoresService(table: ScoreTable): ScoresService {
       sessionId,
       lastCompletionTime,
       maxLevel,
+      levelProgress,
     ): Promise<void> {
       const name = playerName.trim().slice(0, 24) || "Anon";
+      const optional = {
+        ...(sessionId === undefined ? {} : { session_id: sessionId }),
+        ...(lastCompletionTime === undefined ? {} : { last_completion_time: lastCompletionTime }),
+        ...(maxLevel === undefined ? {} : { max_level: maxLevel }),
+        ...(levelProgress === undefined ? {} : { level_progress: levelProgress }),
+      };
 
       if (sessionId) {
         // Check if session already exists
         const { data: existing } = await fromScores()
-          .select("id")
+          .select("id, level")
           .eq("session_id", sessionId)
           .single();
 
         if (existing) {
-          // Update existing record
+          // Update existing record. The stored level is the furthest one reached,
+          // so replaying an earlier level never lowers it.
+          const storedLevel = Number(existing.level) || 0;
+          const reachedFurthest = level >= storedLevel;
           const { error } = await fromScores()
             .update({
               player_name: name,
+              level: reachedFurthest ? level : storedLevel,
               seconds,
-              last_completion_time: lastCompletionTime,
-              max_level: maxLevel,
-            })
+              max_level: Math.max(storedLevel, maxLevel ?? 0),
+              ...(lastCompletionTime === undefined
+                ? {}
+                : { last_completion_time: lastCompletionTime }),
+              ...(reachedFurthest && levelProgress !== undefined
+                ? { level_progress: levelProgress }
+                : {}),
+            } as never)
             .eq("session_id", sessionId);
           if (error) throw error;
           return;
@@ -87,10 +108,8 @@ export function createScoresService(table: ScoreTable): ScoresService {
         level,
         player_name: name,
         seconds,
-        session_id: sessionId,
-        last_completion_time: lastCompletionTime,
-        max_level: maxLevel,
-      });
+        ...optional,
+      } as never);
       if (error) throw error;
     },
   };

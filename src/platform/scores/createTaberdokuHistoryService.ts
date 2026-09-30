@@ -27,7 +27,7 @@ export type TaberdokuHistoryService = {
 };
 
 export function createTaberdokuHistoryService(): TaberdokuHistoryService {
-  const fromHistory = () => supabase.from("taberdoku_history" as "taberdoku_history");
+  const fromHistory = () => supabase.from("taberdoku_history" as const);
 
   return {
     table: "taberdoku_history",

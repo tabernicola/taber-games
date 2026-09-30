@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import { SiteHeader } from "@/platform/layout/SiteHeader";
 import { GameFooter } from "@/platform/layout/GameFooter";
 import { Ranking } from "@/platform/scores/Ranking";
-import { createScoresService } from "@/platform/scores/createScoresService";
+import { createScoresService, type Score } from "@/platform/scores/createScoresService";
 import { useI18n } from "@/platform/i18n";
 import type { TranslateFn } from "@/platform/games/types";
 import { getStorageItem, setStorageItem } from "@/platform/storage";
@@ -28,6 +28,11 @@ type SessionHistoryEntry = {
 };
 
 export const formatLevelLabel = (level: number, _t: TranslateFn) => `Nivel ${level}`;
+
+export const formatScoreNote = (score: Score, t: TranslateFn) =>
+  score.level_progress === null || score.level_progress === undefined
+    ? ""
+    : t("taberdoku.levelProgressOf", { level: score.level, progress: score.level_progress });
 
 export function LandingPage() {
   const { t, slug } = useI18n();
@@ -157,6 +162,7 @@ export function LandingPage() {
               service={scores}
               title={t("landing.ranking")}
               formatLevelLabel={formatLevelLabel}
+              formatScoreNote={formatScoreNote}
             />
           </div>
 

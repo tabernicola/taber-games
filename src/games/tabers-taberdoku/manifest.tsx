@@ -42,6 +42,6 @@ export const tabersTaberdokuGame: GameModule = {
   id: "tabers-taberdoku",
   Card,
   translations,
-  createScoresService: () => createScoresService("scores_tabers_taberdoku"),
+  createScoresService: () => createScoresService("scores_taberdoku"),
   formatLevelLabel: (): string => "🧩",
 };
