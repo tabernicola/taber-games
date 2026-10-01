@@ -12,7 +12,7 @@ export const dict: Dict = {
   "taberdoku.rule1": "1 per color",
   "taberdoku.rule2": "1 per row/column",
   "taberdoku.rule3": "No touching",
-  "taberdoku.doubleClick": "Double-click a cell to place a character.",
+  "taberdoku.clickHint": "Double-click to place a character. Single click to mark an X.",
   "taberdoku.generating": "Generating board…",
   "taberdoku.solvedIn": "Solved in {time}!",
   "taberdoku.back": "Back",
@@ -56,6 +56,17 @@ export const dict: Dict = {
   "taberdoku.tutorial.desc":
     "One character per row, column, and room. They can never touch each other, even diagonally.",
   "taberdoku.tutorial.gotIt": "Got it",
+  "taberdoku.tutorial.stepOf": "Step {current} of {total}",
+  "taberdoku.tutorial.stepPlaceTitle": "Place a character",
+  "taberdoku.tutorial.rule1Desc":
+    "Only one character fits in each room (color). Mark the rest with an X.",
+  "taberdoku.tutorial.rule2Desc":
+    "Only one character fits in each row and each column. Mark the rest with an X.",
+  "taberdoku.tutorial.rule3Desc":
+    "Two characters can never touch, not even diagonally. Mark the surrounding cells with an X.",
+  "taberdoku.tutorial.next": "Next",
+  "taberdoku.tutorial.prev": "Back",
+  "taberdoku.tutorial.skip": "Skip",
   "score.submitToRanking": "Submit to ranking",
   "score.yourScore": "Your score: {score}",
 };

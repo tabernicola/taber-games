@@ -206,6 +206,16 @@ export function TaberdokuBoard({
   const occupied = useMemo(() => Object.values(placements), [placements]);
   const solved = isTaberdokuSolved(puzzle, occupied);
   const { seconds } = useTimer(!solved);
+  // Bumped every time the session score grows, so the star block remounts and
+  // replays its animation. A boolean would stay true after the first award.
+  const [scorePulse, setScorePulse] = useState(0);
+  const prevTotalScoreRef = useRef(totalScore);
+  useEffect(() => {
+    const previous = prevTotalScoreRef.current;
+    prevTotalScoreRef.current = totalScore;
+    if (previous === undefined || totalScore === undefined) return;
+    if (totalScore > previous) setScorePulse((pulse) => pulse + 1);
+  }, [totalScore]);
   // The win sound and the solve callback must fire exactly once per solved board.
   // Without this guard the effect re-runs whenever onSolve changes identity
   // (every parent render), replaying the sound and re-reporting the solve.
@@ -621,7 +631,7 @@ export function TaberdokuBoard({
         </div>
 
         <p className="mx-auto mb-3 max-w-[480px] text-center text-xs text-muted-foreground">
-          {t("taberdoku.doubleClick")}
+          {t("taberdoku.clickHint")}
         </p>
 
         <TaberdokuRules characters={cast} />
@@ -632,6 +642,7 @@ export function TaberdokuBoard({
             currentLevel={level}
             totalLevels={totalLevels}
             completedBoards={completedBoards}
+            characters={characters}
             onSelect={onLevelSelect}
             onClose={onLevelSelectorClose}
           />
@@ -675,7 +686,12 @@ export function TaberdokuBoard({
           </button>
 
           {totalScore !== undefined && (
-            <div className="flex flex-col items-center gap-1 text-[10px] font-semibold text-primary">
+            <div
+              key={scorePulse}
+              className={`flex flex-col items-center gap-1 text-[10px] font-semibold text-primary ${
+                scorePulse > 0 ? "taberdoku-score-pulse" : ""
+              }`}
+            >
               <span className="text-base leading-none">⭐</span>
               <span className="tabular-nums">{totalScore}</span>
             </div>

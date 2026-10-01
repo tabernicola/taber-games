@@ -1,6 +1,8 @@
 import { ChevronDown, Check, Lock } from "lucide-react";
 import { useState } from "react";
 import { useI18n } from "@/platform/i18n";
+import { characterForLevel } from "../logic/levelCharacters";
+import type { MurdokuCharacter } from "../logic/characters";
 import {
   TABERDOKU_BOARDS_PER_LEVEL,
   boardsInLevel,
@@ -14,6 +16,7 @@ interface TaberdokuLevelSelectorProps {
   currentLevel: number;
   totalLevels: number;
   completedBoards: Set<number>;
+  characters: MurdokuCharacter[];
   onSelect: (board: number) => void;
   onClose: () => void;
 }
@@ -35,6 +38,7 @@ export function TaberdokuLevelSelector({
   currentLevel,
   totalLevels,
   completedBoards,
+  characters,
   onSelect,
   onClose,
 }: TaberdokuLevelSelectorProps) {
@@ -83,6 +87,7 @@ export function TaberdokuLevelSelector({
             const isCurrent = lvl === currentLevel;
             const sizeLabel = levelSizeLabel(lvl);
             const isExpanded = expandedLevel === lvl;
+            const character = characterForLevel(lvl, characters);
 
             return (
               <div key={lvl} className="space-y-1">
@@ -101,13 +106,44 @@ export function TaberdokuLevelSelector({
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <span
-                      className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold ${
-                        unlocked ? "bg-muted" : "bg-muted/50"
-                      }`}
-                    >
-                      {lvl}
-                    </span>
+                    {character ? (
+                      <span className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-muted">
+                        {character.image ? (
+                          <img
+                            src={character.image}
+                            alt=""
+                            className={`h-full w-full object-cover object-top transition-all ${
+                              unlocked ? "" : "opacity-40 grayscale"
+                            }`}
+                          />
+                        ) : (
+                          <span
+                            className={`text-[10px] font-bold ${
+                              unlocked ? "text-foreground" : "text-muted-foreground/40"
+                            }`}
+                          >
+                            {character.name.slice(0, 2)}
+                          </span>
+                        )}
+                        <span
+                          className="absolute -bottom-1 -left-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold"
+                          style={{
+                            background: "var(--primary)",
+                            color: "var(--primary-foreground)",
+                          }}
+                        >
+                          {lvl}
+                        </span>
+                      </span>
+                    ) : (
+                      <span
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold ${
+                          unlocked ? "bg-muted" : "bg-muted/50"
+                        }`}
+                      >
+                        {lvl}
+                      </span>
+                    )}
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold">
                         {t("taberdoku.level", { current: lvl })}

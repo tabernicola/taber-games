@@ -13,7 +13,8 @@ export const dict: Dict = {
   "taberdoku.rule1": "1 koloreko",
   "taberdoku.rule2": "1 errenkada/zutabeko",
   "taberdoku.rule3": "Ez elkar ukitu",
-  "taberdoku.doubleClick": "Pertsonaia jartzeko, egin klik bikoitza gelan.",
+  "taberdoku.clickHint":
+    "Egin klik bikoitza pertsonaia jartzeko. Klik bakarra bat X bat markatzeko.",
   "taberdoku.generating": "Taula sortzen…",
   "taberdoku.solvedIn": "{time}-tan ebatzia!",
   "taberdoku.back": "Atzera",
@@ -58,6 +59,17 @@ export const dict: Dict = {
   "taberdoku.tutorial.desc":
     "Pertsonaia bat errenkadako, zutabeko eta gelako. Ezin dira elkarren ondoan egon, diagonalean ere bai.",
   "taberdoku.tutorial.gotIt": "Adostas",
+  "taberdoku.tutorial.stepOf": "{current}. urratsa, {total}-ean",
+  "taberdoku.tutorial.stepPlaceTitle": "Jarri pertsonaia bat",
+  "taberdoku.tutorial.rule1Desc":
+    "Gela bakoitzeko (kolore bakoitzeko) pertsonaia bat baino ez da sar daiteke. Gainerakoak X batean markatu.",
+  "taberdoku.tutorial.rule2Desc":
+    "Errenkada eta zutabe bakoitzeko pertsonaia bat baino ez da sar daiteke. Gainerakoak X batean markatu.",
+  "taberdoku.tutorial.rule3Desc":
+    "Bi pertsonaiak ezin dira elkar ukitu, diagonalean ere ez. Inguruko laukiak X batean markatu.",
+  "taberdoku.tutorial.next": "Hurrengoa",
+  "taberdoku.tutorial.prev": "Atzera",
+  "taberdoku.tutorial.skip": "Saltatu",
 };
 
 export default dict;

@@ -12,7 +12,7 @@ export const dict: Dict = {
   "taberdoku.rule1": "1 por color",
   "taberdoku.rule2": "1 por fila/columna",
   "taberdoku.rule3": "No tocarse",
-  "taberdoku.doubleClick": "Para colocar un personaje, haz doble clic en la casilla.",
+  "taberdoku.clickHint": "Doble clic para colocar un personaje. Clic simple para marcar una X.",
   "taberdoku.generating": "Generando tablero…",
   "taberdoku.solvedIn": "¡Resuelto en {time}!",
   "taberdoku.back": "Volver",
@@ -53,6 +53,17 @@ export const dict: Dict = {
   "taberdoku.tutorial.desc":
     "Un personaje por fila, columna y sala. No pueden tocarse entre sí, ni siquiera en diagonal.",
   "taberdoku.tutorial.gotIt": "Entendido",
+  "taberdoku.tutorial.stepOf": "Paso {current} de {total}",
+  "taberdoku.tutorial.stepPlaceTitle": "Coloca un personaje",
+  "taberdoku.tutorial.rule1Desc":
+    "En cada sala (color) solo cabe un personaje. Marca el resto con una X.",
+  "taberdoku.tutorial.rule2Desc":
+    "En cada fila y en cada columna solo cabe un personaje. Marca el resto con una X.",
+  "taberdoku.tutorial.rule3Desc":
+    "Dos personajes no pueden tocarse, ni siquiera en diagonal. Marca las casillas de alrededor con una X.",
+  "taberdoku.tutorial.next": "Siguiente",
+  "taberdoku.tutorial.prev": "Atrás",
+  "taberdoku.tutorial.skip": "Saltar",
   "taberdoku.levels": "Niveles",
   "taberdoku.levelsHint": "Pulsa un nivel para jugar",
   "taberdoku.close": "Cerrar",

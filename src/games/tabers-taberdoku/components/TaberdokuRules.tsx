@@ -1,69 +1,159 @@
 import { useI18n } from "@/platform/i18n";
+import { RULE_DEMOS, isCrossRevealed } from "../logic/ruleDemos";
 import type { MurdokuCharacter } from "../logic/characters";
 
-const BOARD_COLOR = "#bfdbfe";
-const OTHER_COLOR = "#fecaca";
+/** Hand artwork, pointing up: the fingertip is the spot that clicks the cell. */
+const HAND_SRC = "/icons/puntero.png";
+/** Fingertip position inside the artwork, as a fraction of its box. */
+const HAND_TIP_X = 0.25;
+const HAND_TIP_Y = -0.75;
 
-interface MiniBoardProps {
+/**
+ * Progressive state driven by the tutorial timeline. When it is omitted the
+ * board renders statically, which is what the in-game rule legend needs.
+ */
+export interface MiniBoardAnimation {
+  charPlaced: boolean;
+  crossCount: number;
+  handCell: number;
+  handVisible: boolean;
+  tapKey: number;
+  tapCell: number;
+  doubleTap: boolean;
+}
+
+export interface MiniBoardProps {
   size: number;
   cellColors: string[];
   characters: { cell: number; image?: string; name: string }[];
   crosses: number[];
   cellSize?: number;
+  animation?: MiniBoardAnimation;
 }
 
-function MiniBoard({ size, cellColors, characters, crosses, cellSize = 24 }: MiniBoardProps) {
-  const charAt = (cell: number) => characters.find((c) => c.cell === cell);
+export function HandCursor({
+  size,
+  cellSize,
+  cell,
+  tapKey,
+  doubleTap,
+}: {
+  size: number;
+  cellSize: number;
+  cell: number;
+  tapKey: number;
+  doubleTap: boolean;
+}) {
+  const left = (cell % size) * cellSize + cellSize / 2;
+  const top = Math.floor(cell / size) * cellSize + cellSize / 2;
+  // The inner div is keyed on the tap so the press animation replays, while the
+  // outer div keeps its identity and therefore its position transition.
+  const tapClass = tapKey > 0 ? (doubleTap ? "taberdoku-hand-double" : "taberdoku-hand-tap") : "";
 
   return (
     <div
-      className="grid overflow-hidden rounded-lg border-2 border-slate-700"
+      className="pointer-events-none absolute z-20"
       style={{
-        gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
-        width: size * cellSize,
-        height: size * cellSize,
+        left,
+        top,
+        width: cellSize,
+        height: cellSize,
+        transform: "translate(-50%, -100%)",
+        transition: "left 300ms ease, top 300ms ease",
+        filter: "drop-shadow(0 2px 3px rgb(15 23 42 / 0.35))",
       }}
     >
-      {Array.from({ length: size * size }, (_, i) => {
-        const char = charAt(i);
-        const hasCross = crosses.includes(i);
+      <div
+        key={tapKey}
+        className={tapClass}
+        style={{ position: "relative", width: cellSize, height: cellSize }}
+      >
+        <img
+          src={HAND_SRC}
+          alt=""
+          aria-hidden
+          draggable={false}
+          className="pointer-events-none absolute"
+          style={{
+            // Nudged so the fingertip lands on the top centre of the box, which
+            // is the point the press animation pivots around.
+            left: `${(0.5 - HAND_TIP_X) * 100}%`,
+            top: `${-HAND_TIP_Y * 100}%`,
+            width: cellSize,
+            height: cellSize,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
 
-        return (
-          <div
-            key={i}
-            className="relative flex items-center justify-center overflow-hidden"
-            style={{ background: cellColors[i], width: cellSize, height: cellSize }}
-          >
-            {char && char.image ? (
-              <img
-                src={char.image}
-                alt={char.name}
-                style={{
-                  width: cellSize,
-                  height: cellSize,
-                  objectFit: "cover",
-                  objectPosition: "top",
-                  position: "absolute",
-                  inset: 0,
-                }}
-              />
-            ) : char ? (
-              <span
-                className="relative z-10 font-bold text-white"
-                style={{ fontSize: Math.max(7, cellSize * 0.28) }}
-              >
-                {char.name.slice(0, 2)}
-              </span>
-            ) : null}
-            {hasCross && !char && (
-              <XMark
-                className="relative z-10 text-red-600"
-                style={{ width: cellSize * 0.5, height: cellSize * 0.5, strokeWidth: 3 }}
-              />
-            )}
-          </div>
-        );
-      })}
+export function MiniBoard({
+  size,
+  cellColors,
+  characters,
+  crosses,
+  cellSize = 24,
+  animation,
+}: MiniBoardProps) {
+  const charAt = (cell: number) => characters.find((c) => c.cell === cell);
+
+  return (
+    <div className="relative" style={{ width: size * cellSize, height: size * cellSize }}>
+      <div
+        className="grid overflow-hidden rounded-lg border-2 border-slate-700"
+        style={{
+          gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
+          width: size * cellSize,
+          height: size * cellSize,
+        }}
+      >
+        {Array.from({ length: size * size }, (_, i) => {
+          const char = charAt(i);
+          const showChar = char !== undefined && (!animation || animation.charPlaced);
+          // Static boards pass every X at once; the tutorial reveals them one by one.
+          const shownCrosses = animation ? animation.crossCount : crosses.length;
+          const hasCross = isCrossRevealed(crosses, i, shownCrosses);
+          return (
+            <div
+              key={i}
+              className="relative flex items-center justify-center overflow-hidden"
+              style={{ background: cellColors[i], width: cellSize, height: cellSize }}
+            >
+              {showChar && (
+                <span
+                  className={`absolute inset-0 z-10 flex items-center justify-center ${
+                    animation ? "taberdoku-reveal-pop" : ""
+                  }`}
+                >
+                  {char.image ? (
+                    <img
+                      src={char.image}
+                      alt={char.name}
+                      className="h-full w-full object-cover object-top"
+                    />
+                  ) : (
+                    <span
+                      className="font-bold text-white"
+                      style={{ fontSize: Math.max(7, cellSize * 0.28) }}
+                    >
+                      {char.name.slice(0, 2)}
+                    </span>
+                  )}
+                </span>
+              )}
+              {hasCross && (
+                <XMark
+                  className={`relative z-10 text-red-600 ${
+                    animation ? "taberdoku-reveal-pop" : ""
+                  }`}
+                  style={{ width: cellSize * 0.5, height: cellSize * 0.5, strokeWidth: 3 }}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -104,72 +194,26 @@ function RuleCard({ title, children }: RuleCardProps) {
 export function TaberdokuRules({ characters }: { characters: MurdokuCharacter[] }) {
   const { t } = useI18n();
 
-  const sample = characters.slice(0, 1);
-  const c = sample[0];
+  const c = characters[0];
   const char = {
     image: c?.image,
     name: c?.name ?? "P1",
   };
 
-  // Rule 1: One character per room — two colors.
-  // Room A (cells 0,1,2,3,4) and Room B (cells 5,6,7,8).
-  // Character in room A (cell 0), X on other cells of room A (cells 1,2,3,4).
-  const rule1Colors = [
-    BOARD_COLOR,
-    BOARD_COLOR,
-    BOARD_COLOR,
-    BOARD_COLOR,
-    BOARD_COLOR,
-    OTHER_COLOR,
-    OTHER_COLOR,
-    OTHER_COLOR,
-    OTHER_COLOR,
-  ];
-  const rule1Chars = [{ cell: 0, ...char }];
-  const rule1Crosses = [1, 2, 3, 4];
-
-  // Rule 2: One per row and column — character at (0,0).
-  // X on rest of row 0 (1,2) and rest of col 0 (3,6).
-  const rule2Colors = Array(9).fill(BOARD_COLOR);
-  const rule2Chars = [{ cell: 0, ...char }];
-  const rule2Crosses = [1, 2, 3, 6];
-
-  // Rule 3: No touching — character at center (4).
-  // X on all 8 surrounding cells.
-  const rule3Colors = Array(9).fill(BOARD_COLOR);
-  const rule3Chars = [{ cell: 4, ...char }];
-  const rule3Crosses = [0, 1, 2, 3, 5, 6, 7, 8];
-
   return (
     <div className="mx-auto mb-3 max-w-[480px]">
       <div className="flex flex-wrap items-center justify-center gap-2">
-        <RuleCard title={t("taberdoku.rule1")}>
-          <MiniBoard
-            size={3}
-            cellColors={rule1Colors}
-            characters={rule1Chars}
-            crosses={rule1Crosses}
-            cellSize={24}
-          />
-        </RuleCard>
-        <RuleCard title={t("taberdoku.rule2")}>
-          <MiniBoard
-            size={3}
-            cellColors={rule2Colors}
-            characters={rule2Chars}
-            crosses={rule2Crosses}
-            cellSize={24}
-          />
-        </RuleCard>
-        <RuleCard title={t("taberdoku.rule3")}>
-          <MiniBoard
-            size={3}
-            cellColors={rule3Colors}
-            characters={rule3Chars}
-            crosses={rule3Crosses}
-            cellSize={24}
-          />
-        </RuleCard>
+        {RULE_DEMOS.map((demo, index) => (
+          <RuleCard key={index} title={t(`taberdoku.rule${index + 1}`)}>
+            <MiniBoard
+              size={3}
+              cellColors={demo.cellColors}
+              characters={[{ cell: demo.charCell, ...char }]}
+              crosses={demo.crossCells}
+              cellSize={24}
+            />
+          </RuleCard>
+        ))}
       </div>
     </div>
   );
