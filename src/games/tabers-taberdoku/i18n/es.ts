@@ -12,7 +12,8 @@ export const dict: Dict = {
   "taberdoku.rule1": "1 por color",
   "taberdoku.rule2": "1 por fila/columna",
   "taberdoku.rule3": "No tocarse",
-  "taberdoku.clickHint": "Doble clic para colocar un personaje. Clic simple para marcar una X.",
+  "taberdoku.clickHint":
+    "Toca o haz clic para marcar una X y arrastra para marcar varias. Doble toque o doble clic para colocar un personaje.",
   "taberdoku.generating": "Generando tablero…",
   "taberdoku.solvedIn": "¡Resuelto en {time}!",
   "taberdoku.back": "Volver",
@@ -42,13 +43,6 @@ export const dict: Dict = {
   "taberdoku.startFromBeginning": "Empezar desde el principio",
   "taberdoku.points": "puntos",
   "taberdoku.totalScore": "Puntuación total",
-  "taberdoku.showHistory": "Ver historial",
-  "taberdoku.sessionHistory": "Historial de la sesión",
-  "taberdoku.sessionId": "ID de sesión",
-  "taberdoku.noHistory": "Aún no has completado ningún tablero en esta sesión",
-  "taberdoku.board": "Tablero",
-  "taberdoku.time": "Tiempo",
-  "taberdoku.startNewSession": "Iniciar nueva sesión",
   "taberdoku.tutorial.title": "Cómo jugar",
   "taberdoku.tutorial.desc":
     "Un personaje por fila, columna y sala. No pueden tocarse entre sí, ni siquiera en diagonal.",

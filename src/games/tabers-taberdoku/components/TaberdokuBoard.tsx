@@ -188,20 +188,29 @@ export function TaberdokuBoard({
   const [lastErrorCell, setLastErrorCell] = useState<number | null>(null);
   const lives = 3 - errors;
   const gameOver = errors >= 3;
-  const clickTimers = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
-  const touchStartCell = useRef<number | null>(null);
-  const touchCell = useRef<number | null>(null);
-  const touchStartCellHasCross = useRef(false);
-  const touchMoved = useRef(false);
-  const lastTouchEndTime = useRef(0);
-
-  useEffect(
-    () => () => {
-      clickTimers.current.forEach((timer) => clearTimeout(timer));
-      clickTimers.current.clear();
-    },
-    [],
-  );
+  // Mouse, touch and pen all run through the same pointer gesture, so the
+  // board behaves identically no matter which device drives it.
+  const DOUBLE_TAP_MS = 300;
+  // Keyboard activation has no real pointer id; any value that can never
+  // collide with a pointer id works.
+  const KEYBOARD_POINTER_ID = -1;
+  const boardRef = useRef<HTMLDivElement>(null);
+  const gestureRef = useRef<{
+    pointerId: number;
+    startCell: number;
+    lastCell: number;
+    targetCross: boolean;
+    moved: boolean;
+  } | null>(null);
+  const lastTapRef = useRef<{ cell: number; time: number } | null>(null);
+  // Latest pointer position plus its frame handle, so a drag hit-tests at most
+  // once per frame instead of on every pointermove event.
+  const pendingPointRef = useRef<{ x: number; y: number } | null>(null);
+  const moveFrameRef = useRef<number | null>(null);
+  // A drag paints several cells in a single gesture, so `crosses` must be read
+  // and written through a ref: React state can still be stale when the next
+  // pointermove arrives.
+  const crossesRef = useRef(crosses);
 
   const occupied = useMemo(() => Object.values(placements), [placements]);
   const solved = isTaberdokuSolved(puzzle, occupied);
@@ -262,187 +271,231 @@ export function TaberdokuBoard({
     [charInfo, placements],
   );
 
-  const isGiven = (cell: number) => puzzle.givens.includes(cell);
+  const isGiven = useCallback((cell: number) => puzzle.givens.includes(cell), [puzzle.givens]);
 
-  const handleCellClick = (cell: number) => {
-    if (solved) return;
-    if (gameOver) return;
-    if (isGiven(cell)) return;
-    if (errorCells.has(cell)) return;
+  // Every mutation of `crosses` goes through here so `crossesRef` can never
+  // drift from the state a drag is painting against.
+  const commitCrosses = useCallback((updater: (prev: Set<number>) => Set<number>) => {
+    const next = updater(crossesRef.current);
+    crossesRef.current = next;
+    setCrosses(next);
+  }, []);
 
-    const shouldAddCross = !crosses.has(cell);
-    setCrosses((prev) => {
-      const next = new Set(prev);
-      if (shouldAddCross) {
-        next.add(cell);
-        playSound("click");
-      } else {
-        next.delete(cell);
-        playSound("roll");
+  // The pointer listeners live on `window` and are subscribed once, so the
+  // gesture handlers read the live board state from a ref instead of closing
+  // over values that go stale while a drag is in flight.
+  const boardStateRef = useRef({ solved, gameOver, errorCells, charAt, isGiven });
+  useEffect(() => {
+    boardStateRef.current = { solved, gameOver, errorCells, charAt, isGiven };
+  }, [solved, gameOver, errorCells, charAt, isGiven]);
+
+  const applyCross = useCallback(
+    (cell: number, shouldMark: boolean) => {
+      const state = boardStateRef.current;
+      if (state.solved || state.gameOver) return;
+      if (state.isGiven(cell)) return;
+      if (state.errorCells.has(cell)) return;
+      if (state.charAt(cell)) return;
+      if (crossesRef.current.has(cell) === shouldMark) return;
+
+      commitCrosses((prev) => {
+        const next = new Set(prev);
+        if (shouldMark) {
+          next.add(cell);
+          playSound("click");
+        } else {
+          next.delete(cell);
+          playSound("roll");
+        }
+        return next;
+      });
+    },
+    [commitCrosses, playSound],
+  );
+
+  const handleCellDoubleClick = useCallback(
+    (cell: number) => {
+      if (solved) return;
+      if (gameOver) return;
+      if (isGiven(cell)) return;
+      if (errorCells.has(cell)) return;
+
+      const charForCell = charInfo.find((c) => c.correctCell === cell);
+      if (!charForCell) {
+        setErrors((e) => e + 1);
+        playSound("error");
+        setErrorCells((prev) => {
+          const next = new Set(prev);
+          next.add(cell);
+          return next;
+        });
+        commitCrosses((prev) => {
+          const next = new Set(prev);
+          next.delete(cell);
+          return next;
+        });
+        setLastErrorCell(cell);
+        setTimeout(() => setLastErrorCell(null), 800);
+        return;
       }
-      return next;
-    });
-  };
 
-  const handleCellDoubleClick = (cell: number) => {
-    console.log("double click on cell", cell);
-    if (solved) return;
-    if (gameOver) return;
-    if (isGiven(cell)) return;
-    if (errorCells.has(cell)) return;
+      const currentCell = placements[charForCell.char.id];
+      if (currentCell === cell) return;
+      if (currentCell !== undefined) {
+        setPlacements((prev) => {
+          const next = { ...prev };
+          next[charForCell.char.id] = cell;
+          return next;
+        });
+        playSound("place");
+        commitCrosses((prev) => {
+          const next = new Set(prev);
+          next.delete(cell);
+          next.delete(currentCell);
+          return next;
+        });
+        return;
+      }
 
-    const existing = charAt(cell);
-    console.log("looking for char for cell", cell, charInfo);
-    const charForCell = charInfo.find((c) => c.correctCell === cell);
-    console.log("char for cell", cell, charForCell);
-    if (!charForCell) {
-      setErrors((e) => e + 1);
-      playSound("error");
-      setErrorCells((prev) => {
-        const next = new Set(prev);
-        next.add(cell);
-        return next;
-      });
-      setCrosses((prev) => {
-        const next = new Set(prev);
-        next.delete(cell);
-        return next;
-      });
-      setLastErrorCell(cell);
-      setTimeout(() => setLastErrorCell(null), 800);
-      return;
-    }
+      setPlacements((prev) => ({ ...prev, [charForCell.char.id]: cell }));
 
-    const currentCell = placements[charForCell.char.id];
-    if (currentCell === cell) return;
-    if (currentCell !== undefined) {
-      setPlacements((prev) => {
-        const next = { ...prev };
-        next[charForCell.char.id] = cell;
-        return next;
-      });
       playSound("place");
-      setCrosses((prev) => {
+      commitCrosses((prev) => {
         const next = new Set(prev);
         next.delete(cell);
-        next.delete(currentCell);
         return next;
       });
-      return;
-    }
+    },
+    [charInfo, commitCrosses, errorCells, gameOver, isGiven, placements, playSound, solved],
+  );
 
-    setPlacements((prev) => ({ ...prev, [charForCell.char.id]: cell }));
+  // The pointerup handler lives on `window` and would otherwise capture a stale
+  // double-click handler, so keep a ref to the current one.
+  const doubleClickRef = useRef(handleCellDoubleClick);
+  useEffect(() => {
+    doubleClickRef.current = handleCellDoubleClick;
+  }, [handleCellDoubleClick]);
 
-    playSound("place");
-    setCrosses((prev) => {
-      const next = new Set(prev);
-      next.delete(cell);
-      return next;
-    });
-  };
-
-  const scheduleSingleClick = (cell: number) => {
-    const existingTimer = clickTimers.current.get(cell);
-    if (existingTimer) {
-      clearTimeout(existingTimer);
-      clickTimers.current.delete(cell);
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      clickTimers.current.delete(cell);
-      handleCellClick(cell);
-    }, 50);
-    clickTimers.current.set(cell, timer);
-  };
-
-  const handleMouseClick = (cell: number) => {
-    if (Date.now() - lastTouchEndTime.current < 500) {
-      lastTouchEndTime.current = 0;
-      return;
-    }
-
-    scheduleSingleClick(cell);
-  };
-
-  const setCrossForTouch = (cell: number, shouldMark: boolean) => {
-    if (solved || isGiven(cell) || errorCells.has(cell) || charAt(cell)) return;
-    if (crosses.has(cell) === shouldMark) return;
-
-    setCrosses((prev) => {
-      const next = new Set(prev);
-      if (shouldMark) {
-        next.add(cell);
-        playSound("click");
-      } else {
-        next.delete(cell);
-        playSound("roll");
-      }
-      return next;
-    });
-  };
-
-  const handleTouchStart = (cell: number) => {
-    touchStartCell.current = cell;
-    touchCell.current = cell;
-    touchStartCellHasCross.current = crosses.has(cell);
-    touchMoved.current = false;
-    setCrossForTouch(cell, !touchStartCellHasCross.current);
-  };
-
-  const handleTouchMove = (event: React.TouchEvent<HTMLButtonElement>) => {
-    if (touchStartCell.current === null) return;
-
-    const touch = event.touches[0] ?? event.changedTouches[0];
-    if (!touch) return;
-
-    const currentCellButton = document
-      .elementFromPoint(touch.clientX, touch.clientY)
+  /** Cell under a viewport point, or null when the point is outside the grid. */
+  const cellFromPoint = useCallback((clientX: number, clientY: number) => {
+    const cellEl = document
+      .elementFromPoint(clientX, clientY)
       ?.closest<HTMLButtonElement>("button[data-cell]");
-    if (!currentCellButton) return;
+    if (!cellEl || !boardRef.current?.contains(cellEl)) return null;
+    const cell = Number(cellEl.dataset.cell);
+    return Number.isNaN(cell) ? null : cell;
+  }, []);
 
-    const currentCell = Number(currentCellButton.dataset.cell);
-    if (Number.isNaN(currentCell) || currentCell === touchCell.current) return;
+  /** Opens a paint gesture on a cell and toggles its X right away. */
+  const startGesture = useCallback(
+    (cell: number, pointerId: number) => {
+      const targetCross = !crossesRef.current.has(cell);
+      gestureRef.current = {
+        pointerId,
+        startCell: cell,
+        lastCell: cell,
+        targetCross,
+        moved: false,
+      };
+      applyCross(cell, targetCross);
+    },
+    [applyCross],
+  );
 
-    touchMoved.current = true;
-    setCrossForTouch(currentCell, !touchStartCellHasCross.current);
-    touchCell.current = currentCell;
-  };
+  /** Resolves a completed gesture as a single or double tap. */
+  const finishGesture = useCallback(() => {
+    const gesture = gestureRef.current;
+    gestureRef.current = null;
+    if (!gesture || gesture.moved) return;
 
-  const handleTouchEnd = (cell: number) => {
-    const startCell = touchStartCell.current;
-    const wasTap = startCell === cell && !touchMoved.current;
-    const currentTime = Date.now();
-
-    if (wasTap && currentTime - lastTouchEndTime.current < 300) {
-      console.log("double tap detected");
-      touchStartCell.current = null;
-      touchMoved.current = false;
-      lastTouchEndTime.current = currentTime;
-      handleCellDoubleClick(cell);
+    const now = Date.now();
+    const previous = lastTapRef.current;
+    if (previous && previous.cell === gesture.startCell && now - previous.time < DOUBLE_TAP_MS) {
+      lastTapRef.current = null;
+      doubleClickRef.current(gesture.startCell);
       return;
     }
+    lastTapRef.current = { cell: gesture.startCell, time: now };
+  }, []);
 
-    lastTouchEndTime.current = currentTime;
-    touchStartCell.current = null;
-    touchMoved.current = false;
+  const handlePointerDown = (cell: number, event: React.PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    startGesture(cell, event.pointerId);
+  };
 
-    if (wasTap) {
-      //handleCellClick(cell);
-    } else if (startCell !== null) {
-      setCrossForTouch(startCell, !touchStartCellHasCross.current);
+  /** Ends the gesture started by a pointer, if that pointer is the active one. */
+  const finishPointerGesture = useCallback(
+    (event: PointerEvent) => {
+      if (gestureRef.current?.pointerId !== event.pointerId) return;
+      finishGesture();
+    },
+    [finishGesture],
+  );
+
+  const cancelGesture = useCallback(() => {
+    gestureRef.current = null;
+    pendingPointRef.current = null;
+    if (moveFrameRef.current !== null) {
+      cancelAnimationFrame(moveFrameRef.current);
+      moveFrameRef.current = null;
     }
-  };
+  }, []);
 
-  const handleTouchCancel = () => {
-    touchStartCell.current = null;
-    touchMoved.current = false;
-  };
+  // One gesture for every device: press a cell to toggle its X immediately,
+  // drag to paint the same state across cells, double tap to place a character.
+  useEffect(() => {
+    const paintLatestPoint = () => {
+      moveFrameRef.current = null;
+      const point = pendingPointRef.current;
+      const gesture = gestureRef.current;
+      pendingPointRef.current = null;
+      if (!point || !gesture) return;
+
+      const cell = cellFromPoint(point.x, point.y);
+      if (cell === null || cell === gesture.lastCell) return;
+
+      gesture.moved = true;
+      applyCross(cell, gesture.targetCross);
+      gesture.lastCell = cell;
+    };
+
+    const onMove = (event: PointerEvent) => {
+      const gesture = gestureRef.current;
+      if (!gesture) return;
+      // A release delivered outside the window never reaches `pointerup`, so
+      // drop the gesture as soon as no button is held. Without this, plain
+      // hover would keep painting X marks.
+      if (event.buttons === 0) {
+        cancelGesture();
+        return;
+      }
+      // Ignore other pointers (second finger, stray touch) so they cannot
+      // hijack or prematurely end the active gesture.
+      if (event.pointerId !== gesture.pointerId) return;
+
+      pendingPointRef.current = { x: event.clientX, y: event.clientY };
+      if (moveFrameRef.current === null) {
+        moveFrameRef.current = requestAnimationFrame(paintLatestPoint);
+      }
+    };
+
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", finishPointerGesture);
+    window.addEventListener("pointercancel", cancelGesture);
+    window.addEventListener("blur", cancelGesture);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", finishPointerGesture);
+      window.removeEventListener("pointercancel", cancelGesture);
+      window.removeEventListener("blur", cancelGesture);
+      cancelGesture();
+    };
+  }, [applyCross, cancelGesture, cellFromPoint, finishPointerGesture]);
 
   const reset = () => {
     playSound("click");
     setPlacements(initial);
-    setCrosses(new Set());
+    commitCrosses(() => new Set());
     setErrorCells(new Set());
     setErrors(0);
     setLastErrorCell(null);
@@ -554,7 +607,8 @@ export function TaberdokuBoard({
         )}
 
         <div
-          className="mx-auto mb-3 grid max-w-[480px] overflow-hidden rounded-xl border-2 border-slate-700"
+          ref={boardRef}
+          className="mx-auto mb-3 grid max-w-[480px] touch-none select-none overflow-hidden rounded-xl border-2 border-slate-700"
           style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
         >
           {Array.from({ length: size * size }, (_, cell) => {
@@ -567,25 +621,21 @@ export function TaberdokuBoard({
             const isErrorCell = lastErrorCell === cell;
             const roomColor = ROOM_COLORS[puzzle.rooms[cell] % ROOM_COLORS.length];
 
-            const onClick = () => handleMouseClick(cell);
-            const onDoubleClick = () => handleCellDoubleClick(cell);
-            const onTouchStart = () => handleTouchStart(cell);
-            const onTouchMove = (event: React.TouchEvent<HTMLButtonElement>) =>
-              handleTouchMove(event);
-            const onTouchEnd = () => handleTouchEnd(cell);
-
             return (
               <button
                 key={cell}
                 type="button"
                 data-cell={cell}
-                onClick={onClick}
-                onDoubleClick={onDoubleClick}
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
-                onTouchCancel={handleTouchCancel}
-                className={`relative aspect-square border border-slate-400/70 touch-none ${
+                onPointerDown={(event) => handlePointerDown(cell, event)}
+                // Enter/Space on a focused cell still has to work. Pointer
+                // gestures fire `click` with detail > 0, so only keyboard
+                // activation (detail === 0) reaches this handler.
+                onClick={(event) => {
+                  if (event.detail !== 0) return;
+                  startGesture(cell, KEYBOARD_POINTER_ID);
+                  finishGesture();
+                }}
+                className={`relative aspect-square border border-slate-400/70 ${
                   bad ? "ring-2 ring-inset ring-rose-500" : ""
                 } ${isErrorCell ? "ring-2 ring-inset ring-red-800 animate-pulse" : ""}`}
                 style={{ background: roomColor }}
@@ -603,6 +653,7 @@ export function TaberdokuBoard({
                         <img
                           src={charInfo_cell.char.image}
                           alt={charInfo_cell.char.name}
+                          draggable={false}
                           className={`h-full w-full object-cover object-top ${given ? "" : "opacity-95"}`}
                         />
                       ) : (

@@ -5,6 +5,7 @@ import { useAuth } from "@/platform/hooks/useAuth";
 import { getStorageItem, setStorageItem } from "@/platform/storage";
 import { createScoresService } from "@/platform/scores/createScoresService";
 import { createTaberdokuHistoryService } from "@/platform/scores/createTaberdokuHistoryService";
+import { LEVEL_STORAGE_KEY, readCompletedBoards, writeCompletedBoards } from "../logic/savedGame";
 import { fetchSuspects } from "../logic/characters";
 import { TaberdokuBoard } from "./TaberdokuBoard";
 import { LevelCompleteModal } from "./LevelCompleteModal";
@@ -20,25 +21,12 @@ import {
 } from "../logic/taberdokuPuzzles";
 import "@/games/tabers-taberdoku/light-theme.css";
 
-const LEVEL_STORAGE_KEY = "taberdoku-level";
-const COMPLETED_BOARDS_KEY = "taberdoku-completed";
-const MAX_LEVEL_STORAGE_KEY = "taberdoku-max-level";
 const TUTORIAL_STORAGE_KEY = "taberdoku-tutorial-completed";
 const SCORE_STORAGE_KEY = "taberdoku-score";
 const SESSION_ID_KEY = "taberdoku-session-id";
-const SESSION_HISTORY_KEY = "taberdoku-session-history";
 const PLAYER_NAME_KEY = "taberdoku-player-name";
 const scores = createScoresService("scores_taberdoku");
 const history = createTaberdokuHistoryService();
-
-type SessionHistoryEntry = {
-  sessionId: string;
-  board: number;
-  level: number;
-  time: string;
-  score: number;
-  timestamp: number;
-};
 
 function useCharacters() {
   return useQuery({ queryKey: ["murdoku-suspects"], queryFn: fetchSuspects });
@@ -78,21 +66,11 @@ export function PlayPage() {
   // Load saved board and completed boards on mount
   useEffect(() => {
     const savedBoard = getStorageItem(LEVEL_STORAGE_KEY);
-    const initial = savedBoard ? Number(savedBoard) : 1;
-    setBoard(initial);
+    setBoard(savedBoard ? Number(savedBoard) : 1);
 
-    const savedCompleted = getStorageItem(COMPLETED_BOARDS_KEY);
-    if (savedCompleted) {
-      setCompletedBoards(new Set<number>(JSON.parse(savedCompleted)));
-    } else {
-      // Migrate from old taberdoku-max-level storage (boards 1..max-1 are completed)
-      const savedMax = getStorageItem(MAX_LEVEL_STORAGE_KEY);
-      if (savedMax) {
-        const maxBoard = Number(savedMax);
-        const migrated = new Set<number>();
-        for (let i = 1; i < maxBoard; i++) migrated.add(i);
-        setCompletedBoards(migrated);
-      }
+    const savedCompleted = readCompletedBoards();
+    if (savedCompleted.size > 0) {
+      setCompletedBoards(savedCompleted);
     }
 
     const savedScore = getStorageItem(SCORE_STORAGE_KEY);
@@ -166,7 +144,7 @@ export function PlayPage() {
     const isFirstTimeSolve = !completedBoards.has(board);
     newCompleted.add(board);
     setCompletedBoards(newCompleted);
-    setStorageItem(COMPLETED_BOARDS_KEY, JSON.stringify([...newCompleted]));
+    writeCompletedBoards(newCompleted);
 
     // Add score based on unused hearts (only on first completion)
     let pointsEarned = 0;
@@ -177,23 +155,6 @@ export function PlayPage() {
       setStorageItem(SCORE_STORAGE_KEY, String(newScore));
     }
     setScoreEarned(pointsEarned);
-
-    // Record completion history (only on first completion)
-    if (isFirstTimeSolve && sessionId) {
-      const historyEntry: SessionHistoryEntry = {
-        sessionId,
-        board,
-        level,
-        time,
-        score: pointsEarned,
-        timestamp: Date.now(),
-      };
-
-      const existingHistory = getStorageItem(SESSION_HISTORY_KEY);
-      const history: SessionHistoryEntry[] = existingHistory ? JSON.parse(existingHistory) : [];
-      history.push(historyEntry);
-      setStorageItem(SESSION_HISTORY_KEY, JSON.stringify(history));
-    }
 
     // Save to database on every completion
     if (sessionId && playerName) {

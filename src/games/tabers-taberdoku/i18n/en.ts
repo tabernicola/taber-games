@@ -12,7 +12,8 @@ export const dict: Dict = {
   "taberdoku.rule1": "1 per color",
   "taberdoku.rule2": "1 per row/column",
   "taberdoku.rule3": "No touching",
-  "taberdoku.clickHint": "Double-click to place a character. Single click to mark an X.",
+  "taberdoku.clickHint":
+    "Tap or click to mark an X, drag to mark several. Double tap or double click to place a character.",
   "taberdoku.generating": "Generating board…",
   "taberdoku.solvedIn": "Solved in {time}!",
   "taberdoku.back": "Back",
@@ -45,13 +46,6 @@ export const dict: Dict = {
   "taberdoku.startFromBeginning": "Start from beginning",
   "taberdoku.points": "points",
   "taberdoku.totalScore": "Total score",
-  "taberdoku.showHistory": "View history",
-  "taberdoku.sessionHistory": "Session history",
-  "taberdoku.sessionId": "Session ID",
-  "taberdoku.noHistory": "You haven't completed any boards in this session yet",
-  "taberdoku.board": "Board",
-  "taberdoku.time": "Time",
-  "taberdoku.startNewSession": "Start new session",
   "taberdoku.tutorial.title": "How to play",
   "taberdoku.tutorial.desc":
     "One character per row, column, and room. They can never touch each other, even diagonally.",
