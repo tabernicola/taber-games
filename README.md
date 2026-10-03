@@ -74,7 +74,14 @@ npm run build    # compila la aplicación para producción
 npm run preview  # sirve la versión de producción localmente
 npm run test     # ejecuta la suite de pruebas
 npm run lint     # comprueba el código con ESLint
+npm run sitemap  # regenera public/sitemap.xml a partir de src/routes
 ```
+
+`npm run sitemap` recorre las rutas de `src/routes`, las expande por idioma
+(`eus`, `es`, `en`) y deja fuera las páginas de administración y de
+autenticación, además de los simples redirecciones. Se ejecuta a mano siempre
+que se añadan, cambien o eliminen rutas. Para apuntar a otro dominio:
+`SITE_URL=https://preview.example.com npm run sitemap`.
 
 ## Objetivo del proyecto
 
