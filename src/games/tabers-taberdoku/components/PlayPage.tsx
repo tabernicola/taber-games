@@ -6,7 +6,7 @@ import { getStorageItem, setStorageItem } from "@/platform/storage";
 import { createScoresService } from "@/platform/scores/createScoresService";
 import { createTaberdokuHistoryService } from "@/platform/scores/createTaberdokuHistoryService";
 import { LEVEL_STORAGE_KEY, readCompletedBoards, writeCompletedBoards } from "../logic/savedGame";
-import { fetchSuspects } from "../logic/characters";
+import { charactersQueryKey, fetchCharacters } from "@/platform/characters/characters";
 import { TaberdokuBoard } from "./TaberdokuBoard";
 import { LevelCompleteModal } from "./LevelCompleteModal";
 import {
@@ -29,7 +29,7 @@ const scores = createScoresService("scores_taberdoku");
 const history = createTaberdokuHistoryService();
 
 function useCharacters() {
-  return useQuery({ queryKey: ["murdoku-suspects"], queryFn: fetchSuspects });
+  return useQuery({ queryKey: charactersQueryKey, queryFn: fetchCharacters });
 }
 
 function generateSessionId(): string {

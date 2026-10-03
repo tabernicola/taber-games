@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { LEVEL_WITHOUT_CHARACTER, characterForLevel } from "./levelCharacters";
 import { TABERDOKU_TOTAL_LEVELS } from "./taberdokuPuzzles";
-import type { MurdokuCharacter } from "./characters";
+import type { Character } from "@/platform/characters/characters";
 
-function makeCast(count: number): MurdokuCharacter[] {
+function makeCast(count: number): Character[] {
   return Array.from({ length: count }, (_, index) => ({
     id: `char-${index + 1}`,
     name: `P${index + 1}`,

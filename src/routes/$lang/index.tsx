@@ -5,6 +5,7 @@ import { SiteHeader } from "@/platform/layout/SiteHeader";
 import { useI18n, langFromSlug } from "@/platform/i18n";
 import { pageMeta, getTranslatedMeta } from "@/platform/seo";
 import { externalGames, games } from "@/platform/games/registry";
+import { CharacterGallery } from "@/platform/characters/CharacterGallery";
 
 export const Route = createFileRoute("/$lang/")({
   head: ({ params }) => {
@@ -245,6 +246,8 @@ function Home() {
             </div>
           </div>
         </section>
+
+        <CharacterGallery />
       </main>
       <footer className="mx-auto max-w-6xl px-4 pb-10 text-center text-xs text-muted-foreground">
         © {new Date().getFullYear()} The Taber Games

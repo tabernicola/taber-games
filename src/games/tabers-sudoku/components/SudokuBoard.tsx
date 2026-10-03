@@ -5,7 +5,7 @@ import { useI18n } from "@/platform/i18n";
 import { useTimer } from "@/platform/hooks/useTimer";
 import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
 import { formatTime } from "@/platform/scores/formatTime";
-import type { MurdokuCharacter } from "../logic/characters";
+import type { Character } from "@/platform/characters/characters";
 import {
   generateSudoku,
   isSudokuSolved,
@@ -21,7 +21,7 @@ export function SudokuBoard({
   characters,
 }: {
   level: SudokuLevel;
-  characters: MurdokuCharacter[];
+  characters: Character[];
 }) {
   const { t, slug } = useI18n();
   const { playSound } = useSoundEffects();

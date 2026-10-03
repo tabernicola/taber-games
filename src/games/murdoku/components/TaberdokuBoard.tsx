@@ -4,7 +4,7 @@ import { ChevronLeft, Clock, Eraser, RotateCcw } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
 import { useTimer } from "@/platform/hooks/useTimer";
 import { formatTime } from "@/platform/scores/formatTime";
-import type { MurdokuCharacter } from "../logic/characters";
+import type { Character } from "@/platform/characters/characters";
 import { isTaberdokuSolved, taberdokuConflicts, type TaberdokuPuzzle } from "../logic/taberdoku";
 import { CharacterTray } from "./CharacterTray";
 import "@/games/murdoku/light-theme.css";
@@ -27,7 +27,7 @@ export function TaberdokuBoard({
   onNewBoard,
 }: {
   puzzle: TaberdokuPuzzle;
-  characters: MurdokuCharacter[];
+  characters: Character[];
   onNewBoard: () => void;
 }) {
   const { t, slug } = useI18n();

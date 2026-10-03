@@ -1,5 +1,5 @@
 import { TABERDOKU_TOTAL_LEVELS } from "./taberdokuPuzzles";
-import type { MurdokuCharacter } from "./characters";
+import type { Character } from "@/platform/characters/characters";
 
 /**
  * The finale level has no character on purpose. Levels are paired with the cast
@@ -13,10 +13,7 @@ export const LEVEL_WITHOUT_CHARACTER = TABERDOKU_TOTAL_LEVELS;
  * Pairing is by position, so it stays stable between sessions as long as the
  * cast is fetched in a stable order (it is, ordered by name).
  */
-export function characterForLevel(
-  level: number,
-  characters: MurdokuCharacter[],
-): MurdokuCharacter | undefined {
+export function characterForLevel(level: number, characters: Character[]): Character | undefined {
   if (level < 1 || level === LEVEL_WITHOUT_CHARACTER) return undefined;
   return characters[level - 1];
 }

@@ -5,7 +5,7 @@ import { useI18n } from "@/platform/i18n";
 import { useTimer } from "@/platform/hooks/useTimer";
 import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
 import { formatTime } from "@/platform/scores/formatTime";
-import type { MurdokuCharacter } from "../logic/characters";
+import type { Character } from "@/platform/characters/characters";
 import { characterForLevel } from "../logic/levelCharacters";
 import { isTaberdokuSolved, taberdokuConflicts, type TaberdokuPuzzle } from "../logic/taberdoku";
 import { TaberdokuRules } from "./TaberdokuRules";
@@ -131,7 +131,7 @@ export function TaberdokuBoard({
   totalScore,
 }: {
   puzzle: TaberdokuPuzzle;
-  characters: MurdokuCharacter[];
+  characters: Character[];
   onSolve: (time: string, unusedHearts: number) => void;
   level: number;
   board: number;

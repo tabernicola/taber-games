@@ -1,6 +1,6 @@
 import { useI18n } from "@/platform/i18n";
 import { RULE_DEMOS, isCrossRevealed } from "../logic/ruleDemos";
-import type { MurdokuCharacter } from "../logic/characters";
+import type { Character } from "@/platform/characters/characters";
 
 /** Hand artwork, pointing up: the fingertip is the spot that clicks the cell. */
 const HAND_SRC = "/icons/puntero.png";
@@ -191,7 +191,7 @@ function RuleCard({ title, children }: RuleCardProps) {
   );
 }
 
-export function TaberdokuRules({ characters }: { characters: MurdokuCharacter[] }) {
+export function TaberdokuRules({ characters }: { characters: Character[] }) {
   const { t } = useI18n();
 
   const c = characters[0];

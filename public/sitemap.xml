@@ -84,33 +84,6 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/murdoku"/>
   </url>
   <url>
-    <loc>https://taber-games.lovable.app/eus/murdoku/sospechosos</loc>
-    <lastmod>2026-09-15</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/murdoku/sospechosos"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/murdoku/sospechosos"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/murdoku/sospechosos"/>
-  </url>
-  <url>
-    <loc>https://taber-games.lovable.app/es/murdoku/sospechosos</loc>
-    <lastmod>2026-09-15</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/murdoku/sospechosos"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/murdoku/sospechosos"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/murdoku/sospechosos"/>
-  </url>
-  <url>
-    <loc>https://taber-games.lovable.app/en/murdoku/sospechosos</loc>
-    <lastmod>2026-09-15</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/murdoku/sospechosos"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/murdoku/sospechosos"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/murdoku/sospechosos"/>
-  </url>
-  <url>
     <loc>https://taber-games.lovable.app/eus/tabers-sudoku</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>weekly</changefreq>

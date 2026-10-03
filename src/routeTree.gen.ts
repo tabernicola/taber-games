@@ -25,7 +25,6 @@ import { Route as LangTheTabersStarPlayRouteImport } from './routes/$lang/the-ta
 import { Route as LangTheTaberSquarePlayRouteImport } from './routes/$lang/the-taber-square/play'
 import { Route as LangTabersTaberdokuPlayRouteImport } from './routes/$lang/tabers-taberdoku/play'
 import { Route as LangTabersSudokuPlayRouteImport } from './routes/$lang/tabers-sudoku/play'
-import { Route as LangMurdokuSospechososRouteImport } from './routes/$lang/murdoku/sospechosos'
 import { Route as LangMurdokuPlayRouteImport } from './routes/$lang/murdoku/play'
 import { Route as LangMurdokuCreateRouteImport } from './routes/$lang/murdoku/create'
 import { Route as LangMurdokuAdminRouteImport } from './routes/$lang/murdoku/admin'
@@ -112,11 +111,6 @@ const LangTabersSudokuPlayRoute = LangTabersSudokuPlayRouteImport.update({
   path: '/tabers-sudoku/play',
   getParentRoute: () => LangRouteRoute,
 } as any)
-const LangMurdokuSospechososRoute = LangMurdokuSospechososRouteImport.update({
-  id: '/murdoku/sospechosos',
-  path: '/murdoku/sospechosos',
-  getParentRoute: () => LangRouteRoute,
-} as any)
 const LangMurdokuPlayRoute = LangMurdokuPlayRouteImport.update({
   id: '/murdoku/play',
   path: '/murdoku/play',
@@ -149,7 +143,6 @@ export interface FileRoutesByFullPath {
   '/$lang/murdoku/admin': typeof LangMurdokuAdminRoute
   '/$lang/murdoku/create': typeof LangMurdokuCreateRoute
   '/$lang/murdoku/play': typeof LangMurdokuPlayRoute
-  '/$lang/murdoku/sospechosos': typeof LangMurdokuSospechososRoute
   '/$lang/tabers-sudoku/play': typeof LangTabersSudokuPlayRoute
   '/$lang/tabers-taberdoku/play': typeof LangTabersTaberdokuPlayRoute
   '/$lang/the-taber-square/play': typeof LangTheTaberSquarePlayRoute
@@ -171,7 +164,6 @@ export interface FileRoutesByTo {
   '/$lang/murdoku/admin': typeof LangMurdokuAdminRoute
   '/$lang/murdoku/create': typeof LangMurdokuCreateRoute
   '/$lang/murdoku/play': typeof LangMurdokuPlayRoute
-  '/$lang/murdoku/sospechosos': typeof LangMurdokuSospechososRoute
   '/$lang/tabers-sudoku/play': typeof LangTabersSudokuPlayRoute
   '/$lang/tabers-taberdoku/play': typeof LangTabersTaberdokuPlayRoute
   '/$lang/the-taber-square/play': typeof LangTheTaberSquarePlayRoute
@@ -195,7 +187,6 @@ export interface FileRoutesById {
   '/$lang/murdoku/admin': typeof LangMurdokuAdminRoute
   '/$lang/murdoku/create': typeof LangMurdokuCreateRoute
   '/$lang/murdoku/play': typeof LangMurdokuPlayRoute
-  '/$lang/murdoku/sospechosos': typeof LangMurdokuSospechososRoute
   '/$lang/tabers-sudoku/play': typeof LangTabersSudokuPlayRoute
   '/$lang/tabers-taberdoku/play': typeof LangTabersTaberdokuPlayRoute
   '/$lang/the-taber-square/play': typeof LangTheTaberSquarePlayRoute
@@ -220,7 +211,6 @@ export interface FileRouteTypes {
     | '/$lang/murdoku/admin'
     | '/$lang/murdoku/create'
     | '/$lang/murdoku/play'
-    | '/$lang/murdoku/sospechosos'
     | '/$lang/tabers-sudoku/play'
     | '/$lang/tabers-taberdoku/play'
     | '/$lang/the-taber-square/play'
@@ -242,7 +232,6 @@ export interface FileRouteTypes {
     | '/$lang/murdoku/admin'
     | '/$lang/murdoku/create'
     | '/$lang/murdoku/play'
-    | '/$lang/murdoku/sospechosos'
     | '/$lang/tabers-sudoku/play'
     | '/$lang/tabers-taberdoku/play'
     | '/$lang/the-taber-square/play'
@@ -265,7 +254,6 @@ export interface FileRouteTypes {
     | '/$lang/murdoku/admin'
     | '/$lang/murdoku/create'
     | '/$lang/murdoku/play'
-    | '/$lang/murdoku/sospechosos'
     | '/$lang/tabers-sudoku/play'
     | '/$lang/tabers-taberdoku/play'
     | '/$lang/the-taber-square/play'
@@ -399,13 +387,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangTabersSudokuPlayRouteImport
       parentRoute: typeof LangRouteRoute
     }
-    '/$lang/murdoku/sospechosos': {
-      id: '/$lang/murdoku/sospechosos'
-      path: '/murdoku/sospechosos'
-      fullPath: '/$lang/murdoku/sospechosos'
-      preLoaderRoute: typeof LangMurdokuSospechososRouteImport
-      parentRoute: typeof LangRouteRoute
-    }
     '/$lang/murdoku/play': {
       id: '/$lang/murdoku/play'
       path: '/murdoku/play'
@@ -444,7 +425,6 @@ interface LangRouteRouteChildren {
   LangMurdokuAdminRoute: typeof LangMurdokuAdminRoute
   LangMurdokuCreateRoute: typeof LangMurdokuCreateRoute
   LangMurdokuPlayRoute: typeof LangMurdokuPlayRoute
-  LangMurdokuSospechososRoute: typeof LangMurdokuSospechososRoute
   LangTabersSudokuPlayRoute: typeof LangTabersSudokuPlayRoute
   LangTabersTaberdokuPlayRoute: typeof LangTabersTaberdokuPlayRoute
   LangTheTaberSquarePlayRoute: typeof LangTheTaberSquarePlayRoute
@@ -464,7 +444,6 @@ const LangRouteRouteChildren: LangRouteRouteChildren = {
   LangMurdokuAdminRoute: LangMurdokuAdminRoute,
   LangMurdokuCreateRoute: LangMurdokuCreateRoute,
   LangMurdokuPlayRoute: LangMurdokuPlayRoute,
-  LangMurdokuSospechososRoute: LangMurdokuSospechososRoute,
   LangTabersSudokuPlayRoute: LangTabersSudokuPlayRoute,
   LangTabersTaberdokuPlayRoute: LangTabersTaberdokuPlayRoute,
   LangTheTaberSquarePlayRoute: LangTheTaberSquarePlayRoute,

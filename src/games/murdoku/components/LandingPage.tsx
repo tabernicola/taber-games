@@ -111,16 +111,6 @@ export function LandingPage() {
             )}
           </section>
 
-          <section className="mt-10 flex justify-center">
-            <Link
-              to="/$lang/murdoku/sospechosos"
-              params={{ lang: slug }}
-              className="inline-flex items-center justify-center rounded-lg border border-neon-pink bg-neon-pink/10 px-6 py-3 text-sm font-semibold text-neon-pink transition-all hover:bg-neon-pink/20"
-            >
-              {t("suspects.button")}
-            </Link>
-          </section>
-
           <GameFooter basedOn="Murdoku — Sudoku-style deduction puzzle in the style of Clue/Cluedo." />
         </main>
       </div>

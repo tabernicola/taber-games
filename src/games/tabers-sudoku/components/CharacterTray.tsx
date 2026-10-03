@@ -1,5 +1,5 @@
 import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
-import type { MurdokuCharacter } from "../logic/characters";
+import type { Character } from "@/platform/characters/characters";
 
 export function CharacterTray({
   characters,
@@ -7,7 +7,7 @@ export function CharacterTray({
   onSelect,
   counts,
 }: {
-  characters: MurdokuCharacter[];
+  characters: Character[];
   selectedId: string | null;
   onSelect: (id: string) => void;
   /** optional remaining count badge per character id */

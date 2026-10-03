@@ -2,7 +2,7 @@ import { ChevronDown, Check, Lock } from "lucide-react";
 import { useState } from "react";
 import { useI18n } from "@/platform/i18n";
 import { characterForLevel } from "../logic/levelCharacters";
-import type { MurdokuCharacter } from "../logic/characters";
+import type { Character } from "@/platform/characters/characters";
 import {
   TABERDOKU_BOARDS_PER_LEVEL,
   boardsInLevel,
@@ -16,7 +16,7 @@ interface TaberdokuLevelSelectorProps {
   currentLevel: number;
   totalLevels: number;
   completedBoards: Set<number>;
-  characters: MurdokuCharacter[];
+  characters: Character[];
   onSelect: (board: number) => void;
   onClose: () => void;
 }

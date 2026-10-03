@@ -9,14 +9,14 @@ import {
   type RuleDemo,
 } from "../logic/ruleDemos";
 import { buildScript, durationOf } from "../logic/tutorialScript";
-import type { MurdokuCharacter } from "../logic/characters";
+import type { Character } from "@/platform/characters/characters";
 
 // Import HandCursor component from TaberdokuRules
 import { HandCursor } from "./TaberdokuRules";
 
 interface TaberdokuTutorialProps {
   open: boolean;
-  characters: MurdokuCharacter[];
+  characters: Character[];
   onClose: () => void;
 }
 

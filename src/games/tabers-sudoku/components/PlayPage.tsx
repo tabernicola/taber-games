@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearch } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useI18n } from "@/platform/i18n";
-import { fetchSuspects } from "../logic/characters";
+import { charactersQueryKey, fetchCharacters } from "@/platform/characters/characters";
 import { SudokuBoard } from "./SudokuBoard";
 import type { SudokuLevel } from "../logic/sudoku";
 import "@/games/tabers-sudoku/light-theme.css";
@@ -22,7 +22,7 @@ export function PlayPage() {
 }
 
 function useCharacters() {
-  return useQuery({ queryKey: ["murdoku-suspects"], queryFn: fetchSuspects });
+  return useQuery({ queryKey: charactersQueryKey, queryFn: fetchCharacters });
 }
 
 function SudokuPlay({ level }: { level: SudokuLevel }) {
