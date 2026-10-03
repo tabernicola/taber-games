@@ -6,6 +6,7 @@ import { useTimer } from "@/platform/hooks/useTimer";
 import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
 import { formatTime } from "@/platform/scores/formatTime";
 import type { MurdokuCharacter } from "../logic/characters";
+import { characterForLevel } from "../logic/levelCharacters";
 import { isTaberdokuSolved, taberdokuConflicts, type TaberdokuPuzzle } from "../logic/taberdoku";
 import { TaberdokuRules } from "./TaberdokuRules";
 import { TaberdokuTutorial } from "./TaberdokuTutorial";
@@ -152,6 +153,8 @@ export function TaberdokuBoard({
   const navigate = useNavigate();
   const size = puzzle.size;
   const cast = useMemo(() => characters.slice(0, size), [characters, size]);
+  // Character that represents the current level, shown as the page backdrop.
+  const levelCharacter = useMemo(() => characterForLevel(level, characters), [level, characters]);
 
   // Map each character to their correct cell and room color
   const charInfo = useMemo(() => {
@@ -502,7 +505,16 @@ export function TaberdokuBoard({
   };
 
   return (
-    <div className="tabers-taberdoku-light min-h-screen">
+    <div className="tabers-taberdoku-light relative min-h-screen">
+      {levelCharacter?.image && (
+        <img
+          src={levelCharacter.image}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none fixed right-0 bottom-16 z-0 h-[38vh] max-h-[320px] w-auto max-w-[65vw] rounded-l-3xl object-cover object-top opacity-15 select-none"
+        />
+      )}
+
       <header className="sticky top-0 z-30 flex flex-nowrap items-center gap-2 border-b border-border bg-background/80 px-3 py-2 backdrop-blur">
         <button
           type="button"
@@ -548,7 +560,7 @@ export function TaberdokuBoard({
         )}
       </header>
 
-      <main className="px-2 pb-32 pt-4">
+      <main className="taberdoku-play relative z-10 px-2 pb-28 pt-6">
         {solved && (
           <p className="mb-3 text-center text-lg font-bold text-primary">
             {t("taberdoku.solvedIn", { time: formatTime(seconds) })}
@@ -608,8 +620,11 @@ export function TaberdokuBoard({
 
         <div
           ref={boardRef}
-          className="mx-auto mb-3 grid max-w-[480px] touch-none select-none overflow-hidden rounded-xl border-2 border-slate-700"
-          style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
+          className="taberdoku-board mx-auto mb-3 grid touch-none select-none overflow-hidden rounded-xl border-2 border-slate-700"
+          style={{
+            gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
+            gridTemplateRows: `repeat(${size}, minmax(0, 1fr))`,
+          }}
         >
           {Array.from({ length: size * size }, (_, cell) => {
             const charInfo_cell = charAt(cell);

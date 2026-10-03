@@ -31,6 +31,25 @@
   background-color: #f8fafc;
 }
 
+/* Play area: the content is centred in the viewport height so the board keeps
+   breathing room above and below (legend, hint and bottom nav) instead of
+   overflowing the fold. `safe center` degrades to `flex-start` on browsers
+   that do not support it. */
+.taberdoku-play {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  justify-content: safe center;
+  min-height: calc(100dvh - 3.25rem);
+}
+
+/* The board is square, so it takes the smallest of the available width and the
+   height left by the header, legend, hint and bottom nav. */
+.taberdoku-board {
+  width: min(100%, 480px, calc(100dvh - 19rem));
+  aspect-ratio: 1 / 1;
+}
+
 /* Star burst played when the session score increases. The element is remounted
    through a key on every award, so the animation restarts each time. */
 .taberdoku-score-pulse {
