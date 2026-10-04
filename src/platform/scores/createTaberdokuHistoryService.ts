@@ -24,6 +24,8 @@ export type TaberdokuHistoryService = {
     timeSeconds: number,
     score: number,
   ): Promise<void>;
+  /** Rewrites the player name on every entry of the session. */
+  rename(sessionId: string, playerName: string): Promise<void>;
 };
 
 export function createTaberdokuHistoryService(): TaberdokuHistoryService {
@@ -78,6 +80,15 @@ export function createTaberdokuHistoryService(): TaberdokuHistoryService {
         time_seconds: timeSeconds,
         score,
       });
+      if (error) throw error;
+    },
+
+    async rename(sessionId: string, playerName: string): Promise<void> {
+      const name = playerName.trim().slice(0, 24) || "Anon";
+
+      const { error } = await fromHistory()
+        .update({ player_name: name })
+        .eq("session_id", sessionId);
       if (error) throw error;
     },
   };

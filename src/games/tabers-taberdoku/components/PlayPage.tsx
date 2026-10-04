@@ -6,6 +6,7 @@ import { getStorageItem, setStorageItem } from "@/platform/storage";
 import { createScoresService } from "@/platform/scores/createScoresService";
 import { createTaberdokuHistoryService } from "@/platform/scores/createTaberdokuHistoryService";
 import { LEVEL_STORAGE_KEY, readCompletedBoards, writeCompletedBoards } from "../logic/savedGame";
+import { characterForLevel } from "../logic/levelCharacters";
 import { charactersQueryKey, fetchCharacters } from "@/platform/characters/characters";
 import { TaberdokuBoard } from "./TaberdokuBoard";
 import { LevelCompleteModal } from "./LevelCompleteModal";
@@ -25,6 +26,9 @@ const TUTORIAL_STORAGE_KEY = "taberdoku-tutorial-completed";
 const SCORE_STORAGE_KEY = "taberdoku-score";
 const SESSION_ID_KEY = "taberdoku-session-id";
 const PLAYER_NAME_KEY = "taberdoku-player-name";
+// Set once the player replaces the random name, so the rename field is offered
+// only while the stored name is still the generated one.
+const PLAYER_NAME_CUSTOM_KEY = "taberdoku-player-name-custom";
 const scores = createScoresService("scores_taberdoku");
 const history = createTaberdokuHistoryService();
 
@@ -60,6 +64,7 @@ export function PlayPage() {
   const [scoreEarned, setScoreEarned] = useState(0);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [playerName, setPlayerName] = useState<string | null>(null);
+  const [playerNameIsGenerated, setPlayerNameIsGenerated] = useState(false);
   // Prevents the same board from being reported as solved more than once.
   const solvingRef = useRef(false);
 
@@ -89,6 +94,7 @@ export function PlayPage() {
     // Set player name (from auth or generate random)
     if (user?.email) {
       setPlayerName(user.email.split("@")[0]); // Use email prefix as name
+      setPlayerNameIsGenerated(false);
     } else {
       let savedPlayerName = getStorageItem(PLAYER_NAME_KEY);
       if (!savedPlayerName) {
@@ -96,8 +102,29 @@ export function PlayPage() {
         setStorageItem(PLAYER_NAME_KEY, savedPlayerName);
       }
       setPlayerName(savedPlayerName);
+      setPlayerNameIsGenerated(!getStorageItem(PLAYER_NAME_CUSTOM_KEY));
     }
   }, [user]);
+
+  const handleRename = async (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setStorageItem(PLAYER_NAME_KEY, trimmed);
+    setStorageItem(PLAYER_NAME_CUSTOM_KEY, "1");
+    setPlayerName(trimmed);
+    setPlayerNameIsGenerated(false);
+
+    // The board that is being celebrated was already submitted with the old
+    // name, so patch the session rows instead of waiting for the next board.
+    const currentSessionId = sessionId ?? getStorageItem(SESSION_ID_KEY);
+    if (!currentSessionId) return;
+    try {
+      await scores.rename(currentSessionId, trimmed);
+      await history.rename(currentSessionId, trimmed);
+    } catch (error) {
+      console.error("Failed to rename the score records:", error);
+    }
+  };
 
   // Show tutorial on first visit
   useEffect(() => {
@@ -258,6 +285,10 @@ export function PlayPage() {
         onAdvance={handleAdvance}
         scoreEarned={scoreEarned}
         totalScore={totalScore}
+        levelCharacter={characterForLevel(level, characters)}
+        playerName={playerName}
+        canRename={playerNameIsGenerated}
+        onRename={handleRename}
       />
     </div>
   );

@@ -188,4 +188,37 @@ describe("createScoresService", () => {
       expect(chain.update).toHaveBeenCalledWith(expect.objectContaining({ level: 2 }));
     });
   });
+
+  describe("rename", () => {
+    function renameChain(result: { error: unknown }) {
+      const eq = vi.fn().mockResolvedValue(result);
+      const update = vi.fn().mockReturnValue({ eq });
+      mockFrom.mockReturnValue({ update } as never);
+      return { update, eq };
+    }
+
+    it("rewrites only the player name of the session row", async () => {
+      const chain = renameChain({ error: null });
+      await service.rename("sess1", "  Ana  ");
+      expect(chain.update).toHaveBeenCalledWith({ player_name: "Ana" });
+      expect(chain.eq).toHaveBeenCalledWith("session_id", "sess1");
+    });
+
+    it("truncates names longer than 24 characters", async () => {
+      const chain = renameChain({ error: null });
+      await service.rename("sess1", "a".repeat(30));
+      expect(chain.update).toHaveBeenCalledWith({ player_name: "a".repeat(24) });
+    });
+
+    it("falls back to Anon for a blank name", async () => {
+      const chain = renameChain({ error: null });
+      await service.rename("sess1", "   ");
+      expect(chain.update).toHaveBeenCalledWith({ player_name: "Anon" });
+    });
+
+    it("throws when supabase returns an error", async () => {
+      renameChain({ error: new Error("nope") });
+      await expect(service.rename("sess1", "Ana")).rejects.toThrow("nope");
+    });
+  });
 });

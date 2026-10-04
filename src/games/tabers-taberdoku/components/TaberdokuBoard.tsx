@@ -733,16 +733,7 @@ export function TaberdokuBoard({
       )}
 
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
-        <div
-          className={`mx-auto flex max-w-md items-center gap-2 px-3 py-2 ${
-            totalScore !== undefined ? "justify-between" : "justify-center"
-          }`}
-        >
-          <div className="flex flex-col items-center gap-1 text-[10px] font-semibold text-muted-foreground">
-            <Clock className="h-5 w-5" />
-            <span className="tabular-nums">{formatTime(seconds)}</span>
-          </div>
-
+        <div className="mx-auto flex max-w-md items-center justify-between gap-2 px-3 py-2">
           <button
             type="button"
             onClick={() => {
@@ -763,6 +754,10 @@ export function TaberdokuBoard({
             <RotateCcw className="h-5 w-5" />
             {t("taberdoku.reset")}
           </button>
+          <div className="flex flex-col items-center gap-1 text-[10px] font-semibold text-muted-foreground">
+            <Clock className="h-5 w-5" />
+            <span className="tabular-nums">{formatTime(seconds)}</span>
+          </div>
         </div>
       </nav>
     </div>

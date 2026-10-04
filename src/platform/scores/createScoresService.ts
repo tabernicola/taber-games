@@ -34,6 +34,11 @@ export type ScoresService = {
     maxLevel?: number,
     levelProgress?: number,
   ): Promise<void>;
+  /**
+   * Rewrites the player name of an already submitted session, so a rename shows
+   * up in the ranking right away instead of on the next solved board.
+   */
+  rename(sessionId: string, playerName: string): Promise<void>;
 };
 
 /** Data access for a game's score table. One instance per game slice. */
@@ -110,6 +115,14 @@ export function createScoresService(table: ScoreTable): ScoresService {
         seconds,
         ...optional,
       } as never);
+      if (error) throw error;
+    },
+
+    async rename(sessionId: string, playerName: string): Promise<void> {
+      const name = playerName.trim().slice(0, 24) || "Anon";
+      const { error } = await fromScores()
+        .update({ player_name: name } as never)
+        .eq("session_id", sessionId);
       if (error) throw error;
     },
   };

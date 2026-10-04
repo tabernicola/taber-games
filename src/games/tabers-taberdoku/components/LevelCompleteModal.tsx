@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Check, ChevronRight, Lock, Sparkles, X } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
+import type { Character } from "@/platform/characters/characters";
 import "@/games/tabers-taberdoku/light-theme.css";
 
 interface LevelCompleteModalProps {
@@ -17,6 +18,13 @@ interface LevelCompleteModalProps {
   onAdvance: () => void;
   scoreEarned?: number;
   totalScore?: number;
+  /** Character that represents the level that was just cleared. */
+  levelCharacter?: Character;
+  /** Player name shown in the congratulation line. */
+  playerName?: string | null;
+  /** True while the name is still the random one, so the player may replace it. */
+  canRename?: boolean;
+  onRename?: (name: string) => void | Promise<void>;
 }
 
 export function LevelCompleteModal({
@@ -33,6 +41,10 @@ export function LevelCompleteModal({
   onAdvance,
   scoreEarned,
   totalScore,
+  levelCharacter,
+  playerName,
+  canRename,
+  onRename,
 }: LevelCompleteModalProps) {
   const { t } = useI18n();
   const [visible, setVisible] = useState(false);
@@ -41,14 +53,16 @@ export function LevelCompleteModal({
   // which would advance to the next board twice.
   const advancingRef = useRef(false);
   const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [draftName, setDraftName] = useState("");
 
   useEffect(() => {
     if (open) {
       advancingRef.current = false;
       setVisible(true);
       setClosing(false);
+      setDraftName(playerName ?? "");
     }
-  }, [open]);
+  }, [open, playerName]);
 
   useEffect(
     () => () => {
@@ -68,17 +82,18 @@ export function LevelCompleteModal({
     }, 200);
   };
 
-  // Auto-advance after 3 seconds
-  useEffect(() => {
-    if (!open || isLastLevel) return;
-    const timer = setTimeout(() => {
-      handleAdvance();
-    }, 3000);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, isLastLevel]);
-
+  // The modal waits for the player: only the close and advance buttons dismiss it.
   if (!visible) return null;
+
+  // Renaming is offered once, while the name is still the random one.
+  const trimmedName = draftName.trim();
+  const canSubmitName = canRename && onRename !== undefined && trimmedName.length > 0;
+
+  const handleRenameSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    if (!canSubmitName || !onRename) return;
+    onRename(trimmedName);
+  };
 
   const showUnlock = newlyUnlockedLevel !== null;
 
@@ -129,6 +144,42 @@ export function LevelCompleteModal({
           <h2 className="text-lg font-bold" style={{ color: "var(--primary)" }}>
             {title}
           </h2>
+
+          {playerName && (
+            <p className="mt-1 text-sm font-semibold" style={{ color: "var(--primary)" }}>
+              {t("taberdoku.wellDone", { name: playerName })}
+            </p>
+          )}
+
+          {canRename && onRename && (
+            <form onSubmit={handleRenameSubmit} className="mt-3 flex w-full items-center gap-2">
+              <input
+                type="text"
+                value={draftName}
+                onChange={(event) => setDraftName(event.target.value)}
+                maxLength={24}
+                autoComplete="off"
+                placeholder={t("taberdoku.namePlaceholder")}
+                aria-label={t("taberdoku.changeName")}
+                className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              />
+              <button
+                type="submit"
+                disabled={!canSubmitName}
+                className="shrink-0 rounded-lg border border-primary/50 px-3 py-2 text-xs font-semibold text-primary transition-opacity disabled:opacity-40"
+              >
+                {t("taberdoku.saveName")}
+              </button>
+            </form>
+          )}
+
+          {levelCharacter?.image && (
+            <img
+              src={levelCharacter.image}
+              alt={levelCharacter.name}
+              className="mt-3 max-h-40 w-auto max-w-full object-contain"
+            />
+          )}
 
           {showUnlock && (
             <div className="mt-3 w-full rounded-lg border border-yellow-400/50 bg-yellow-400/10 px-3 py-2">
