@@ -132,8 +132,8 @@
 
   body {
     background-image:
-      radial-gradient(ellipse at top, oklch(0.2 0.1 340 / 0.4), transparent 60%),
-      radial-gradient(ellipse at bottom, oklch(0.15 0.08 280 / 0.3), transparent 60%);
+      radial-gradient(ellipse at top, oklch(0.2 0.1 340 / 0.4), transparent 30%),
+      radial-gradient(ellipse at bottom, oklch(0.15 0.08 280 / 0.3), transparent 30%);
     background-attachment: fixed;
     min-height: 100vh;
   }

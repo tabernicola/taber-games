@@ -36,6 +36,10 @@
    overflowing the fold. `safe center` degrades to `flex-start` on browsers
    that do not support it. */
 .taberdoku-play {
+  /* Shared content width: the board and the row above it must line up on both
+     sides, so both read this instead of capping themselves separately. */
+  --taberdoku-content-width: min(100%, 480px, calc(100dvh - 19rem));
+
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -46,8 +50,14 @@
 /* The board is square, so it takes the smallest of the available width and the
    height left by the header, legend, hint and bottom nav. */
 .taberdoku-board {
-  width: min(100%, 480px, calc(100dvh - 19rem));
+  width: var(--taberdoku-content-width);
   aspect-ratio: 1 / 1;
+}
+
+/* Character, level badge and lives: same width as the board so the avatar sits
+   on the left edge of the board and the hearts on the right edge. */
+.taberdoku-status {
+  width: var(--taberdoku-content-width);
 }
 
 /* Star burst played when the session score increases. The element is remounted

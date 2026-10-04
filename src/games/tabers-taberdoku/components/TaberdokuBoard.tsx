@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, Clock, HelpCircle, Lock, RotateCcw, TrendingUp, X } from "lucide-react";
+import { ChevronLeft, Clock, HelpCircle, Lock, RotateCcw, UserRound, X } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
 import { useTimer } from "@/platform/hooks/useTimer";
 import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
 import { formatTime } from "@/platform/scores/formatTime";
 import type { Character } from "@/platform/characters/characters";
-import { characterForLevel } from "../logic/levelCharacters";
 import { isTaberdokuSolved, taberdokuConflicts, type TaberdokuPuzzle } from "../logic/taberdoku";
 import { TaberdokuRules } from "./TaberdokuRules";
 import { TaberdokuTutorial } from "./TaberdokuTutorial";
@@ -153,8 +152,6 @@ export function TaberdokuBoard({
   const navigate = useNavigate();
   const size = puzzle.size;
   const cast = useMemo(() => characters.slice(0, size), [characters, size]);
-  // Character that represents the current level, shown as the page backdrop.
-  const levelCharacter = useMemo(() => characterForLevel(level, characters), [level, characters]);
 
   // Map each character to their correct cell and room color
   const charInfo = useMemo(() => {
@@ -168,6 +165,12 @@ export function TaberdokuBoard({
       };
     });
   }, [cast, puzzle.solution, puzzle.rooms]);
+
+  // Legend avatars are sized from the cast length so the row always fills the
+  // board width: 384/count matches 80% of a board cell on a 480px board, and the
+  // 100% fallback keeps them inside the tile on narrower screens. The divisor
+  // never drops below 6 (the smallest puzzle) so short casts stay readable.
+  const legendAvatarWidth = `min(${Math.round(384 / Math.max(cast.length, 6))}px, 100%)`;
 
   const initial = useMemo(() => {
     const map: Record<string, number> = {};
@@ -506,15 +509,6 @@ export function TaberdokuBoard({
 
   return (
     <div className="tabers-taberdoku-light relative min-h-screen">
-      {levelCharacter?.image && (
-        <img
-          src={levelCharacter.image}
-          alt=""
-          aria-hidden="true"
-          className="pointer-events-none fixed right-0 bottom-16 z-0 h-[38vh] max-h-[320px] w-auto max-w-[65vw] rounded-l-3xl object-cover object-top opacity-15 select-none"
-        />
-      )}
-
       <header className="sticky top-0 z-30 flex flex-nowrap items-center gap-2 border-b border-border bg-background/80 px-3 py-2 backdrop-blur">
         <button
           type="button"
@@ -528,23 +522,8 @@ export function TaberdokuBoard({
           <ChevronLeft className="h-5 w-5" />
         </button>
         <h1 className="min-w-0 flex-1 truncate text-center text-sm font-bold tracking-widest text-primary sm:text-base">
-          {t("taberdoku.title")} · {t("taberdoku.levelOf", { current: level, total: totalLevels })}
+          {t("taberdoku.title")}
         </h1>
-        <div className="flex shrink-0 items-center gap-3 whitespace-nowrap text-sm font-semibold text-muted-foreground sm:gap-4">
-          <span className="flex items-center gap-1.5">
-            <TrendingUp className="h-4 w-4" />
-            <span className="tabular-nums">{progress}%</span>
-          </span>
-
-          <div className="w-20 sm:w-24">
-            <div className="h-1.5 rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-primary transition-all"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
-        </div>
         {onHelpClick && (
           <button
             type="button"
@@ -567,56 +546,90 @@ export function TaberdokuBoard({
           </p>
         )}
 
-        {/* Character legend + lives */}
-        <div className="mx-auto mb-3 flex max-w-[480px] items-center justify-between gap-2">
-          <div className="flex flex-nowrap gap-1 overflow-x-auto py-0.5 sm:gap-1.5">
-            {charInfo.map(({ char, roomColor }) => {
-              const isPlaced = placements[char.id] !== undefined;
-              const isGivenChar = puzzle.givens.includes(placements[char.id] ?? -1);
-              return (
-                <div
-                  key={char.id}
-                  className={`flex items-center justify-center rounded-lg border border-border px-1.5 py-1 text-[10px] transition-all ${
-                    isPlaced ? "opacity-60 border-primary/50" : "opacity-100"
-                  }`}
-                  style={{ background: roomColor }}
-                >
-                  <span
-                    className="flex h-[24px] w-[24px] items-center justify-center rounded-full text-[8px] font-bold text-white relative"
-                    style={{ background: roomColor }}
-                  >
-                    {char.image ? (
-                      <img
-                        src={char.image}
-                        alt={char.name}
-                        className="h-full w-full rounded-full object-cover object-top"
-                      />
-                    ) : (
-                      char.name.slice(0, 2)
-                    )}
-                    {isPlaced && (
-                      <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-primary text-[6px]">
-                        ✓
-                      </span>
-                    )}
-                  </span>
-                </div>
-              );
-            })}
+        {gameOver && (
+          <div className="taberdoku-status mx-auto mb-3 rounded-xl bg-destructive/10 border border-destructive/40 px-4 py-3 text-center">
+            <p className="text-sm font-bold text-destructive">{t("taberdoku.gameOver")}</p>
+            <p className="text-xs text-destructive/70 mt-0.5">{t("taberdoku.restartLevel")}</p>
           </div>
-          <div className="flex gap-0.5 text-base">
+        )}
+
+        {/* Score + level badge + lives */}
+        <div className="taberdoku-status mx-auto mb-3 flex items-center gap-2">
+          {totalScore !== undefined ? (
+            <div
+              key={scorePulse}
+              className={`flex h-10 shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2.5 text-primary ${
+                scorePulse > 0 ? "taberdoku-score-pulse" : ""
+              }`}
+            >
+              <span className="text-sm leading-none">⭐</span>
+              <span className="text-sm font-bold tabular-nums">{totalScore}</span>
+            </div>
+          ) : (
+            <span className="h-10 shrink-0" />
+          )}
+          <div className="relative min-w-0 flex-1 overflow-hidden rounded-full border border-border bg-primary/15 px-4 py-1.5">
+            <span
+              className="absolute inset-y-0 left-0 bg-primary/35 transition-all"
+              style={{ width: `${progress}%` }}
+            />
+            <span className="relative block truncate text-center text-base font-extrabold tracking-wide text-primary">
+              {t("taberdoku.level", { current: level })}
+            </span>
+          </div>
+          <div className="flex shrink-0 gap-0.5 text-base">
             {[0, 1, 2].map((i) => (
               <span key={i}>{i < lives ? "❤️" : "💔"}</span>
             ))}
           </div>
         </div>
 
-        {gameOver && (
-          <div className="mx-auto mb-3 max-w-[480px] rounded-xl bg-destructive/10 border border-destructive/40 px-4 py-3 text-center">
-            <p className="text-sm font-bold text-destructive">{t("taberdoku.gameOver")}</p>
-            <p className="text-xs text-destructive/70 mt-0.5">{t("taberdoku.restartLevel")}</p>
-          </div>
-        )}
+        {/* Character legend: silhouettes until the character is found on the board. The tiles
+            share the board width, so the avatar shrinks as characters are added. */}
+        <div className="taberdoku-status mx-auto mb-3 flex flex-nowrap items-stretch gap-1 py-0.5 sm:gap-1.5">
+          {charInfo.map(({ char }) => {
+            const isFound = placements[char.id] !== undefined;
+            return (
+              <div
+                key={char.id}
+                className={`flex min-w-0 flex-1 items-center justify-center rounded-lg border px-1 py-1 text-[10px] transition-all ${
+                  isFound ? "border-primary/60 bg-primary/10" : "border-border bg-muted"
+                }`}
+              >
+                <span
+                  className="relative aspect-square items-center justify-center overflow-hidden rounded-full"
+                  style={{ width: legendAvatarWidth }}
+                >
+                  {isFound ? (
+                    char.image ? (
+                      <img
+                        src={char.image}
+                        alt={char.name}
+                        className="h-full w-full rounded-full object-cover object-top"
+                      />
+                    ) : (
+                      <span
+                        className="flex h-full w-full items-center justify-center rounded-full text-[8px] font-bold text-white"
+                        style={{ background: ROOM_COLORS[char.id.length % ROOM_COLORS.length] }}
+                      >
+                        {char.name.slice(0, 2)}
+                      </span>
+                    )
+                  ) : (
+                    <span className="flex h-full w-full items-center justify-center rounded-full bg-slate-300">
+                      <UserRound className="h-1/2 w-1/2 text-slate-500" aria-hidden="true" />
+                    </span>
+                  )}
+                  {isFound && (
+                    <span className="absolute -right-0.5 -bottom-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[7px]">
+                      ✓
+                    </span>
+                  )}
+                </span>
+              </div>
+            );
+          })}
+        </div>
 
         <div
           ref={boardRef}
@@ -696,7 +709,7 @@ export function TaberdokuBoard({
           })}
         </div>
 
-        <p className="mx-auto mb-3 max-w-[480px] text-center text-xs text-muted-foreground">
+        <p className="taberdoku-status mx-auto mb-3 text-center text-xs text-muted-foreground">
           {t("taberdoku.clickHint")}
         </p>
 
@@ -750,18 +763,6 @@ export function TaberdokuBoard({
             <RotateCcw className="h-5 w-5" />
             {t("taberdoku.reset")}
           </button>
-
-          {totalScore !== undefined && (
-            <div
-              key={scorePulse}
-              className={`flex flex-col items-center gap-1 text-[10px] font-semibold text-primary ${
-                scorePulse > 0 ? "taberdoku-score-pulse" : ""
-              }`}
-            >
-              <span className="text-base leading-none">⭐</span>
-              <span className="tabular-nums">{totalScore}</span>
-            </div>
-          )}
         </div>
       </nav>
     </div>
