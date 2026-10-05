@@ -1,40 +1,57 @@
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import type { GameCardProps, GameModule } from "@/platform/games/types";
 import { createScoresService } from "@/platform/scores/createScoresService";
 import { useI18n } from "@/platform/i18n";
 import { translations } from "./i18n";
+import { GameInfoModal } from "@/components/GameInfoModal";
+import { Info, Play } from "lucide-react";
 
 function Card({ lang }: GameCardProps) {
   const { t } = useI18n();
+  const [infoOpen, setInfoOpen] = useState(false);
+
   return (
-    <Link
-      to="/$lang/tabers-taberdoku"
-      params={{ lang }}
-      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-0.5 hover:border-muted-foreground/40"
-    >
-      <div
-        aria-hidden
-        className="absolute -right-16 -top-16 h-40 w-40 rounded-full opacity-0 blur-2xl transition-opacity group-hover:opacity-30"
-        style={{ background: "var(--primary)" }}
-      />
-      <div className="mb-3 flex justify-center">
+    <>
+      <div className="group relative flex h-[128px] w-[128px] overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-0.5 hover:border-muted-foreground/40">
+        <div
+          aria-hidden
+          className="absolute -right-16 -top-16 h-40 w-40 rounded-full opacity-0 blur-2xl transition-opacity group-hover:opacity-30"
+          style={{ background: "var(--primary)" }}
+        />
         <img
           src="/taberdoku/logo.png"
-          alt="Taberdoku"
-          className="h-32 w-32 object-contain drop-shadow-[0_0_20px_oklch(0.72_0.30_350/0.5)]"
+          alt={t("taberdoku.title")}
+          className="h-full w-full object-contain p-3 drop-shadow-[0_0_20px_oklch(0.72_0.30_350/0.5)]"
         />
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            setInfoOpen(true);
+          }}
+          className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card/90 text-muted-foreground backdrop-blur transition-colors hover:bg-card hover:text-foreground"
+          aria-label="Info"
+        >
+          <Info className="h-3.5 w-3.5" />
+        </button>
+        <Link
+          to="/$lang/tabers-taberdoku"
+          params={{ lang }}
+          className="absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-white transition-colors hover:bg-primary/90"
+          aria-label="Play"
+        >
+          <Play className="h-3.5 w-3.5 fill-current" />
+        </Link>
       </div>
-      <span className="text-[10px] uppercase tracking-widest text-primary">
-        {t("home.card.taberdoku.tag")}
-      </span>
-      <h3 className="mt-2 text-xl text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-        {t("taberdoku.title")}
-      </h3>
-      <p className="mt-3 text-sm text-muted-foreground flex-1">{t("home.card.taberdoku.desc")}</p>
-      <div className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-secondary">
-        {t("home.play")} <span aria-hidden>→</span>
-      </div>
-    </Link>
+      <GameInfoModal
+        open={infoOpen}
+        onOpenChange={setInfoOpen}
+        title={t("taberdoku.title")}
+        description={t("home.card.taberdoku.desc")}
+        tag={t("home.card.taberdoku.tag")}
+      />
+    </>
   );
 }
 

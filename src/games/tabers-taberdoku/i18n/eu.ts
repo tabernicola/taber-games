@@ -57,13 +57,18 @@ export const dict: Dict = {
     "Pertsonaia bat errenkadako, zutabeko eta gelako. Ezin dira elkarren ondoan egon, diagonalean ere bai.",
   "taberdoku.tutorial.gotIt": "Adostas",
   "taberdoku.tutorial.stepOf": "{current}. urratsa, {total}-ean",
+  "taberdoku.tutorial.stepGoalTitle": "Helburua",
+  "taberdoku.tutorial.stepGoalDesc":
+    "Zure helburua da pertsonaiai aurkitzea: adierazi zein laukietan dagoen bakoitza. Gelako, errenkadako eta zutabeko bakarra dago, eta bi ezin dira inoiz elkar ukitu.",
   "taberdoku.tutorial.stepPlaceTitle": "Jarri pertsonaia bat",
+  "taberdoku.tutorial.stepPlaceDesc":
+    "Egin klik bikoitza edo sakatu bikoitza pertsonaia jartzeko. Posizioa egokia bada, pertsonaia agertuko da. Ez bada, zure 3 bizitzetako bat galdu duzu.",
   "taberdoku.tutorial.rule1Desc":
-    "Gela bakoitzeko (kolore bakoitzeko) pertsonaia bat baino ez da sar daiteke. Gainerakoak X batean markatu.",
+    "Pertsonaia bat jartzean, markatu X batekin bere kolorea duten lauki guztiak. Kolore berean ezin da egon beste pertsonaia bat.",
   "taberdoku.tutorial.rule2Desc":
-    "Errenkada eta zutabe bakoitzeko pertsonaia bat baino ez da sar daiteke. Gainerakoak X batean markatu.",
+    "Berdela da errenkada eta zutabekin ere: markatu, lauki horietan ezin dela egon pertsonaia bat adierazteko.",
   "taberdoku.tutorial.rule3Desc":
-    "Bi pertsonaiak ezin dira elkar ukitu, diagonalean ere ez. Inguruko laukiak X batean markatu.",
+    "Azkenean, markatu pertsonaiaren inguruko lauki guztiak: pertsonaiek ezin dira elkar ukitu.",
   "taberdoku.tutorial.next": "Hurrengoa",
   "taberdoku.tutorial.prev": "Atzera",
   "taberdoku.tutorial.skip": "Saltatu",

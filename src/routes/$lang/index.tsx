@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useRef, useEffect } from "react";
 import logoAsset from "@/assets/taber-games-logo-v2.png.asset.json";
 import { SiteHeader } from "@/platform/layout/SiteHeader";
 import { useI18n, langFromSlug } from "@/platform/i18n";
@@ -58,56 +57,8 @@ export const Route = createFileRoute("/$lang/")({
 
 function Home() {
   const { t, slug } = useI18n();
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-  const [activeIndex, setActiveIndex] = useState(0);
 
   const totalCards = games.length + externalGames.length;
-
-  const checkScroll = () => {
-    if (carouselRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
-      setCanScrollLeft(scrollLeft > 15);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 15);
-
-      const firstChild = carouselRef.current.firstElementChild as HTMLElement | null;
-      if (firstChild) {
-        const cardWidth = firstChild.offsetWidth + 16;
-        const index = Math.round(scrollLeft / cardWidth);
-        setActiveIndex(Math.min(Math.max(index, 0), totalCards - 1));
-      }
-    }
-  };
-
-  useEffect(() => {
-    const el = carouselRef.current;
-    if (!el) return;
-    checkScroll();
-    el.addEventListener("scroll", checkScroll, { passive: true });
-    window.addEventListener("resize", checkScroll);
-    return () => {
-      el.removeEventListener("scroll", checkScroll);
-      window.removeEventListener("resize", checkScroll);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const scrollBy = (dir: -1 | 1) => {
-    if (carouselRef.current) {
-      const firstChild = carouselRef.current.firstElementChild as HTMLElement | null;
-      const scrollAmount = firstChild ? firstChild.offsetWidth + 16 : 350;
-      carouselRef.current.scrollBy({ left: dir * scrollAmount, behavior: "smooth" });
-    }
-  };
-
-  const scrollToCard = (index: number) => {
-    if (carouselRef.current) {
-      const firstChild = carouselRef.current.firstElementChild as HTMLElement | null;
-      const cardWidth = firstChild ? firstChild.offsetWidth + 16 : 350;
-      carouselRef.current.scrollTo({ left: index * cardWidth, behavior: "smooth" });
-    }
-  };
 
   return (
     <div className="min-h-screen">
@@ -158,92 +109,17 @@ function Home() {
             </span>
           </div>
 
-          <div className="group relative">
-            <div
-              ref={carouselRef}
-              className="-mx-1 flex touch-pan-x gap-4 overflow-x-auto overscroll-x-contain scroll-smooth px-1 py-2 hide-scrollbar snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
-              style={{
-                scrollbarWidth: "none",
-                msOverflowStyle: "none",
-                WebkitOverflowScrolling: "touch",
-              }}
-            >
-              {games.map((game) => (
-                <div
-                  key={game.id}
-                  className="flex w-[85vw] shrink-0 snap-center flex-col sm:w-[380px] sm:snap-start md:w-[420px] lg:w-[460px]"
-                >
-                  <game.Card lang={slug} />
-                </div>
-              ))}
-              {externalGames.map((game) => (
-                <div
-                  key={game.id}
-                  className="flex w-[85vw] shrink-0 snap-center flex-col sm:w-[380px] sm:snap-start md:w-[420px] lg:w-[460px]"
-                >
-                  <ExternalGameCard entry={game} />
-                </div>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => scrollBy(-1)}
-              disabled={!canScrollLeft}
-              className="absolute left-1 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-border bg-card/90 text-foreground opacity-90 shadow-lg backdrop-blur transition-all hover:border-neon-pink hover:bg-neon-pink/20 active:scale-95 disabled:pointer-events-none disabled:opacity-20 sm:-left-5 sm:h-10 sm:w-10 sm:bg-card sm:opacity-0 sm:group-hover:opacity-100"
-              aria-label="Previous games"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2.5}
-                stroke="currentColor"
-                className="h-4 w-4 sm:h-5 sm:w-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15.75 19.5L8.25 12l7.5-7.5"
-                />
-              </svg>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => scrollBy(1)}
-              disabled={!canScrollRight}
-              className="absolute right-1 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-border bg-card/90 text-foreground opacity-90 shadow-lg backdrop-blur transition-all hover:border-neon-pink hover:bg-neon-pink/20 active:scale-95 disabled:pointer-events-none disabled:opacity-20 sm:-right-5 sm:h-10 sm:w-10 sm:bg-card sm:opacity-0 sm:group-hover:opacity-100"
-              aria-label="Next games"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2.5}
-                stroke="currentColor"
-                className="h-4 w-4 sm:h-5 sm:w-5"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg>
-            </button>
-
-            {/* Pagination dots for mobile */}
-            <div className="mt-4 flex items-center justify-center gap-2 sm:hidden">
-              {Array.from({ length: totalCards }, (_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => scrollToCard(i)}
-                  className={`h-2 cursor-pointer rounded-full transition-all ${
-                    activeIndex === i
-                      ? "w-6 bg-neon-pink shadow-[0_0_8px_var(--neon-pink)]"
-                      : "w-2 bg-muted-foreground/30 hover:bg-muted-foreground/60"
-                  }`}
-                  aria-label={`Go to game ${i + 1}`}
-                />
-              ))}
-            </div>
+          <div className="grid gap-1" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(128px, 1fr))" }}>
+            {games.map((game) => (
+              <div key={game.id} className="flex justify-center">
+                <game.Card lang={slug} />
+              </div>
+            ))}
+            {externalGames.map((game) => (
+              <div key={game.id} className="flex justify-center">
+                <ExternalGameCard entry={game} />
+              </div>
+            ))}
           </div>
         </section>
 
@@ -263,31 +139,33 @@ function ExternalGameCard({ entry }: { entry: (typeof externalGames)[number] }) 
       href={entry.href}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-0.5 hover:border-neon-cyan"
+      className="group relative flex h-[128px] w-[128px] overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-0.5 hover:border-neon-cyan"
     >
       <div
         aria-hidden
         className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full opacity-0 blur-3xl transition-opacity group-hover:opacity-60"
         style={{ background: "var(--neon-cyan)" }}
       />
-      <div className="mb-3 flex justify-center">
-        {entry.image && (
-          <img
-            src={entry.image}
-            alt=""
-            className="h-24 w-24 object-contain drop-shadow-[0_0_20px_oklch(0.85_0.18_200/0.5)]"
-          />
-        )}
-      </div>
-      <span className="text-[10px] uppercase tracking-widest text-neon-cyan">
-        {t(entry.tagKey)}
-      </span>
-      <h3 className="mt-2 text-xl text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-        {entry.title}
-      </h3>
-      <p className="mt-3 text-sm text-muted-foreground">{t(entry.descriptionKey)}</p>
-      <div className="mt-auto inline-flex items-center gap-1 pt-6 text-sm font-medium text-neon-cyan">
-        {t("home.external")} <span aria-hidden>↗</span>
+      {entry.image && (
+        <img
+          src={entry.image}
+          alt={entry.title}
+          className="h-full w-full object-contain p-3 drop-shadow-[0_0_20px_oklch(0.85_0.18_200/0.5)]"
+        />
+      )}
+      <div className="absolute bottom-2 right-2">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-neon-cyan text-white transition-colors hover:bg-neon-cyan/90">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2.5}
+            stroke="currentColor"
+            className="h-3.5 w-3.5 fill-current"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          </svg>
+        </div>
       </div>
     </a>
   );

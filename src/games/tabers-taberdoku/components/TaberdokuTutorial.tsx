@@ -5,10 +5,13 @@ import { MiniBoard, type MiniBoardAnimation } from "./TaberdokuRules";
 import {
   PLACE_CHARACTER_DEMO,
   RULE_DEMOS,
-  DEMO_CENTER_CELL,
+  GOAL_DEMO,
+  DEMO_SIZE,
+  demoSize,
+  type DeductionDemo,
   type RuleDemo,
 } from "../logic/ruleDemos";
-import { buildScript, durationOf } from "../logic/tutorialScript";
+import { buildDeductionScript, buildScript, durationOf } from "../logic/tutorialScript";
 import type { Character } from "@/platform/characters/characters";
 
 // Import HandCursor component from TaberdokuRules
@@ -21,14 +24,43 @@ interface TaberdokuTutorialProps {
 }
 
 const CELL_SIZE = 32;
+/** Where the hand waits on the square rule demos, whose character is pre-placed. */
+const RULE_DEMO_HAND_CELL = 8;
 
-function initialDemoState(demo: RuleDemo): MiniBoardAnimation {
-  const hasCrosses = demo.crossCells.length > 0;
+/**
+ * A step is either the deduction walkthrough, where the hand finds every
+ * character in turn, or a single rule demo. Both play back through the timeline.
+ */
+type TutorialStep = {
+  title: string;
+  desc: string;
+  /** Walkthrough played until the board is complete. */
+  deduction?: DeductionDemo;
+  /** Single rule demo, looping. */
+  demo?: RuleDemo;
+};
+
+/**
+ * Fresh state for one pass of a demo.
+ *
+ * `placedCells` is required on purpose: it decides what the board shows before
+ * the hand moves. The rule demos open with their character already placed,
+ * because all they have left to do is drop the marks, while the placement step
+ * must start empty so its character only appears on the double tap.
+ */
+function initialDemoState(
+  demo: RuleDemo,
+  placedCells: number[],
+  restCell: number,
+): MiniBoardAnimation {
   return {
-    charPlaced: hasCrosses,
+    placedCells,
     crossCount: 0,
-    // The hand waits in the middle of the board, then walks to its first cell.
-    handCell: hasCrosses ? 8 : DEMO_CENTER_CELL,
+    // Nothing is flagged until the hand gets a cell wrong.
+    errorCell: null,
+    // The hand waits next to the character when there is one, and on the resting
+    // cell otherwise, then walks to its first target.
+    handCell: placedCells.length > 0 ? RULE_DEMO_HAND_CELL : restCell,
     handVisible: true,
     tapKey: 0,
     tapCell: demo.crossCells[0] ?? demo.charCell,
@@ -36,19 +68,35 @@ function initialDemoState(demo: RuleDemo): MiniBoardAnimation {
   };
 }
 
+/** Fresh board state for whichever kind of demo the step plays. */
+function resetState(deduction?: DeductionDemo, demo?: RuleDemo): MiniBoardAnimation | null {
+  // The walkthrough reveals every character itself, so nothing starts placed.
+  if (deduction) return initialDemoState(deduction, [], deduction.restCell);
+  if (!demo) return null;
+  // A demo whose job is to drop marks opens with its character already on the
+  // board. The placement demo has no marks, so it starts empty and waits for the
+  // double tap.
+  const preplaced = demo.crossCells.length > 0 ? [demo.charCell] : [];
+  return initialDemoState(demo, preplaced, RULE_DEMO_HAND_CELL);
+}
+
 export function TaberdokuTutorial({ open, characters, onClose }: TaberdokuTutorialProps) {
   const { t } = useI18n();
   const [stepIndex, setStepIndex] = useState(0);
   const [actionIndex, setActionIndex] = useState(0);
+  // Seeded with the first step so the board never flashes the wrong demo for a
+  // frame; the effect below re-seeds it whenever the step changes.
   const [board, setBoard] = useState<MiniBoardAnimation>(() =>
-    initialDemoState(PLACE_CHARACTER_DEMO),
+    initialDemoState(GOAL_DEMO, [], GOAL_DEMO.restCell),
   );
 
-  const steps: { demo: RuleDemo; title: string; desc: string }[] = [
+  // The goal comes first so the rules and the placement step read as the way to
+  // reach it, rather than as an unexplained preamble.
+  const steps: TutorialStep[] = [
     {
-      demo: PLACE_CHARACTER_DEMO,
-      title: t("taberdoku.tutorial.stepPlaceTitle"),
-      desc: t("taberdoku.clickHint"),
+      deduction: GOAL_DEMO,
+      title: t("taberdoku.tutorial.stepGoalTitle"),
+      desc: t("taberdoku.tutorial.stepGoalDesc"),
     },
     {
       demo: RULE_DEMOS[0],
@@ -65,19 +113,31 @@ export function TaberdokuTutorial({ open, characters, onClose }: TaberdokuTutori
       title: t("taberdoku.rule3"),
       desc: t("taberdoku.tutorial.rule3Desc"),
     },
+    {
+      demo: PLACE_CHARACTER_DEMO,
+      title: t("taberdoku.tutorial.stepPlaceTitle"),
+      desc: t("taberdoku.tutorial.stepPlaceDesc"),
+    },
   ];
 
   const step = steps[stepIndex];
+  const deduction = step.deduction;
+  const demo = step.demo;
   // Memoised on the rule definition, which is a module constant: a fresh array
   // on every render would restart the timeline timer and double-apply actions.
-  const script = useMemo(() => buildScript(step.demo), [step.demo]);
+  const script = useMemo(
+    () => (deduction ? buildDeductionScript(deduction) : demo ? buildScript(demo) : []),
+    [deduction, demo],
+  );
   const isLastStep = stepIndex === steps.length - 1;
 
   // Restart the demo from scratch whenever the visible step changes.
   useEffect(() => {
-    setBoard(initialDemoState(step.demo));
+    const fresh = resetState(deduction, demo);
+    if (!fresh) return;
+    setBoard(fresh);
     setActionIndex(0);
-  }, [step.demo]);
+  }, [deduction, demo]);
 
   // Timeline: applies one action, then schedules the next one.
   useEffect(() => {
@@ -102,8 +162,14 @@ export function TaberdokuTutorial({ open, characters, onClose }: TaberdokuTutori
       case "reveal":
         setBoard((state) => ({
           ...state,
-          charPlaced: state.charPlaced || action.what === "char",
+          placedCells:
+            action.what === "char"
+              ? state.placedCells.includes(action.cell)
+                ? state.placedCells
+                : [...state.placedCells, action.cell]
+              : state.placedCells,
           crossCount: action.what === "cross" ? state.crossCount + 1 : state.crossCount,
+          errorCell: action.what === "error" ? action.cell : state.errorCell,
         }));
         break;
       case "pause":
@@ -115,17 +181,30 @@ export function TaberdokuTutorial({ open, characters, onClose }: TaberdokuTutori
         setActionIndex(actionIndex + 1);
         return;
       }
-      // Loop: clear the marks so the whole beat can play again.
-      setBoard(initialDemoState(step.demo));
+      // Loop: clear the board so the whole beat can play again.
+      const fresh = resetState(deduction, demo);
+      if (fresh) setBoard(fresh);
       setActionIndex(0);
     }, durationOf(action));
 
     return () => clearTimeout(timer);
-  }, [open, actionIndex, script, step.demo]);
+  }, [open, actionIndex, script, demo, deduction]);
 
   if (!open) return null;
 
   const char = { image: characters[0]?.image, name: characters[0]?.name ?? "P1" };
+  // The deduction board is bigger than the rule demos, so the size comes from
+  // the demo itself rather than being fixed.
+  const boardDemo = deduction ?? demo;
+  const size = boardDemo ? demoSize(boardDemo) : DEMO_SIZE;
+  // Every character of a multi-character demo needs its own artwork, falling
+  // back to the first one while the cast is still loading.
+  const castFor = (cells: number[]) =>
+    cells.map((cell, index) => ({
+      cell,
+      image: characters[index]?.image ?? characters[0]?.image,
+      name: characters[index]?.name ?? characters[0]?.name ?? "P1",
+    }));
 
   return (
     <div
@@ -173,25 +252,29 @@ export function TaberdokuTutorial({ open, characters, onClose }: TaberdokuTutori
         </div>
 
         <div className="mt-5 flex justify-center">
-          <div className="relative" style={{ width: 3 * CELL_SIZE, height: 3 * CELL_SIZE }}>
-            <MiniBoard
-              size={3}
-              cellColors={step.demo.cellColors}
-              characters={[{ cell: step.demo.charCell, ...char }]}
-              crosses={step.demo.crossCells}
-              cellSize={CELL_SIZE}
-              animation={board}
-            />
-            {board.handVisible && (
-              <HandCursor
-                size={3}
+          {boardDemo && (
+            <div className="relative" style={{ width: size * CELL_SIZE, height: size * CELL_SIZE }}>
+              <MiniBoard
+                size={size}
+                cellColors={boardDemo.cellColors}
+                characters={
+                  deduction ? castFor(deduction.charCells) : [{ cell: boardDemo.charCell, ...char }]
+                }
+                crosses={boardDemo.crossCells}
                 cellSize={CELL_SIZE}
-                cell={board.handCell}
-                tapKey={board.tapKey}
-                doubleTap={board.doubleTap}
+                animation={board}
               />
-            )}
-          </div>
+              {board.handVisible && (
+                <HandCursor
+                  size={size}
+                  cellSize={CELL_SIZE}
+                  cell={board.handCell}
+                  tapKey={board.tapKey}
+                  doubleTap={board.doubleTap}
+                />
+              )}
+            </div>
+          )}
         </div>
 
         <div className="mt-5 text-center">

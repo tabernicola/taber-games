@@ -52,13 +52,18 @@ export const dict: Dict = {
     "Un personaje por fila, columna y sala. No pueden tocarse entre sí, ni siquiera en diagonal.",
   "taberdoku.tutorial.gotIt": "Entendido",
   "taberdoku.tutorial.stepOf": "Paso {current} de {total}",
+  "taberdoku.tutorial.stepGoalTitle": "El objetivo",
+  "taberdoku.tutorial.stepGoalDesc":
+    "Tu objetivo es encontrar a los personajes: deduce en qué casilla está cada uno. En cada sala, fila y columna solo cabe uno, y dos nunca pueden tocarse.",
   "taberdoku.tutorial.stepPlaceTitle": "Coloca un personaje",
+  "taberdoku.tutorial.stepPlaceDesc":
+    "Doble toque o doble clic para colocar un personaje. Si la posición es correcta, el personaje aparecerá. Pero si no, habrás perdido uno de tus 3 vidas.",
   "taberdoku.tutorial.rule1Desc":
-    "En cada sala (color) solo cabe un personaje. Marca el resto con una X.",
+    "Cuando tienes un personaje colocado, marca con una X todas las casillas de su mismo color. No puede haber más de un personaje en el mismo color.",
   "taberdoku.tutorial.rule2Desc":
-    "En cada fila y en cada columna solo cabe un personaje. Marca el resto con una X.",
+    "También pasa lo mismo con las filas y las columnas: márcalas para indicar que en esas casillas no puede haber un personaje.",
   "taberdoku.tutorial.rule3Desc":
-    "Dos personajes no pueden tocarse, ni siquiera en diagonal. Marca las casillas de alrededor con una X.",
+    "Por último, marca todas las casillas alrededor del personaje: los personajes no pueden tocarse.",
   "taberdoku.tutorial.next": "Siguiente",
   "taberdoku.tutorial.prev": "Atrás",
   "taberdoku.tutorial.skip": "Saltar",

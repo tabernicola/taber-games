@@ -539,7 +539,7 @@ export function TaberdokuBoard({
         )}
       </header>
 
-      <main className="taberdoku-play relative z-10 px-2 pb-28 pt-6">
+      <main className="taberdoku-play relative z-10 px-2 pb-32 pt-10">
         {solved && (
           <p className="mb-3 text-center text-lg font-bold text-primary">
             {t("taberdoku.solvedIn", { time: formatTime(seconds) })}

@@ -13,8 +13,11 @@ const HAND_TIP_Y = -0.75;
  * board renders statically, which is what the in-game rule legend needs.
  */
 export interface MiniBoardAnimation {
-  charPlaced: boolean;
+  /** Cells that already show their character; the walkthrough fills it as it goes. */
+  placedCells: number[];
   crossCount: number;
+  /** Cell where a misplaced character was rejected, shown with the dark X. */
+  errorCell: number | null;
   handCell: number;
   handVisible: boolean;
   tapKey: number;
@@ -110,10 +113,13 @@ export function MiniBoard({
       >
         {Array.from({ length: size * size }, (_, i) => {
           const char = charAt(i);
-          const showChar = char !== undefined && (!animation || animation.charPlaced);
+          const showChar =
+            char !== undefined && (!animation || animation.placedCells.includes(char.cell));
           // Static boards pass every X at once; the tutorial reveals them one by one.
           const shownCrosses = animation ? animation.crossCount : crosses.length;
           const hasCross = isCrossRevealed(crosses, i, shownCrosses);
+          // A wrong placement leaves the dark X the game shows on an error cell.
+          const hasError = animation?.errorCell === i;
           return (
             <div
               key={i}
@@ -148,6 +154,12 @@ export function MiniBoard({
                     animation ? "taberdoku-reveal-pop" : ""
                   }`}
                   style={{ width: cellSize * 0.5, height: cellSize * 0.5, strokeWidth: 3 }}
+                />
+              )}
+              {hasError && (
+                <XMark
+                  className="absolute inset-0 z-10 m-auto h-3/4 w-3/4 text-red-950"
+                  style={{ strokeWidth: 3 }}
                 />
               )}
             </div>

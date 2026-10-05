@@ -5,10 +5,12 @@ import { buildScript, durationOf, scriptDuration } from "./tutorialScript";
 describe("buildScript", () => {
   it("places the character with a double tap on the first step", () => {
     const script = buildScript(PLACE_CHARACTER_DEMO);
-    const taps = script.filter((action) => action.kind === "tap");
+    const charTaps = script.filter(
+      (action) => action.kind === "tap" && action.cell === PLACE_CHARACTER_DEMO.charCell,
+    );
 
-    expect(taps).toHaveLength(1);
-    expect(taps[0]).toMatchObject({
+    expect(charTaps).toHaveLength(1);
+    expect(charTaps[0]).toMatchObject({
       cell: PLACE_CHARACTER_DEMO.charCell,
       double: true,
     });
@@ -18,9 +20,51 @@ describe("buildScript", () => {
     );
   });
 
+  it("tries a wrong cell first and marks it with the error X", () => {
+    const wrongCell = PLACE_CHARACTER_DEMO.wrongCell;
+    expect(wrongCell).toBeDefined();
+    expect(wrongCell).not.toBe(PLACE_CHARACTER_DEMO.charCell);
+
+    const script = buildScript(PLACE_CHARACTER_DEMO);
+
+    // The wrong cell is double tapped, then flagged, and only after that does the
+    // hand go to the right cell.
+    expect(script).toContainEqual({ kind: "tap", cell: wrongCell, double: true });
+    const errorAt = script.findIndex(
+      (action) => action.kind === "reveal" && action.what === "error",
+    );
+    const charAt = script.findIndex((action) => action.kind === "reveal" && action.what === "char");
+    expect(errorAt).toBeGreaterThanOrEqual(0);
+    expect(charAt).toBeGreaterThan(errorAt);
+  });
+
+  it("leaves no error mark on the demos that have no wrong cell", () => {
+    for (const demo of RULE_DEMOS) {
+      expect(
+        buildScript(demo).some((action) => action.kind === "reveal" && action.what === "error"),
+      ).toBe(false);
+    }
+  });
+
+  it("never reveals a character or an error before its cell is double clicked", () => {
+    for (const demo of [PLACE_CHARACTER_DEMO, ...RULE_DEMOS]) {
+      const script = buildScript(demo);
+      let lastDoubleTap: number | null = null;
+
+      for (const action of script) {
+        if (action.kind === "tap" && action.double) lastDoubleTap = action.cell;
+        if (action.kind === "reveal" && (action.what === "char" || action.what === "error")) {
+          expect(lastDoubleTap).toBe(action.cell);
+        }
+      }
+    }
+  });
+
   it("reveals the character only after both taps of the double click", () => {
     const script = buildScript(PLACE_CHARACTER_DEMO);
-    const tapAt = script.findIndex((action) => action.kind === "tap");
+    const tapAt = script.findIndex(
+      (action) => action.kind === "tap" && action.cell === PLACE_CHARACTER_DEMO.charCell,
+    );
     const revealAt = script.findIndex(
       (action) => action.kind === "reveal" && action.what === "char",
     );
@@ -52,13 +96,15 @@ describe("buildScript", () => {
     }
   });
 
-  it("walks the hand from the middle to the cell and back on the first step", () => {
+  it("walks the hand from the middle to each target and back on the first step", () => {
     const script = buildScript(PLACE_CHARACTER_DEMO);
     const moves = script.filter((action) => action.kind === "move");
 
     // The hand rests in the middle, so the first beat settles instead of moving.
+    // It visits the wrong cell, the right one, and finally goes back to rest.
     expect(script[0].kind).toBe("pause");
     expect(moves.map((action) => (action.kind === "move" ? action.cell : -1))).toEqual([
+      PLACE_CHARACTER_DEMO.wrongCell,
       PLACE_CHARACTER_DEMO.charCell,
       DEMO_CENTER_CELL,
     ]);

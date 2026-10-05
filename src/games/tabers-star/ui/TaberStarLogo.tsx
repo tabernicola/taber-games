@@ -10,6 +10,7 @@ export function TaberStarLogo({ className }: TaberStarLogoProps) {
       alt="The Taber's Star"
       className={className}
       draggable={false}
+      style={{ objectFit: 'contain' }}
     />
   );
 }

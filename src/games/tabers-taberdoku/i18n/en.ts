@@ -55,13 +55,18 @@ export const dict: Dict = {
     "One character per row, column, and room. They can never touch each other, even diagonally.",
   "taberdoku.tutorial.gotIt": "Got it",
   "taberdoku.tutorial.stepOf": "Step {current} of {total}",
+  "taberdoku.tutorial.stepGoalTitle": "The goal",
+  "taberdoku.tutorial.stepGoalDesc":
+    "Your goal is to find the characters: work out which cell each one belongs in. Only one fits per room, row and column, and two can never touch.",
   "taberdoku.tutorial.stepPlaceTitle": "Place a character",
+  "taberdoku.tutorial.stepPlaceDesc":
+    "Double tap or double click to place a character. If the position is right, the character appears. If not, you lose one of your 3 lives.",
   "taberdoku.tutorial.rule1Desc":
-    "Only one character fits in each room (color). Mark the rest with an X.",
+    "Once a character is placed, mark every cell of the same colour with an X. Two characters can never share a colour.",
   "taberdoku.tutorial.rule2Desc":
-    "Only one character fits in each row and each column. Mark the rest with an X.",
+    "The same goes for rows and columns: mark them to show that no character can be in those cells.",
   "taberdoku.tutorial.rule3Desc":
-    "Two characters can never touch, not even diagonally. Mark the surrounding cells with an X.",
+    "Lastly, mark every cell around the character: two characters can never touch.",
   "taberdoku.tutorial.next": "Next",
   "taberdoku.tutorial.prev": "Back",
   "taberdoku.tutorial.skip": "Skip",

@@ -1,4 +1,4 @@
-import { DEMO_CENTER_CELL, type RuleDemo } from "./ruleDemos";
+import { DEMO_CENTER_CELL, type DeductionDemo, type RuleDemo } from "./ruleDemos";
 
 /** Timing of each beat of the looping demo, in milliseconds. */
 export const MOVE_MS = 300;
@@ -12,7 +12,9 @@ export const PRE_REVEAL_PAUSE_MS = 200;
 export type DemoAction =
   | { kind: "move"; cell: number }
   | { kind: "tap"; cell: number; double: boolean }
-  | { kind: "reveal"; what: "char" | "cross" }
+  | { kind: "reveal"; what: "char"; cell: number }
+  | { kind: "reveal"; what: "cross" }
+  | { kind: "reveal"; what: "error"; cell: number }
   | { kind: "pause"; ms: number };
 
 /**
@@ -26,16 +28,30 @@ export type DemoAction =
  */
 export function buildScript(demo: RuleDemo): DemoAction[] {
   if (demo.crossCells.length === 0) {
-    return [
-      { kind: "pause", ms: 250 },
+    const actions: DemoAction[] = [{ kind: "pause", ms: 250 }];
+
+    // The placement step opens with a wrong cell, so the player sees what a
+    // misplaced character costs before seeing the correct one land.
+    if (demo.wrongCell !== undefined) {
+      actions.push(
+        { kind: "move", cell: demo.wrongCell },
+        { kind: "pause", ms: 250 },
+        { kind: "tap", cell: demo.wrongCell, double: true },
+        { kind: "reveal", what: "error", cell: demo.wrongCell },
+        { kind: "pause", ms: HOLD_MS },
+      );
+    }
+
+    actions.push(
       { kind: "move", cell: demo.charCell },
       { kind: "pause", ms: 250 },
       { kind: "tap", cell: demo.charCell, double: true },
-      { kind: "reveal", what: "char" },
+      { kind: "reveal", what: "char", cell: demo.charCell },
       { kind: "pause", ms: HOLD_MS },
       { kind: "move", cell: DEMO_CENTER_CELL },
       { kind: "pause", ms: MOVE_MS },
-    ];
+    );
+    return actions;
   }
 
   const actions: DemoAction[] = [{ kind: "pause", ms: 250 }];
@@ -46,6 +62,36 @@ export function buildScript(demo: RuleDemo): DemoAction[] {
     actions.push({ kind: "reveal", what: "cross" });
   }
   actions.push({ kind: "pause", ms: HOLD_MS });
+  return actions;
+}
+
+/**
+ * Walkthrough for the goal board: the hand places one character, rules out the
+ * cells that character forbids, and repeats until the board is complete. Each
+ * pass starts and ends with the hand resting on the same cell, so the loop
+ * never jumps.
+ */
+export function buildDeductionScript(demo: DeductionDemo): DemoAction[] {
+  const actions: DemoAction[] = [{ kind: "pause", ms: 250 }];
+
+  demo.charCells.forEach((cell, index) => {
+    actions.push({ kind: "move", cell });
+    actions.push({ kind: "pause", ms: 250 });
+    actions.push({ kind: "tap", cell, double: true });
+    actions.push({ kind: "reveal", what: "char", cell });
+
+    for (const crossed of demo.crossGroups[index] ?? []) {
+      actions.push({ kind: "move", cell: crossed });
+      actions.push({ kind: "tap", cell: crossed, double: false });
+      actions.push({ kind: "pause", ms: PRE_REVEAL_PAUSE_MS });
+      actions.push({ kind: "reveal", what: "cross" });
+    }
+
+    actions.push({ kind: "pause", ms: HOLD_MS });
+  });
+
+  actions.push({ kind: "move", cell: demo.restCell });
+  actions.push({ kind: "pause", ms: MOVE_MS });
   return actions;
 }
 
