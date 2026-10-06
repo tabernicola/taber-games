@@ -10,7 +10,7 @@ import { Info } from "lucide-react";
 function Card({ lang }: GameCardProps) {
   const { t } = useI18n();
   const [infoOpen, setInfoOpen] = useState(false);
-
+  return "";
   return (
     <>
       <Link

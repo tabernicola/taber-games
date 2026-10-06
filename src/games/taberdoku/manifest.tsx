@@ -4,6 +4,9 @@ import type { GameCardProps, GameModule } from "@/platform/games/types";
 import { createScoresService } from "@/platform/scores/createScoresService";
 import { useI18n } from "@/platform/i18n";
 import { translations } from "./i18n";
+import { translations as starBattleTranslations } from "../star-battle/i18n";
+import { translations as murdokuTranslations } from "./murdoku/i18n";
+import { mergeTranslations } from "@/platform/i18n";
 import { GameInfoModal } from "@/components/GameInfoModal";
 import { Info } from "lucide-react";
 
@@ -53,10 +56,16 @@ function Card({ lang }: GameCardProps) {
   );
 }
 
+const mergedTranslations = mergeTranslations(
+  translations,
+  starBattleTranslations,
+  murdokuTranslations
+);
+
 export const taberdokuGame: GameModule = {
   id: "taberdoku",
   Card,
-  translations,
+  translations: mergedTranslations,
   createScoresService: () => createScoresService("scores_taberdoku"),
   formatLevelLabel: (): string => "🧩",
 };
