@@ -13,10 +13,7 @@ export const games: GameModule[] = [
   taberdokuGame,
   tabersStarGame,
   eternityIIGame,
-  taberSquareGame,
-  murdokuGame,
-  tabersSudokuGame,
-  starBattleGame,
+  taberSquareGame
 ];
 export const externalGames: ExternalGameEntry[] = [
   {
