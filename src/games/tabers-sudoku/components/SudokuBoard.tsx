@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, Clock, Eraser, RotateCcw } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
@@ -15,6 +15,96 @@ import {
 } from "../logic/sudoku";
 import { CharacterTray } from "./CharacterTray";
 import "@/games/tabers-sudoku/light-theme.css";
+
+function spritePathFor(image: string | undefined): string | undefined {
+  if (!image) return undefined;
+  return image.replace(/\.png$/, "-sprite.png");
+}
+
+function SpriteAnimation({
+  src,
+  frameDuration = 160,
+  animate = true,
+}: { src: string; frameDuration?: number; animate?: boolean }) {
+  const rows = 1;
+  const cols = 6;
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const totalFrames = cols * rows;
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const img = new Image();
+    img.src = src;
+    let loaded = false;
+
+    const resize = () => {
+      const rect = container.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    };
+
+    resize();
+
+    const observer = new ResizeObserver(() => resize());
+    observer.observe(container);
+
+    let frame = 0;
+    let lastTime = 0;
+    let animId: number;
+
+    const tick = (time: number) => {
+      if (animate && time - lastTime >= frameDuration && loaded) {
+        frame = (frame + 1) % totalFrames;
+        lastTime = time;
+      }
+      if (loaded && canvas.width > 0 && canvas.height > 0 && img.complete) {
+        const cols = img.width / img.height;
+        const frameWidth = img.width / cols;
+        const frameHeight = img.height / rows;
+        const col = frame % cols;
+        const row = Math.floor(frame / cols);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(
+          img,
+          col * frameWidth,
+          row * frameHeight,
+          frameWidth,
+          frameHeight,
+          0,
+          0,
+          canvas.width,
+          canvas.height,
+        );
+      }
+      animId = requestAnimationFrame(tick);
+    };
+
+    img.onload = () => {
+      loaded = true;
+      resize();
+    };
+
+    animId = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      observer.disconnect();
+    };
+  }, [src, cols, rows, frameDuration, totalFrames, animate]);
+
+  return (
+    <div ref={containerRef} className="absolute inset-0 overflow-hidden">
+      <canvas ref={canvasRef} className="block h-full w-full" />
+    </div>
+  );
+}
 
 export function SudokuBoard({
   level,
@@ -128,8 +218,9 @@ export function SudokuBoard({
                 const fixed = puzzle.fixed.has(index);
                 const char = value !== null ? characters[value] : undefined;
                 const bad = conflicts.has(index);
-                const highlight =
-                  selected !== null && value === selected ? "ring-2 ring-inset ring-primary" : "";
+                const isSelected = selected !== null && value === selected;
+                const highlight = isSelected ? "ring-2 ring-inset ring-primary" : "";
+                const spritePath = char?.image ? spritePathFor(char.image) : undefined;
                 return (
                   <button
                     key={index}
@@ -146,16 +237,21 @@ export function SudokuBoard({
                     }}
                     aria-label={`${row + 1},${col + 1}`}
                   >
-                    {char &&
-                      (char.image ? (
-                        <img
-                          src={char.image}
-                          alt={char.name}
-                          className={`h-full w-full object-cover object-top ${fixed ? "" : "opacity-90"}`}
-                        />
-                      ) : (
-                        <span className="text-xs font-bold">{char.name.slice(0, 2)}</span>
-                      ))}
+                    {char && (
+                      <>
+                        {spritePath ? (
+                          <SpriteAnimation src={spritePath} animate={isSelected} />
+                        ) : char.image ? (
+                          <img
+                            src={char.image}
+                            alt={char.name}
+                            className={`h-full w-full object-cover object-top ${fixed ? "" : "opacity-90"}`}
+                          />
+                        ) : (
+                          <span className="text-xs font-bold">{char.name.slice(0, 2)}</span>
+                        )}
+                      </>
+                    )}
                   </button>
                 );
               })}

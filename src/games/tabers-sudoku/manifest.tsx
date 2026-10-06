@@ -5,7 +5,7 @@ import { createScoresService } from "@/platform/scores/createScoresService";
 import { useI18n } from "@/platform/i18n";
 import { translations } from "./i18n";
 import { GameInfoModal } from "@/components/GameInfoModal";
-import { Info, Play } from "lucide-react";
+import { Info } from "lucide-react";
 
 function Card({ lang }: GameCardProps) {
   const { t } = useI18n();
@@ -13,7 +13,11 @@ function Card({ lang }: GameCardProps) {
 
   return (
     <>
-      <div className="group relative flex h-[128px] w-[128px] overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-0.5 hover:border-muted-foreground/40">
+      <Link
+        to="/$lang/tabers-sudoku"
+        params={{ lang }}
+        className="group relative flex h-[128px] w-[128px] overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-0.5 hover:border-muted-foreground/40"
+      >
         <div
           aria-hidden
           className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full opacity-0 blur-2xl transition-opacity group-hover:opacity-30"
@@ -24,6 +28,7 @@ function Card({ lang }: GameCardProps) {
           type="button"
           onClick={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             setInfoOpen(true);
           }}
           className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card/90 text-muted-foreground backdrop-blur transition-colors hover:bg-card hover:text-foreground"
@@ -31,21 +36,14 @@ function Card({ lang }: GameCardProps) {
         >
           <Info className="h-3.5 w-3.5" />
         </button>
-        <Link
-          to="/$lang/tabers-sudoku"
-          params={{ lang }}
-          className="absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-white transition-colors hover:bg-primary/90"
-          aria-label="Play"
-        >
-          <Play className="h-3.5 w-3.5 fill-current" />
-        </Link>
-      </div>
+      </Link>
       <GameInfoModal
         open={infoOpen}
         onOpenChange={setInfoOpen}
         title={t("sudoku.title")}
         description={t("home.card.sudoku.desc")}
         tag={t("home.card.murdoku.tag")}
+        image={<TabersSudokuLogo className="h-32 w-auto" />}
       />
     </>
   );

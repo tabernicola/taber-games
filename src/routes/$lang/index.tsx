@@ -153,20 +153,6 @@ function ExternalGameCard({ entry }: { entry: (typeof externalGames)[number] }) 
           className="h-full w-full object-contain p-3 drop-shadow-[0_0_20px_oklch(0.85_0.18_200/0.5)]"
         />
       )}
-      <div className="absolute bottom-2 right-2">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-neon-cyan text-white transition-colors hover:bg-neon-cyan/90">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2.5}
-            stroke="currentColor"
-            className="h-3.5 w-3.5 fill-current"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-          </svg>
-        </div>
-      </div>
     </a>
   );
 }

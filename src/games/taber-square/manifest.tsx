@@ -7,7 +7,7 @@ import { useI18n } from "@/platform/i18n";
 import { translations } from "./i18n";
 import { SQUARE_LEVELS } from "./logic/levels";
 import { GameInfoModal } from "@/components/GameInfoModal";
-import { Info, Play } from "lucide-react";
+import { Info } from "lucide-react";
 
 function Card({ lang }: GameCardProps) {
   const { t } = useI18n();
@@ -15,7 +15,11 @@ function Card({ lang }: GameCardProps) {
 
   return (
     <>
-      <div className="group relative flex h-[128px] w-[128px] overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-0.5 hover:border-neon-pink">
+      <Link
+        to="/$lang/the-taber-square"
+        params={{ lang }}
+        className="group relative flex h-[128px] w-[128px] overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-0.5 hover:border-neon-pink"
+      >
         <div
           aria-hidden
           className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full opacity-0 blur-3xl transition-opacity group-hover:opacity-60"
@@ -30,6 +34,7 @@ function Card({ lang }: GameCardProps) {
           type="button"
           onClick={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             setInfoOpen(true);
           }}
           className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card/90 text-muted-foreground backdrop-blur transition-colors hover:bg-card hover:text-foreground"
@@ -37,21 +42,14 @@ function Card({ lang }: GameCardProps) {
         >
           <Info className="h-3.5 w-3.5" />
         </button>
-        <Link
-          to="/$lang/the-taber-square"
-          params={{ lang }}
-          className="absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-lg bg-neon-pink text-white transition-colors hover:bg-neon-pink/90"
-          aria-label="Play"
-        >
-          <Play className="h-3.5 w-3.5 fill-current" />
-        </Link>
-      </div>
+      </Link>
       <GameInfoModal
         open={infoOpen}
         onOpenChange={setInfoOpen}
         title="The Taber Square"
         description={t("home.card.desc")}
         tag={t("home.card.tag")}
+        image={squareLogo.url}
       />
     </>
   );
