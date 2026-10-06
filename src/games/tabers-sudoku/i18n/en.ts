@@ -18,6 +18,27 @@ export const dict: Dict = {
   "sudoku.reset": "Reset",
   "sudoku.newBoard": "New board",
   "sudoku.needNineCharacters": "This game needs nine characters.",
+  "sudoku.tutorial.title": "How to play",
+  "sudoku.tutorial.desc":
+    "Complete the 9×9 grid using the nine characters. Each character must appear exactly once in every row, every column, and every 3×3 box.",
+  "sudoku.tutorial.gotIt": "Got it",
+  "sudoku.tutorial.stepOf": "Step {current} of {total}",
+  "sudoku.tutorial.stepGoalTitle": "The goal",
+  "sudoku.tutorial.stepGoalDesc":
+    "Your goal is to fill the entire grid. Each row, column, and 3×3 box must contain all nine characters without any repeats.",
+  "sudoku.tutorial.stepRulesTitle": "The rules",
+  "sudoku.tutorial.stepRulesDesc":
+    "No character can repeat in the same row, column, or 3×3 box. Use logic to deduce where each one goes.",
+  "sudoku.tutorial.stepPlaceTitle": "Place a character",
+  "sudoku.tutorial.stepPlaceDesc":
+    "Tap a character in the bottom tray, then tap an empty cell to place it. If you make a mistake, use the eraser.",
+  "sudoku.tutorial.stepCountsTitle": "Track remaining",
+  "sudoku.tutorial.stepCountsDesc":
+    "Below each character you can see how many are left to place. When it reaches zero, that character is complete.",
+  "sudoku.tutorial.next": "Next",
+  "sudoku.tutorial.prev": "Back",
+  "sudoku.tutorial.skip": "Skip",
+  "sudoku.help": "Help",
 };
 
 export default dict;

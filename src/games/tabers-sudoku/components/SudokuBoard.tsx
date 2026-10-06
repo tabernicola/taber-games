@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, Clock, Eraser, RotateCcw } from "lucide-react";
+import { ChevronLeft, Clock, Eraser, HelpCircle, RotateCcw } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
 import { useTimer } from "@/platform/hooks/useTimer";
 import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
@@ -14,7 +14,11 @@ import {
   type SudokuPuzzle,
 } from "../logic/sudoku";
 import { CharacterTray } from "./CharacterTray";
+import { SudokuTutorial } from "./SudokuTutorial";
+import { getStorageItem, setStorageItem } from "@/platform/storage";
 import "@/games/tabers-sudoku/light-theme.css";
+
+const TUTORIAL_STORAGE_KEY = "tabers-sudoku-tutorial-completed";
 
 function spritePathFor(image: string | undefined): string | undefined {
   if (!image) return undefined;
@@ -132,6 +136,20 @@ export function SudokuBoard({
   const [selected, setSelected] = useState<number | null>(null);
   const [erasing, setErasing] = useState(false);
   const [round, setRound] = useState(0);
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  // Show tutorial on first visit
+  useEffect(() => {
+    const completed = getStorageItem(TUTORIAL_STORAGE_KEY);
+    if (!completed) {
+      setShowTutorial(true);
+    }
+  }, []);
+
+  const handleTutorialClose = () => {
+    setShowTutorial(false);
+    setStorageItem(TUTORIAL_STORAGE_KEY, "1");
+  };
 
   useEffect(() => {
     setPuzzle(null);
@@ -203,10 +221,17 @@ export function SudokuBoard({
         <h1 className="text-base font-bold tracking-widest text-primary">
           {t("sudoku.title")} · {t(`sudoku.level.${level}`)}
         </h1>
-        <span className="flex items-center gap-1 text-sm font-semibold text-muted-foreground">
-          <Clock className="h-4 w-4" />
-          {formatTime(seconds)}
-        </span>
+        <button
+          type="button"
+          onClick={() => {
+            playSound("click");
+            setShowTutorial(true);
+          }}
+          className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+          aria-label={t("sudoku.help")}
+        >
+          <HelpCircle className="h-5 w-5" />
+        </button>
       </header>
 
       <main className="px-2 pb-32 pt-4">
@@ -284,34 +309,41 @@ export function SudokuBoard({
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
-        <div className="mx-auto flex max-w-md items-stretch justify-around gap-2 px-3 py-2">
-          <button
-            type="button"
-            onClick={() => {
-              playSound("click");
-              setErasing((v) => !v);
-              setSelected(null);
-            }}
-            className={`flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold ${
-              erasing ? "border border-primary bg-primary/10 text-primary" : "text-muted-foreground"
-            }`}
-          >
-            <Eraser className="h-5 w-5" />
-            {t("sudoku.reset")}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              playSound("click");
-              setRound((r) => r + 1);
-            }}
-            className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-muted-foreground"
-          >
-            <RotateCcw className="h-5 w-5" />
-            {t("game.new")}
-          </button>
+        <div className="mx-auto flex max-w-md items-stretch justify-between gap-2 px-3 py-2">
+          <div className="flex flex-1 items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                playSound("click");
+                if (!puzzle) return;
+                setGrid(puzzle.puzzle);
+                setSelected(null);
+                setErasing(false);
+              }}
+              className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-muted-foreground"
+            >
+              <RotateCcw className="h-5 w-5" />
+              {t("sudoku.reset")}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                playSound("click");
+                setRound((r) => r + 1);
+              }}
+              className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-muted-foreground"
+            >
+              <Eraser className="h-5 w-5" />
+              {t("game.new")}
+            </button>
+          </div>
+          <span className="flex items-center gap-1 text-sm font-semibold text-muted-foreground">
+            <Clock className="h-4 w-4" />
+            {formatTime(seconds)}
+          </span>
         </div>
       </nav>
+      <SudokuTutorial open={showTutorial} onClose={handleTutorialClose} />
     </div>
   );
 }

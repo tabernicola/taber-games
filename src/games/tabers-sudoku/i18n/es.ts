@@ -18,6 +18,27 @@ export const dict: Dict = {
   "sudoku.reset": "Reiniciar",
   "sudoku.newBoard": "Nuevo tablero",
   "sudoku.needNineCharacters": "Hacen falta nueve personajes para este modo.",
+  "sudoku.tutorial.title": "Cómo jugar",
+  "sudoku.tutorial.desc":
+    "Completa la cuadrícula 9×9 usando los nueve personajes. Cada personaje debe aparecer exactamente una vez en cada fila, cada columna y cada cuadro 3×3.",
+  "sudoku.tutorial.gotIt": "Entendido",
+  "sudoku.tutorial.stepOf": "Paso {current} de {total}",
+  "sudoku.tutorial.stepGoalTitle": "El objetivo",
+  "sudoku.tutorial.stepGoalDesc":
+    "Tu objetivo es rellenar toda la cuadrícula. Cada fila, columna y cuadro 3×3 debe contener los nueve personajes sin repetir ninguno.",
+  "sudoku.tutorial.stepRulesTitle": "Las reglas",
+  "sudoku.tutorial.stepRulesDesc":
+    "No puede haber personajes repetidos en la misma fila, columna o cuadro 3×3. Usa la lógica para deducir dónde va cada uno.",
+  "sudoku.tutorial.stepPlaceTitle": "Coloca un personaje",
+  "sudoku.tutorial.stepPlaceDesc":
+    "Toca un personaje en la barra inferior y luego toca una casilla vacía para colocarlo. Si te equivocas, usa el borrador.",
+  "sudoku.tutorial.stepCountsTitle": "Cuenta los personajes",
+  "sudoku.tutorial.stepCountsDesc":
+    "Debajo de cada personaje ves cuántos te quedan por colocar. Cuando llegues a cero, ese personaje está completo.",
+  "sudoku.tutorial.next": "Siguiente",
+  "sudoku.tutorial.prev": "Atrás",
+  "sudoku.tutorial.skip": "Saltar",
+  "sudoku.help": "Ayuda",
 };
 
 export default dict;

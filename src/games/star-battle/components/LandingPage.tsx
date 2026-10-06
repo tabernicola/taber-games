@@ -46,12 +46,7 @@ export function LandingPage() {
         <main className="mx-auto max-w-4xl px-4 pb-24 pt-10">
           <SubGameTabs active="star-battle" />
           <header className="mt-8 flex flex-col items-center text-center">
-            <img
-              src="/taberdoku/logo.png"
-              alt={t("starBattle.title")}
-              className="object-contain drop-shadow-[0_0_20px_oklch(0.72_0.30_350/0.5)]"
-            />
-            <h1 className="mt-4 text-3xl tracking-widest text-foreground sm:text-4xl">
+            <h1 className="text-3xl font-bold tracking-widest text-primary sm:text-4xl">
               {t("starBattle.title")}
             </h1>
             <p className="mt-3 max-w-xl text-sm text-muted-foreground">

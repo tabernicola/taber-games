@@ -4,7 +4,6 @@ import studyLogo from "@/assets/taber-study-logo.png.asset.json";
 import { taberSquareGame } from "@/games/taber-square/manifest";
 import { tabersStarGame } from "@/games/tabers-star/manifest";
 import { eternityIIGame } from "@/games/eternity-ii/manifest";
-import { tabersSudokuGame } from "@/games/tabers-sudoku/manifest";
 import { taberdokuGame } from "@/games/taberdoku/manifest";
 
 export const games: GameModule[] = [

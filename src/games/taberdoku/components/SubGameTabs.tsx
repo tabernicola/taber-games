@@ -3,6 +3,12 @@ import { useI18n } from "@/platform/i18n";
 
 type SubGame = "murdoku" | "star-battle" | "tabers-sudoku";
 
+const logos: Record<SubGame, { src: string; alt: string }> = {
+  murdoku: { src: "/taberdoku/murdoku-logo.png", alt: "murdoku.title" },
+  "star-battle": { src: "/taberdoku/star-battle-logo.png", alt: "starBattle.title" },
+  "tabers-sudoku": { src: "/taberdoku/sudoku-logo.png", alt: "sudoku.title" },
+};
+
 export function SubGameTabs({ active }: { active: SubGame }) {
   const { t, slug } = useI18n();
 
@@ -12,11 +18,13 @@ export function SubGameTabs({ active }: { active: SubGame }) {
     { key: "tabers-sudoku", label: t("taberdoku.sudoku.title"), href: "/$lang/taberdoku/tabers-sudoku" },
   ];
 
+  const logo = logos[active];
+
   return (
     <div className="flex flex-col items-center">
       <img
-        src="/taberdoku/logo.png"
-        alt={t("taberdoku.title")}
+        src={logo.src}
+        alt={t(logo.alt)}
         className="object-contain drop-shadow-[0_0_12px_oklch(0.72_0.30_350/0.5)]"
       />
       <nav className="mt-2 flex gap-1 rounded-xl border border-border bg-card/50 p-1">
