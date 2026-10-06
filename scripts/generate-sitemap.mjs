@@ -34,7 +34,17 @@ const LANG_PARAM = "$lang";
  * Route segments that must never reach the sitemap. Keep it in sync with
  * `public/robots.txt`: anything disallowed there belongs here too.
  */
-const EXCLUDED_SEGMENTS = new Set(["auth", "admin", "create", "edit", "delete", "play", "playground", "sandbox", "test"]);
+const EXCLUDED_SEGMENTS = new Set([
+  "auth",
+  "admin",
+  "create",
+  "edit",
+  "delete",
+  "play",
+  "playground",
+  "sandbox",
+  "test",
+]);
 
 /** File names that do not add a segment to the URL (TanStack Router file routing). */
 const IGNORED_FILE_NAMES = new Set(["__root", "index", "route", "_layout"]);

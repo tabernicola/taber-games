@@ -1,20 +1,22 @@
-import type { ExternalGameEntry, GameModule } from "./types";
+import type { ExternalGameEntry, GameModule } from "@/platform/games/types";
 import { coreTranslations, mergeTranslations } from "@/platform/i18n";
 import studyLogo from "@/assets/taber-study-logo.png.asset.json";
 import { taberSquareGame } from "@/games/taber-square/manifest";
 import { tabersStarGame } from "@/games/tabers-star/manifest";
 import { eternityIIGame } from "@/games/eternity-ii/manifest";
-import { murdokuGame } from "@/games/murdoku/manifest";
+import { murdokuGame } from "@/games/taberdoku/murdoku/manifest";
 import { tabersSudokuGame } from "@/games/tabers-sudoku/manifest";
-import { tabersTaberdokuGame } from "@/games/tabers-taberdoku/manifest";
+import { taberdokuGame } from "@/games/taberdoku/manifest";
+import { starBattleGame } from "@/games/star-battle/manifest";
 
 export const games: GameModule[] = [
+  taberdokuGame,
   tabersStarGame,
   eternityIIGame,
   taberSquareGame,
   murdokuGame,
   tabersSudokuGame,
-  tabersTaberdokuGame,
+  starBattleGame,
 ];
 export const externalGames: ExternalGameEntry[] = [
   {

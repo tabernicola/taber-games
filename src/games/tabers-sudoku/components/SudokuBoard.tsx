@@ -21,11 +21,21 @@ function spritePathFor(image: string | undefined): string | undefined {
   return image.replace(/\.png$/, "-sprite.png");
 }
 
+/** Transforms pX.png → pX-number.png for the Sudoku character tray display. */
+function numberImagePath(image: string | undefined): string | undefined {
+  if (!image) return undefined;
+  return image.replace(/\.png$/, "-number.png");
+}
+
 function SpriteAnimation({
   src,
   frameDuration = 160,
   animate = true,
-}: { src: string; frameDuration?: number; animate?: boolean }) {
+}: {
+  src: string;
+  frameDuration?: number;
+  animate?: boolean;
+}) {
   const rows = 1;
   const cols = 6;
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -183,7 +193,7 @@ export function SudokuBoard({
           type="button"
           onClick={() => {
             playSound("click");
-            void navigate({ to: "/$lang/tabers-sudoku", params: { lang: slug } });
+            void navigate({ to: "/$lang/taberdoku/tabers-sudoku", params: { lang: slug } });
           }}
           className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
           aria-label={t("common.back")}

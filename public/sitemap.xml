@@ -4,7 +4,7 @@
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 ">
   <url>
     <loc>https://taber-games.lovable.app/eus</loc>
-    <lastmod>2026-08-28</lastmod>
+    <lastmod>2026-10-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus"/>
@@ -13,7 +13,7 @@
   </url>
   <url>
     <loc>https://taber-games.lovable.app/es</loc>
-    <lastmod>2026-08-28</lastmod>
+    <lastmod>2026-10-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus"/>
@@ -22,7 +22,7 @@
   </url>
   <url>
     <loc>https://taber-games.lovable.app/en</loc>
-    <lastmod>2026-08-28</lastmod>
+    <lastmod>2026-10-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus"/>
@@ -57,85 +57,112 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/eternity-ii"/>
   </url>
   <url>
-    <loc>https://taber-games.lovable.app/eus/murdoku</loc>
-    <lastmod>2026-09-10</lastmod>
+    <loc>https://taber-games.lovable.app/eus/taberdoku</loc>
+    <lastmod>2026-10-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/murdoku"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/murdoku"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/murdoku"/>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/taberdoku"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/taberdoku"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/taberdoku"/>
   </url>
   <url>
-    <loc>https://taber-games.lovable.app/es/murdoku</loc>
-    <lastmod>2026-09-10</lastmod>
+    <loc>https://taber-games.lovable.app/es/taberdoku</loc>
+    <lastmod>2026-10-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/murdoku"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/murdoku"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/murdoku"/>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/taberdoku"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/taberdoku"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/taberdoku"/>
   </url>
   <url>
-    <loc>https://taber-games.lovable.app/en/murdoku</loc>
-    <lastmod>2026-09-10</lastmod>
+    <loc>https://taber-games.lovable.app/en/taberdoku</loc>
+    <lastmod>2026-10-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/murdoku"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/murdoku"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/murdoku"/>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/taberdoku"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/taberdoku"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/taberdoku"/>
   </url>
   <url>
-    <loc>https://taber-games.lovable.app/eus/tabers-sudoku</loc>
-    <lastmod>2026-09-17</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/tabers-sudoku"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/tabers-sudoku"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/tabers-sudoku"/>
+    <loc>https://taber-games.lovable.app/eus/taberdoku/murdoku</loc>
+    <lastmod>2026-10-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/taberdoku/murdoku"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/taberdoku/murdoku"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/taberdoku/murdoku"/>
   </url>
   <url>
-    <loc>https://taber-games.lovable.app/es/tabers-sudoku</loc>
-    <lastmod>2026-09-17</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/tabers-sudoku"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/tabers-sudoku"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/tabers-sudoku"/>
+    <loc>https://taber-games.lovable.app/es/taberdoku/murdoku</loc>
+    <lastmod>2026-10-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/taberdoku/murdoku"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/taberdoku/murdoku"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/taberdoku/murdoku"/>
   </url>
   <url>
-    <loc>https://taber-games.lovable.app/en/tabers-sudoku</loc>
-    <lastmod>2026-09-17</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/tabers-sudoku"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/tabers-sudoku"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/tabers-sudoku"/>
+    <loc>https://taber-games.lovable.app/en/taberdoku/murdoku</loc>
+    <lastmod>2026-10-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/taberdoku/murdoku"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/taberdoku/murdoku"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/taberdoku/murdoku"/>
   </url>
   <url>
-    <loc>https://taber-games.lovable.app/eus/tabers-taberdoku</loc>
-    <lastmod>2026-09-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/tabers-taberdoku"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/tabers-taberdoku"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/tabers-taberdoku"/>
+    <loc>https://taber-games.lovable.app/eus/taberdoku/star-battle</loc>
+    <lastmod>2026-10-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/taberdoku/star-battle"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/taberdoku/star-battle"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/taberdoku/star-battle"/>
   </url>
   <url>
-    <loc>https://taber-games.lovable.app/es/tabers-taberdoku</loc>
-    <lastmod>2026-09-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/tabers-taberdoku"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/tabers-taberdoku"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/tabers-taberdoku"/>
+    <loc>https://taber-games.lovable.app/es/taberdoku/star-battle</loc>
+    <lastmod>2026-10-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/taberdoku/star-battle"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/taberdoku/star-battle"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/taberdoku/star-battle"/>
   </url>
   <url>
-    <loc>https://taber-games.lovable.app/en/tabers-taberdoku</loc>
-    <lastmod>2026-09-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/tabers-taberdoku"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/tabers-taberdoku"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/tabers-taberdoku"/>
+    <loc>https://taber-games.lovable.app/en/taberdoku/star-battle</loc>
+    <lastmod>2026-10-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/taberdoku/star-battle"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/taberdoku/star-battle"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/taberdoku/star-battle"/>
+  </url>
+  <url>
+    <loc>https://taber-games.lovable.app/eus/taberdoku/tabers-sudoku</loc>
+    <lastmod>2026-10-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/taberdoku/tabers-sudoku"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/taberdoku/tabers-sudoku"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/taberdoku/tabers-sudoku"/>
+  </url>
+  <url>
+    <loc>https://taber-games.lovable.app/es/taberdoku/tabers-sudoku</loc>
+    <lastmod>2026-10-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/taberdoku/tabers-sudoku"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/taberdoku/tabers-sudoku"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/taberdoku/tabers-sudoku"/>
+  </url>
+  <url>
+    <loc>https://taber-games.lovable.app/en/taberdoku/tabers-sudoku</loc>
+    <lastmod>2026-10-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="eu" href="https://taber-games.lovable.app/eus/taberdoku/tabers-sudoku"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://taber-games.lovable.app/es/taberdoku/tabers-sudoku"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://taber-games.lovable.app/en/taberdoku/tabers-sudoku"/>
   </url>
   <url>
     <loc>https://taber-games.lovable.app/eus/the-taber-square</loc>

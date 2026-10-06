@@ -17,18 +17,19 @@ import { Route as LangIndexRouteImport } from './routes/$lang/index'
 import { Route as LangAuthRouteImport } from './routes/$lang/auth'
 import { Route as LangTheTabersStarIndexRouteImport } from './routes/$lang/the-tabers-star/index'
 import { Route as LangTheTaberSquareIndexRouteImport } from './routes/$lang/the-taber-square/index'
-import { Route as LangTabersTaberdokuIndexRouteImport } from './routes/$lang/tabers-taberdoku/index'
-import { Route as LangTabersSudokuIndexRouteImport } from './routes/$lang/tabers-sudoku/index'
-import { Route as LangMurdokuIndexRouteImport } from './routes/$lang/murdoku/index'
+import { Route as LangTaberdokuIndexRouteImport } from './routes/$lang/taberdoku/index'
 import { Route as LangEternityIiIndexRouteImport } from './routes/$lang/eternity-ii/index'
 import { Route as LangTheTabersStarPlayRouteImport } from './routes/$lang/the-tabers-star/play'
 import { Route as LangTheTaberSquarePlayRouteImport } from './routes/$lang/the-taber-square/play'
-import { Route as LangTabersTaberdokuPlayRouteImport } from './routes/$lang/tabers-taberdoku/play'
-import { Route as LangTabersSudokuPlayRouteImport } from './routes/$lang/tabers-sudoku/play'
-import { Route as LangMurdokuPlayRouteImport } from './routes/$lang/murdoku/play'
-import { Route as LangMurdokuCreateRouteImport } from './routes/$lang/murdoku/create'
-import { Route as LangMurdokuAdminRouteImport } from './routes/$lang/murdoku/admin'
 import { Route as LangEternityIiPlayRouteImport } from './routes/$lang/eternity-ii/play'
+import { Route as LangTaberdokuTabersSudokuIndexRouteImport } from './routes/$lang/taberdoku/tabers-sudoku/index'
+import { Route as LangTaberdokuStarBattleIndexRouteImport } from './routes/$lang/taberdoku/star-battle/index'
+import { Route as LangTaberdokuMurdokuIndexRouteImport } from './routes/$lang/taberdoku/murdoku/index'
+import { Route as LangTaberdokuTabersSudokuPlayRouteImport } from './routes/$lang/taberdoku/tabers-sudoku/play'
+import { Route as LangTaberdokuStarBattlePlayRouteImport } from './routes/$lang/taberdoku/star-battle/play'
+import { Route as LangTaberdokuMurdokuPlayRouteImport } from './routes/$lang/taberdoku/murdoku/play'
+import { Route as LangTaberdokuMurdokuCreateRouteImport } from './routes/$lang/taberdoku/murdoku/create'
+import { Route as LangTaberdokuMurdokuAdminRouteImport } from './routes/$lang/taberdoku/murdoku/admin'
 
 const TheTaberSquareRoute = TheTaberSquareRouteImport.update({
   id: '/the-taber-square',
@@ -70,20 +71,9 @@ const LangTheTaberSquareIndexRoute = LangTheTaberSquareIndexRouteImport.update({
   path: '/the-taber-square/',
   getParentRoute: () => LangRouteRoute,
 } as any)
-const LangTabersTaberdokuIndexRoute =
-  LangTabersTaberdokuIndexRouteImport.update({
-    id: '/tabers-taberdoku/',
-    path: '/tabers-taberdoku/',
-    getParentRoute: () => LangRouteRoute,
-  } as any)
-const LangTabersSudokuIndexRoute = LangTabersSudokuIndexRouteImport.update({
-  id: '/tabers-sudoku/',
-  path: '/tabers-sudoku/',
-  getParentRoute: () => LangRouteRoute,
-} as any)
-const LangMurdokuIndexRoute = LangMurdokuIndexRouteImport.update({
-  id: '/murdoku/',
-  path: '/murdoku/',
+const LangTaberdokuIndexRoute = LangTaberdokuIndexRouteImport.update({
+  id: '/taberdoku/',
+  path: '/taberdoku/',
   getParentRoute: () => LangRouteRoute,
 } as any)
 const LangEternityIiIndexRoute = LangEternityIiIndexRouteImport.update({
@@ -101,36 +91,59 @@ const LangTheTaberSquarePlayRoute = LangTheTaberSquarePlayRouteImport.update({
   path: '/the-taber-square/play',
   getParentRoute: () => LangRouteRoute,
 } as any)
-const LangTabersTaberdokuPlayRoute = LangTabersTaberdokuPlayRouteImport.update({
-  id: '/tabers-taberdoku/play',
-  path: '/tabers-taberdoku/play',
-  getParentRoute: () => LangRouteRoute,
-} as any)
-const LangTabersSudokuPlayRoute = LangTabersSudokuPlayRouteImport.update({
-  id: '/tabers-sudoku/play',
-  path: '/tabers-sudoku/play',
-  getParentRoute: () => LangRouteRoute,
-} as any)
-const LangMurdokuPlayRoute = LangMurdokuPlayRouteImport.update({
-  id: '/murdoku/play',
-  path: '/murdoku/play',
-  getParentRoute: () => LangRouteRoute,
-} as any)
-const LangMurdokuCreateRoute = LangMurdokuCreateRouteImport.update({
-  id: '/murdoku/create',
-  path: '/murdoku/create',
-  getParentRoute: () => LangRouteRoute,
-} as any)
-const LangMurdokuAdminRoute = LangMurdokuAdminRouteImport.update({
-  id: '/murdoku/admin',
-  path: '/murdoku/admin',
-  getParentRoute: () => LangRouteRoute,
-} as any)
 const LangEternityIiPlayRoute = LangEternityIiPlayRouteImport.update({
   id: '/eternity-ii/play',
   path: '/eternity-ii/play',
   getParentRoute: () => LangRouteRoute,
 } as any)
+const LangTaberdokuTabersSudokuIndexRoute =
+  LangTaberdokuTabersSudokuIndexRouteImport.update({
+    id: '/taberdoku/tabers-sudoku/',
+    path: '/taberdoku/tabers-sudoku/',
+    getParentRoute: () => LangRouteRoute,
+  } as any)
+const LangTaberdokuStarBattleIndexRoute =
+  LangTaberdokuStarBattleIndexRouteImport.update({
+    id: '/taberdoku/star-battle/',
+    path: '/taberdoku/star-battle/',
+    getParentRoute: () => LangRouteRoute,
+  } as any)
+const LangTaberdokuMurdokuIndexRoute =
+  LangTaberdokuMurdokuIndexRouteImport.update({
+    id: '/taberdoku/murdoku/',
+    path: '/taberdoku/murdoku/',
+    getParentRoute: () => LangRouteRoute,
+  } as any)
+const LangTaberdokuTabersSudokuPlayRoute =
+  LangTaberdokuTabersSudokuPlayRouteImport.update({
+    id: '/taberdoku/tabers-sudoku/play',
+    path: '/taberdoku/tabers-sudoku/play',
+    getParentRoute: () => LangRouteRoute,
+  } as any)
+const LangTaberdokuStarBattlePlayRoute =
+  LangTaberdokuStarBattlePlayRouteImport.update({
+    id: '/taberdoku/star-battle/play',
+    path: '/taberdoku/star-battle/play',
+    getParentRoute: () => LangRouteRoute,
+  } as any)
+const LangTaberdokuMurdokuPlayRoute =
+  LangTaberdokuMurdokuPlayRouteImport.update({
+    id: '/taberdoku/murdoku/play',
+    path: '/taberdoku/murdoku/play',
+    getParentRoute: () => LangRouteRoute,
+  } as any)
+const LangTaberdokuMurdokuCreateRoute =
+  LangTaberdokuMurdokuCreateRouteImport.update({
+    id: '/taberdoku/murdoku/create',
+    path: '/taberdoku/murdoku/create',
+    getParentRoute: () => LangRouteRoute,
+  } as any)
+const LangTaberdokuMurdokuAdminRoute =
+  LangTaberdokuMurdokuAdminRouteImport.update({
+    id: '/taberdoku/murdoku/admin',
+    path: '/taberdoku/murdoku/admin',
+    getParentRoute: () => LangRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -140,19 +153,20 @@ export interface FileRoutesByFullPath {
   '/$lang/auth': typeof LangAuthRoute
   '/$lang/': typeof LangIndexRoute
   '/$lang/eternity-ii/play': typeof LangEternityIiPlayRoute
-  '/$lang/murdoku/admin': typeof LangMurdokuAdminRoute
-  '/$lang/murdoku/create': typeof LangMurdokuCreateRoute
-  '/$lang/murdoku/play': typeof LangMurdokuPlayRoute
-  '/$lang/tabers-sudoku/play': typeof LangTabersSudokuPlayRoute
-  '/$lang/tabers-taberdoku/play': typeof LangTabersTaberdokuPlayRoute
   '/$lang/the-taber-square/play': typeof LangTheTaberSquarePlayRoute
   '/$lang/the-tabers-star/play': typeof LangTheTabersStarPlayRoute
   '/$lang/eternity-ii/': typeof LangEternityIiIndexRoute
-  '/$lang/murdoku/': typeof LangMurdokuIndexRoute
-  '/$lang/tabers-sudoku/': typeof LangTabersSudokuIndexRoute
-  '/$lang/tabers-taberdoku/': typeof LangTabersTaberdokuIndexRoute
+  '/$lang/taberdoku/': typeof LangTaberdokuIndexRoute
   '/$lang/the-taber-square/': typeof LangTheTaberSquareIndexRoute
   '/$lang/the-tabers-star/': typeof LangTheTabersStarIndexRoute
+  '/$lang/taberdoku/murdoku/admin': typeof LangTaberdokuMurdokuAdminRoute
+  '/$lang/taberdoku/murdoku/create': typeof LangTaberdokuMurdokuCreateRoute
+  '/$lang/taberdoku/murdoku/play': typeof LangTaberdokuMurdokuPlayRoute
+  '/$lang/taberdoku/star-battle/play': typeof LangTaberdokuStarBattlePlayRoute
+  '/$lang/taberdoku/tabers-sudoku/play': typeof LangTaberdokuTabersSudokuPlayRoute
+  '/$lang/taberdoku/murdoku/': typeof LangTaberdokuMurdokuIndexRoute
+  '/$lang/taberdoku/star-battle/': typeof LangTaberdokuStarBattleIndexRoute
+  '/$lang/taberdoku/tabers-sudoku/': typeof LangTaberdokuTabersSudokuIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -161,19 +175,20 @@ export interface FileRoutesByTo {
   '/$lang/auth': typeof LangAuthRoute
   '/$lang': typeof LangIndexRoute
   '/$lang/eternity-ii/play': typeof LangEternityIiPlayRoute
-  '/$lang/murdoku/admin': typeof LangMurdokuAdminRoute
-  '/$lang/murdoku/create': typeof LangMurdokuCreateRoute
-  '/$lang/murdoku/play': typeof LangMurdokuPlayRoute
-  '/$lang/tabers-sudoku/play': typeof LangTabersSudokuPlayRoute
-  '/$lang/tabers-taberdoku/play': typeof LangTabersTaberdokuPlayRoute
   '/$lang/the-taber-square/play': typeof LangTheTaberSquarePlayRoute
   '/$lang/the-tabers-star/play': typeof LangTheTabersStarPlayRoute
   '/$lang/eternity-ii': typeof LangEternityIiIndexRoute
-  '/$lang/murdoku': typeof LangMurdokuIndexRoute
-  '/$lang/tabers-sudoku': typeof LangTabersSudokuIndexRoute
-  '/$lang/tabers-taberdoku': typeof LangTabersTaberdokuIndexRoute
+  '/$lang/taberdoku': typeof LangTaberdokuIndexRoute
   '/$lang/the-taber-square': typeof LangTheTaberSquareIndexRoute
   '/$lang/the-tabers-star': typeof LangTheTabersStarIndexRoute
+  '/$lang/taberdoku/murdoku/admin': typeof LangTaberdokuMurdokuAdminRoute
+  '/$lang/taberdoku/murdoku/create': typeof LangTaberdokuMurdokuCreateRoute
+  '/$lang/taberdoku/murdoku/play': typeof LangTaberdokuMurdokuPlayRoute
+  '/$lang/taberdoku/star-battle/play': typeof LangTaberdokuStarBattlePlayRoute
+  '/$lang/taberdoku/tabers-sudoku/play': typeof LangTaberdokuTabersSudokuPlayRoute
+  '/$lang/taberdoku/murdoku': typeof LangTaberdokuMurdokuIndexRoute
+  '/$lang/taberdoku/star-battle': typeof LangTaberdokuStarBattleIndexRoute
+  '/$lang/taberdoku/tabers-sudoku': typeof LangTaberdokuTabersSudokuIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -184,19 +199,20 @@ export interface FileRoutesById {
   '/$lang/auth': typeof LangAuthRoute
   '/$lang/': typeof LangIndexRoute
   '/$lang/eternity-ii/play': typeof LangEternityIiPlayRoute
-  '/$lang/murdoku/admin': typeof LangMurdokuAdminRoute
-  '/$lang/murdoku/create': typeof LangMurdokuCreateRoute
-  '/$lang/murdoku/play': typeof LangMurdokuPlayRoute
-  '/$lang/tabers-sudoku/play': typeof LangTabersSudokuPlayRoute
-  '/$lang/tabers-taberdoku/play': typeof LangTabersTaberdokuPlayRoute
   '/$lang/the-taber-square/play': typeof LangTheTaberSquarePlayRoute
   '/$lang/the-tabers-star/play': typeof LangTheTabersStarPlayRoute
   '/$lang/eternity-ii/': typeof LangEternityIiIndexRoute
-  '/$lang/murdoku/': typeof LangMurdokuIndexRoute
-  '/$lang/tabers-sudoku/': typeof LangTabersSudokuIndexRoute
-  '/$lang/tabers-taberdoku/': typeof LangTabersTaberdokuIndexRoute
+  '/$lang/taberdoku/': typeof LangTaberdokuIndexRoute
   '/$lang/the-taber-square/': typeof LangTheTaberSquareIndexRoute
   '/$lang/the-tabers-star/': typeof LangTheTabersStarIndexRoute
+  '/$lang/taberdoku/murdoku/admin': typeof LangTaberdokuMurdokuAdminRoute
+  '/$lang/taberdoku/murdoku/create': typeof LangTaberdokuMurdokuCreateRoute
+  '/$lang/taberdoku/murdoku/play': typeof LangTaberdokuMurdokuPlayRoute
+  '/$lang/taberdoku/star-battle/play': typeof LangTaberdokuStarBattlePlayRoute
+  '/$lang/taberdoku/tabers-sudoku/play': typeof LangTaberdokuTabersSudokuPlayRoute
+  '/$lang/taberdoku/murdoku/': typeof LangTaberdokuMurdokuIndexRoute
+  '/$lang/taberdoku/star-battle/': typeof LangTaberdokuStarBattleIndexRoute
+  '/$lang/taberdoku/tabers-sudoku/': typeof LangTaberdokuTabersSudokuIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -208,19 +224,20 @@ export interface FileRouteTypes {
     | '/$lang/auth'
     | '/$lang/'
     | '/$lang/eternity-ii/play'
-    | '/$lang/murdoku/admin'
-    | '/$lang/murdoku/create'
-    | '/$lang/murdoku/play'
-    | '/$lang/tabers-sudoku/play'
-    | '/$lang/tabers-taberdoku/play'
     | '/$lang/the-taber-square/play'
     | '/$lang/the-tabers-star/play'
     | '/$lang/eternity-ii/'
-    | '/$lang/murdoku/'
-    | '/$lang/tabers-sudoku/'
-    | '/$lang/tabers-taberdoku/'
+    | '/$lang/taberdoku/'
     | '/$lang/the-taber-square/'
     | '/$lang/the-tabers-star/'
+    | '/$lang/taberdoku/murdoku/admin'
+    | '/$lang/taberdoku/murdoku/create'
+    | '/$lang/taberdoku/murdoku/play'
+    | '/$lang/taberdoku/star-battle/play'
+    | '/$lang/taberdoku/tabers-sudoku/play'
+    | '/$lang/taberdoku/murdoku/'
+    | '/$lang/taberdoku/star-battle/'
+    | '/$lang/taberdoku/tabers-sudoku/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -229,19 +246,20 @@ export interface FileRouteTypes {
     | '/$lang/auth'
     | '/$lang'
     | '/$lang/eternity-ii/play'
-    | '/$lang/murdoku/admin'
-    | '/$lang/murdoku/create'
-    | '/$lang/murdoku/play'
-    | '/$lang/tabers-sudoku/play'
-    | '/$lang/tabers-taberdoku/play'
     | '/$lang/the-taber-square/play'
     | '/$lang/the-tabers-star/play'
     | '/$lang/eternity-ii'
-    | '/$lang/murdoku'
-    | '/$lang/tabers-sudoku'
-    | '/$lang/tabers-taberdoku'
+    | '/$lang/taberdoku'
     | '/$lang/the-taber-square'
     | '/$lang/the-tabers-star'
+    | '/$lang/taberdoku/murdoku/admin'
+    | '/$lang/taberdoku/murdoku/create'
+    | '/$lang/taberdoku/murdoku/play'
+    | '/$lang/taberdoku/star-battle/play'
+    | '/$lang/taberdoku/tabers-sudoku/play'
+    | '/$lang/taberdoku/murdoku'
+    | '/$lang/taberdoku/star-battle'
+    | '/$lang/taberdoku/tabers-sudoku'
   id:
     | '__root__'
     | '/'
@@ -251,19 +269,20 @@ export interface FileRouteTypes {
     | '/$lang/auth'
     | '/$lang/'
     | '/$lang/eternity-ii/play'
-    | '/$lang/murdoku/admin'
-    | '/$lang/murdoku/create'
-    | '/$lang/murdoku/play'
-    | '/$lang/tabers-sudoku/play'
-    | '/$lang/tabers-taberdoku/play'
     | '/$lang/the-taber-square/play'
     | '/$lang/the-tabers-star/play'
     | '/$lang/eternity-ii/'
-    | '/$lang/murdoku/'
-    | '/$lang/tabers-sudoku/'
-    | '/$lang/tabers-taberdoku/'
+    | '/$lang/taberdoku/'
     | '/$lang/the-taber-square/'
     | '/$lang/the-tabers-star/'
+    | '/$lang/taberdoku/murdoku/admin'
+    | '/$lang/taberdoku/murdoku/create'
+    | '/$lang/taberdoku/murdoku/play'
+    | '/$lang/taberdoku/star-battle/play'
+    | '/$lang/taberdoku/tabers-sudoku/play'
+    | '/$lang/taberdoku/murdoku/'
+    | '/$lang/taberdoku/star-battle/'
+    | '/$lang/taberdoku/tabers-sudoku/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -331,25 +350,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangTheTaberSquareIndexRouteImport
       parentRoute: typeof LangRouteRoute
     }
-    '/$lang/tabers-taberdoku/': {
-      id: '/$lang/tabers-taberdoku/'
-      path: '/tabers-taberdoku'
-      fullPath: '/$lang/tabers-taberdoku/'
-      preLoaderRoute: typeof LangTabersTaberdokuIndexRouteImport
-      parentRoute: typeof LangRouteRoute
-    }
-    '/$lang/tabers-sudoku/': {
-      id: '/$lang/tabers-sudoku/'
-      path: '/tabers-sudoku'
-      fullPath: '/$lang/tabers-sudoku/'
-      preLoaderRoute: typeof LangTabersSudokuIndexRouteImport
-      parentRoute: typeof LangRouteRoute
-    }
-    '/$lang/murdoku/': {
-      id: '/$lang/murdoku/'
-      path: '/murdoku'
-      fullPath: '/$lang/murdoku/'
-      preLoaderRoute: typeof LangMurdokuIndexRouteImport
+    '/$lang/taberdoku/': {
+      id: '/$lang/taberdoku/'
+      path: '/taberdoku'
+      fullPath: '/$lang/taberdoku/'
+      preLoaderRoute: typeof LangTaberdokuIndexRouteImport
       parentRoute: typeof LangRouteRoute
     }
     '/$lang/eternity-ii/': {
@@ -373,46 +378,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangTheTaberSquarePlayRouteImport
       parentRoute: typeof LangRouteRoute
     }
-    '/$lang/tabers-taberdoku/play': {
-      id: '/$lang/tabers-taberdoku/play'
-      path: '/tabers-taberdoku/play'
-      fullPath: '/$lang/tabers-taberdoku/play'
-      preLoaderRoute: typeof LangTabersTaberdokuPlayRouteImport
-      parentRoute: typeof LangRouteRoute
-    }
-    '/$lang/tabers-sudoku/play': {
-      id: '/$lang/tabers-sudoku/play'
-      path: '/tabers-sudoku/play'
-      fullPath: '/$lang/tabers-sudoku/play'
-      preLoaderRoute: typeof LangTabersSudokuPlayRouteImport
-      parentRoute: typeof LangRouteRoute
-    }
-    '/$lang/murdoku/play': {
-      id: '/$lang/murdoku/play'
-      path: '/murdoku/play'
-      fullPath: '/$lang/murdoku/play'
-      preLoaderRoute: typeof LangMurdokuPlayRouteImport
-      parentRoute: typeof LangRouteRoute
-    }
-    '/$lang/murdoku/create': {
-      id: '/$lang/murdoku/create'
-      path: '/murdoku/create'
-      fullPath: '/$lang/murdoku/create'
-      preLoaderRoute: typeof LangMurdokuCreateRouteImport
-      parentRoute: typeof LangRouteRoute
-    }
-    '/$lang/murdoku/admin': {
-      id: '/$lang/murdoku/admin'
-      path: '/murdoku/admin'
-      fullPath: '/$lang/murdoku/admin'
-      preLoaderRoute: typeof LangMurdokuAdminRouteImport
-      parentRoute: typeof LangRouteRoute
-    }
     '/$lang/eternity-ii/play': {
       id: '/$lang/eternity-ii/play'
       path: '/eternity-ii/play'
       fullPath: '/$lang/eternity-ii/play'
       preLoaderRoute: typeof LangEternityIiPlayRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/taberdoku/tabers-sudoku/': {
+      id: '/$lang/taberdoku/tabers-sudoku/'
+      path: '/taberdoku/tabers-sudoku'
+      fullPath: '/$lang/taberdoku/tabers-sudoku/'
+      preLoaderRoute: typeof LangTaberdokuTabersSudokuIndexRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/taberdoku/star-battle/': {
+      id: '/$lang/taberdoku/star-battle/'
+      path: '/taberdoku/star-battle'
+      fullPath: '/$lang/taberdoku/star-battle/'
+      preLoaderRoute: typeof LangTaberdokuStarBattleIndexRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/taberdoku/murdoku/': {
+      id: '/$lang/taberdoku/murdoku/'
+      path: '/taberdoku/murdoku'
+      fullPath: '/$lang/taberdoku/murdoku/'
+      preLoaderRoute: typeof LangTaberdokuMurdokuIndexRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/taberdoku/tabers-sudoku/play': {
+      id: '/$lang/taberdoku/tabers-sudoku/play'
+      path: '/taberdoku/tabers-sudoku/play'
+      fullPath: '/$lang/taberdoku/tabers-sudoku/play'
+      preLoaderRoute: typeof LangTaberdokuTabersSudokuPlayRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/taberdoku/star-battle/play': {
+      id: '/$lang/taberdoku/star-battle/play'
+      path: '/taberdoku/star-battle/play'
+      fullPath: '/$lang/taberdoku/star-battle/play'
+      preLoaderRoute: typeof LangTaberdokuStarBattlePlayRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/taberdoku/murdoku/play': {
+      id: '/$lang/taberdoku/murdoku/play'
+      path: '/taberdoku/murdoku/play'
+      fullPath: '/$lang/taberdoku/murdoku/play'
+      preLoaderRoute: typeof LangTaberdokuMurdokuPlayRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/taberdoku/murdoku/create': {
+      id: '/$lang/taberdoku/murdoku/create'
+      path: '/taberdoku/murdoku/create'
+      fullPath: '/$lang/taberdoku/murdoku/create'
+      preLoaderRoute: typeof LangTaberdokuMurdokuCreateRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/taberdoku/murdoku/admin': {
+      id: '/$lang/taberdoku/murdoku/admin'
+      path: '/taberdoku/murdoku/admin'
+      fullPath: '/$lang/taberdoku/murdoku/admin'
+      preLoaderRoute: typeof LangTaberdokuMurdokuAdminRouteImport
       parentRoute: typeof LangRouteRoute
     }
   }
@@ -422,38 +448,40 @@ interface LangRouteRouteChildren {
   LangAuthRoute: typeof LangAuthRoute
   LangIndexRoute: typeof LangIndexRoute
   LangEternityIiPlayRoute: typeof LangEternityIiPlayRoute
-  LangMurdokuAdminRoute: typeof LangMurdokuAdminRoute
-  LangMurdokuCreateRoute: typeof LangMurdokuCreateRoute
-  LangMurdokuPlayRoute: typeof LangMurdokuPlayRoute
-  LangTabersSudokuPlayRoute: typeof LangTabersSudokuPlayRoute
-  LangTabersTaberdokuPlayRoute: typeof LangTabersTaberdokuPlayRoute
   LangTheTaberSquarePlayRoute: typeof LangTheTaberSquarePlayRoute
   LangTheTabersStarPlayRoute: typeof LangTheTabersStarPlayRoute
   LangEternityIiIndexRoute: typeof LangEternityIiIndexRoute
-  LangMurdokuIndexRoute: typeof LangMurdokuIndexRoute
-  LangTabersSudokuIndexRoute: typeof LangTabersSudokuIndexRoute
-  LangTabersTaberdokuIndexRoute: typeof LangTabersTaberdokuIndexRoute
+  LangTaberdokuIndexRoute: typeof LangTaberdokuIndexRoute
   LangTheTaberSquareIndexRoute: typeof LangTheTaberSquareIndexRoute
   LangTheTabersStarIndexRoute: typeof LangTheTabersStarIndexRoute
+  LangTaberdokuMurdokuAdminRoute: typeof LangTaberdokuMurdokuAdminRoute
+  LangTaberdokuMurdokuCreateRoute: typeof LangTaberdokuMurdokuCreateRoute
+  LangTaberdokuMurdokuPlayRoute: typeof LangTaberdokuMurdokuPlayRoute
+  LangTaberdokuStarBattlePlayRoute: typeof LangTaberdokuStarBattlePlayRoute
+  LangTaberdokuTabersSudokuPlayRoute: typeof LangTaberdokuTabersSudokuPlayRoute
+  LangTaberdokuMurdokuIndexRoute: typeof LangTaberdokuMurdokuIndexRoute
+  LangTaberdokuStarBattleIndexRoute: typeof LangTaberdokuStarBattleIndexRoute
+  LangTaberdokuTabersSudokuIndexRoute: typeof LangTaberdokuTabersSudokuIndexRoute
 }
 
 const LangRouteRouteChildren: LangRouteRouteChildren = {
   LangAuthRoute: LangAuthRoute,
   LangIndexRoute: LangIndexRoute,
   LangEternityIiPlayRoute: LangEternityIiPlayRoute,
-  LangMurdokuAdminRoute: LangMurdokuAdminRoute,
-  LangMurdokuCreateRoute: LangMurdokuCreateRoute,
-  LangMurdokuPlayRoute: LangMurdokuPlayRoute,
-  LangTabersSudokuPlayRoute: LangTabersSudokuPlayRoute,
-  LangTabersTaberdokuPlayRoute: LangTabersTaberdokuPlayRoute,
   LangTheTaberSquarePlayRoute: LangTheTaberSquarePlayRoute,
   LangTheTabersStarPlayRoute: LangTheTabersStarPlayRoute,
   LangEternityIiIndexRoute: LangEternityIiIndexRoute,
-  LangMurdokuIndexRoute: LangMurdokuIndexRoute,
-  LangTabersSudokuIndexRoute: LangTabersSudokuIndexRoute,
-  LangTabersTaberdokuIndexRoute: LangTabersTaberdokuIndexRoute,
+  LangTaberdokuIndexRoute: LangTaberdokuIndexRoute,
   LangTheTaberSquareIndexRoute: LangTheTaberSquareIndexRoute,
   LangTheTabersStarIndexRoute: LangTheTabersStarIndexRoute,
+  LangTaberdokuMurdokuAdminRoute: LangTaberdokuMurdokuAdminRoute,
+  LangTaberdokuMurdokuCreateRoute: LangTaberdokuMurdokuCreateRoute,
+  LangTaberdokuMurdokuPlayRoute: LangTaberdokuMurdokuPlayRoute,
+  LangTaberdokuStarBattlePlayRoute: LangTaberdokuStarBattlePlayRoute,
+  LangTaberdokuTabersSudokuPlayRoute: LangTaberdokuTabersSudokuPlayRoute,
+  LangTaberdokuMurdokuIndexRoute: LangTaberdokuMurdokuIndexRoute,
+  LangTaberdokuStarBattleIndexRoute: LangTaberdokuStarBattleIndexRoute,
+  LangTaberdokuTabersSudokuIndexRoute: LangTaberdokuTabersSudokuIndexRoute,
 }
 
 const LangRouteRouteWithChildren = LangRouteRoute._addFileChildren(

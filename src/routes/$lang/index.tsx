@@ -109,7 +109,10 @@ function Home() {
             </span>
           </div>
 
-          <div className="grid gap-1" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(128px, 1fr))" }}>
+          <div
+            className="grid gap-1"
+            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(128px, 1fr))" }}
+          >
             {games.map((game) => (
               <div key={game.id} className="flex justify-center">
                 <game.Card lang={slug} />

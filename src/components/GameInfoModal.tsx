@@ -41,17 +41,11 @@ export function GameInfoModal({
               )}
             </div>
           )}
-          {tag && (
-            <span className="text-[10px] uppercase tracking-widest text-primary">
-              {tag}
-            </span>
-          )}
+          {tag && <span className="text-[10px] uppercase tracking-widest text-primary">{tag}</span>}
           <DialogTitle className="text-2xl" style={{ fontFamily: "var(--font-display)" }}>
             {title}
           </DialogTitle>
-          <DialogDescription className="text-base leading-relaxed">
-            {description}
-          </DialogDescription>
+          <DialogDescription className="text-base leading-relaxed">{description}</DialogDescription>
         </DialogHeader>
       </DialogContent>
     </Dialog>

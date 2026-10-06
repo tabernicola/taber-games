@@ -5,6 +5,7 @@ import { SiteHeader } from "@/platform/layout/SiteHeader";
 import { GameFooter } from "@/platform/layout/GameFooter";
 import { useI18n } from "@/platform/i18n";
 import { useAuth } from "@/platform/hooks/useAuth";
+import { SubGameTabs } from "@/games/taberdoku/components/SubGameTabs";
 
 import "@/games/tabers-sudoku/light-theme.css";
 
@@ -17,7 +18,8 @@ export function LandingPage() {
       <SiteHeader />
       <div className="tabers-sudoku-light min-h-screen pt-4">
         <main className="mx-auto max-w-4xl px-4 pb-24 pt-10">
-          <header className="text-center">
+          <SubGameTabs active="tabers-sudoku" />
+          <header className="mt-8 text-center">
             <h1
               className="text-3xl font-bold tracking-widest text-primary sm:text-4xl"
               style={{ fontFamily: "var(--font-display)" }}
@@ -25,7 +27,7 @@ export function LandingPage() {
               {t("sudoku.title")}
             </h1>
             <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground">
-              {t("home.card.sudoku.desc")}
+              {t("taberdoku.sudoku.desc")}
             </p>
           </header>
 
@@ -51,7 +53,7 @@ function ModeSelect({ slug }: { slug: "eus" | "es" | "en" }) {
           {levels.map((level) => (
             <Link
               key={level}
-              to="/$lang/tabers-sudoku/play"
+              to="/$lang/taberdoku/tabers-sudoku/play"
               params={{ lang: slug }}
               className="rounded-lg border border-primary bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/20"
             >
