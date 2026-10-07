@@ -6,12 +6,47 @@ import { GameFooter } from "@/platform/layout/GameFooter";
 import { useI18n } from "@/platform/i18n";
 import { useAuth } from "@/platform/hooks/useAuth";
 import { SubGameTabs } from "@/games/taberdoku/components/SubGameTabs";
+import { getStorageItem } from "@/platform/storage";
+import { Ranking } from "@/platform/scores/Ranking";
+import { createScoresService } from "@/platform/scores/createScoresService";
+import type { SudokuLevel } from "../logic/sudoku";
 
 import "@/games/tabers-sudoku/light-theme.css";
+
+const scores = createScoresService("scores_tabers_sudoku");
+const RANKING_LEVELS: SudokuLevel[] = ["easy", "medium", "hard", "expert"];
+
+type SavedSudokuState = {
+  level: SudokuLevel;
+  puzzle: (number | null)[];
+  solution: number[];
+  fixed: number[];
+  grid: (number | null)[];
+  seconds: number;
+  timestamp: number;
+  showHints: boolean;
+};
+
+function getSaveKey(userId: string | null): string {
+  return userId ? `tabers-sudoku-save-${userId}` : "tabers-sudoku-save-anonymous";
+}
+
+function loadSudokuState(userId: string | null): SavedSudokuState | null {
+  const key = getSaveKey(userId);
+  const saved = getStorageItem(key);
+  if (!saved) return null;
+  try {
+    return JSON.parse(saved);
+  } catch {
+    return null;
+  }
+}
 
 export function LandingPage() {
   const { t, slug } = useI18n();
   const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const savedGame = loadSudokuState(userId);
 
   return (
     <div className="min-h-screen">
@@ -31,7 +66,18 @@ export function LandingPage() {
             </p>
           </header>
 
-          <ModeSelect slug={slug} />
+          <ModeSelect slug={slug} savedGame={savedGame} userId={userId} />
+
+          <section className="mt-12 grid gap-6 sm:grid-cols-2">
+            {RANKING_LEVELS.map((lvl) => (
+              <Ranking
+                key={lvl}
+                service={scores}
+                level={lvl}
+                title={`${t("landing.ranking")} · ${t(`sudoku.level.${lvl}`)}`}
+              />
+            ))}
+          </section>
 
           <GameFooter basedOn="Classic 9x9 sudoku using the nine characters instead of numbers." />
         </main>
@@ -40,12 +86,37 @@ export function LandingPage() {
   );
 }
 
-function ModeSelect({ slug }: { slug: "eus" | "es" | "en" }) {
+function ModeSelect({
+  slug,
+  savedGame,
+  userId,
+}: {
+  slug: "eus" | "es" | "en";
+  savedGame: SavedSudokuState | null;
+  userId: string | null;
+}) {
   const { t } = useI18n();
   const levels = ["easy", "medium", "hard", "expert"] as const;
 
   return (
     <section className="mt-10 grid gap-4">
+      {savedGame && (
+        <div className="rounded-xl border border-border bg-card p-4">
+          <h3 className="text-lg font-semibold text-foreground">{t("sudoku.continue")}</h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {t("sudoku.level." + savedGame.level)} · {Math.floor(savedGame.seconds / 60)}:
+            {(savedGame.seconds % 60).toString().padStart(2, "0")}
+          </p>
+          <Link
+            to="/$lang/taberdoku/tabers-sudoku/play"
+            params={{ lang: slug }}
+            search={{ level: savedGame.level }}
+            className="mt-3 inline-block rounded-lg border border-primary bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/20"
+          >
+            {t("sudoku.continue")}
+          </Link>
+        </div>
+      )}
       <div className="rounded-xl center border border-border bg-card p-4">
         <h3 className="text-lg font-semibold text-foreground">{t("sudoku.title")}</h3>
         <p className="mt-1 text-xs text-muted-foreground">{t("sudoku.desc")}</p>
@@ -55,7 +126,7 @@ function ModeSelect({ slug }: { slug: "eus" | "es" | "en" }) {
               key={level}
               to="/$lang/taberdoku/tabers-sudoku/play"
               params={{ lang: slug }}
-              search={{ level }}
+              search={{ level, newGame: "1" }}
               className="rounded-lg border border-primary bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/20"
             >
               {t(`sudoku.level.${level}`)}

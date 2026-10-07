@@ -77,12 +77,8 @@ export function SudokuTutorial({ open, onClose }: SudokuTutorialProps) {
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-base font-semibold text-foreground">
-              {steps[stepIndex].title}
-            </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {steps[stepIndex].desc}
-            </p>
+            <h3 className="text-base font-semibold text-foreground">{steps[stepIndex].title}</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">{steps[stepIndex].desc}</p>
           </div>
         </div>
 

@@ -37,7 +37,7 @@ export function TaberStarRanking({
             <li key={s.id} className="flex items-center gap-3 text-sm">
               <span className="w-5 text-right text-xs text-[var(--ts-terracotta-d)]">{i + 1}.</span>
               <span className="flex-1 truncate text-[var(--ts-ink)]">{s.player_name}</span>
-              {formatLevelLabel && (
+              {formatLevelLabel && typeof s.level === "number" && (
                 <span className="text-xs text-[var(--ts-olive-deep)] font-medium">
                   {formatLevelLabel(s.level, t)}
                 </span>

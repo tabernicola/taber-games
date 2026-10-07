@@ -85,9 +85,10 @@ describe("createScoresService", () => {
     /** Mock where the session has no row yet, so submit falls through to insert. */
     function insertChain(result: { error: unknown }) {
       const insert = vi.fn().mockResolvedValue(result);
-      const single = vi.fn().mockResolvedValue({ data: null, error: null });
-      const eq = vi.fn().mockReturnValue({ single });
-      const select = vi.fn().mockReturnValue({ eq, single });
+      const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
+      const eqLevel = vi.fn().mockReturnValue({ maybeSingle });
+      const eqSession = vi.fn().mockReturnValue({ eq: eqLevel });
+      const select = vi.fn().mockReturnValue({ eq: eqSession, maybeSingle });
       mockFrom.mockReturnValue({ insert, select } as never);
       return insert;
     }
@@ -144,48 +145,51 @@ describe("createScoresService", () => {
 
   describe("submit with an existing session", () => {
     function updateChain(existing: unknown) {
-      const eq = vi.fn().mockResolvedValue({ error: null });
-      const update = vi.fn().mockReturnValue({ eq });
-      const single = vi
+      const eqLevel = vi.fn().mockResolvedValue({ error: null });
+      const eqSession = vi.fn().mockReturnValue({ eq: eqLevel });
+      const update = vi.fn().mockReturnValue({ eq: eqSession });
+      const maybeSingle = vi
         .fn()
         .mockResolvedValue(
           existing ? { data: existing, error: null } : { data: null, error: null },
         );
-      const eqSession = vi.fn().mockReturnValue({ single });
-      const select = vi.fn().mockReturnValue({ eq: eqSession, single });
+      const eqLevelSelect = vi.fn().mockReturnValue({ maybeSingle });
+      const eqSessionSelect = vi.fn().mockReturnValue({ eq: eqLevelSelect });
+      const select = vi.fn().mockReturnValue({ eq: eqSessionSelect, maybeSingle });
       mockFrom.mockReturnValue({ select, update } as never);
-      return { select, single, update, eq: eqSession };
+      return { select, maybeSingle, update, eqSession, eqLevel };
     }
 
-    it("updates the session row with the new level and progress", async () => {
-      const chain = updateChain({ id: "1", level: 1 });
+    it("updates the session+level row with the new time and progress", async () => {
+      const chain = updateChain({ id: "1", level: 2 });
       await service.submit(2, "Ana", 95, "sess1", 95, 2, 30);
       expect(chain.update).toHaveBeenCalledWith({
         player_name: "Ana",
-        level: 2,
         seconds: 95,
-        max_level: 2,
         last_completion_time: 95,
         level_progress: 30,
       });
-      expect(chain.eq).toHaveBeenCalledWith("session_id", "sess1");
+      expect(chain.eqSession).toHaveBeenCalledWith("session_id", "sess1");
+      expect(chain.eqLevel).toHaveBeenCalledWith("level", 2);
     });
 
-    it("keeps the furthest level when an earlier level is replayed", async () => {
-      const chain = updateChain({ id: "1", level: 5 });
-      await service.submit(2, "Ana", 95, "sess1", 95, 2, 30);
-      expect(chain.update).toHaveBeenCalledWith(
-        expect.objectContaining({ level: 5, max_level: 5 }),
-      );
-      expect(chain.update).toHaveBeenCalledWith(
-        expect.not.objectContaining({ level_progress: expect.anything() }),
-      );
-    });
-
-    it("recovers the level of rows stored as level 0", async () => {
-      const chain = updateChain({ id: "1", level: 0 });
-      await service.submit(2, "Ana", 95, "sess1", 95, 2, 30);
-      expect(chain.update).toHaveBeenCalledWith(expect.objectContaining({ level: 2 }));
+    it("inserts a new row when the level differs from the existing session row", async () => {
+      const insert = vi.fn().mockResolvedValue({ error: null });
+      const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
+      const eqLevel = vi.fn().mockReturnValue({ maybeSingle });
+      const eqSession = vi.fn().mockReturnValue({ eq: eqLevel });
+      const select = vi.fn().mockReturnValue({ eq: eqSession, maybeSingle });
+      mockFrom.mockReturnValue({ insert, select } as never);
+      await service.submit(3, "Ana", 95, "sess1", 95, 3, 40);
+      expect(insert).toHaveBeenCalledWith({
+        level: 3,
+        player_name: "Ana",
+        seconds: 95,
+        session_id: "sess1",
+        last_completion_time: 95,
+        max_level: 3,
+        level_progress: 40,
+      });
     });
   });
 

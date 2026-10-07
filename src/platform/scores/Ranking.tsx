@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { formatTime } from "./formatTime";
-import type { Score, ScoresService } from "./createScoresService";
+import type { Score, ScoreLevel, ScoresService } from "./createScoresService";
 import type { TranslateFn } from "@/platform/games/types";
 import { useI18n } from "@/platform/i18n";
 
@@ -13,7 +13,7 @@ export function Ranking({
   className = "",
 }: {
   service: ScoresService;
-  level?: number;
+  level?: ScoreLevel;
   title?: string;
   formatLevelLabel?: (level: number, t: TranslateFn) => string;
   /** Extra label rendered next to the level (e.g. level completion percentage). */
@@ -48,7 +48,7 @@ export function Ranking({
                 {i + 1}.
               </span>
               <span className="flex-1 truncate text-foreground">{s.player_name}</span>
-              {formatLevelLabel && (
+              {formatLevelLabel && typeof s.level === "number" && (
                 <span className="text-xs text-muted-foreground font-medium">
                   {formatLevelLabel(s.level, t)}
                 </span>

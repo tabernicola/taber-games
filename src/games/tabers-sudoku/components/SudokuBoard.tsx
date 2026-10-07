@@ -6,6 +6,7 @@ import { useTimer } from "@/platform/hooks/useTimer";
 import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
 import { useAuth } from "@/platform/hooks/useAuth";
 import { formatTime } from "@/platform/scores/formatTime";
+import { createScoresService } from "@/platform/scores/createScoresService";
 import type { Character } from "@/platform/characters/characters";
 import {
   generateSudoku,
@@ -16,6 +17,7 @@ import {
   type SudokuPuzzle,
 } from "../logic/sudoku";
 import { CharacterTray } from "./CharacterTray";
+import { SudokuSolvedModal } from "./SudokuSolvedModal";
 import { SudokuTutorial } from "./SudokuTutorial";
 import { getStorageItem, removeStorageItem, setStorageItem } from "@/platform/storage";
 import {
@@ -27,6 +29,23 @@ import {
 import "@/games/tabers-sudoku/light-theme.css";
 
 const TUTORIAL_STORAGE_KEY = "tabers-sudoku-tutorial-completed";
+const SESSION_ID_KEY = "tabers-sudoku-session-id";
+const PLAYER_NAME_KEY = "tabers-sudoku-player-name";
+
+const scores = createScoresService("scores_tabers_sudoku");
+
+function generateSessionId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+}
+
+function generateRandomPlayerName(): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let result = "";
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
 
 type SavedSudokuState = {
   level: SudokuLevel;
@@ -43,20 +62,33 @@ function getSaveKey(userId: string | null): string {
   return userId ? `tabers-sudoku-save-${userId}` : "tabers-sudoku-save-anonymous";
 }
 
-function saveSudokuState(
-  userId: string | null,
-  state: SavedSudokuState,
-): void {
+function saveSudokuState(userId: string | null, state: SavedSudokuState): void {
   const key = getSaveKey(userId);
   setStorageItem(key, JSON.stringify(state));
 }
 
 function loadSudokuState(userId: string | null): SavedSudokuState | null {
-  const key = getSaveKey(userId);
-  const saved = getStorageItem(key);
-  if (!saved) return null;
+  // Try to load with userId first
+  const userKey = userId ? `tabers-sudoku-save-${userId}` : null;
+  const anonymousKey = "tabers-sudoku-save-anonymous";
+
+  // If userId is available, try loading from user's save first
+  if (userKey) {
+    const userSaved = getStorageItem(userKey);
+    if (userSaved) {
+      try {
+        return JSON.parse(userSaved);
+      } catch {
+        // If user save is corrupted, try anonymous
+      }
+    }
+  }
+
+  // Try loading from anonymous save
+  const anonymousSaved = getStorageItem(anonymousKey);
+  if (!anonymousSaved) return null;
   try {
-    return JSON.parse(saved);
+    return JSON.parse(anonymousSaved);
   } catch {
     return null;
   }
@@ -169,28 +201,40 @@ function SpriteAnimation({
 
 export function SudokuBoard({
   level: initialLevel,
+  newGame,
   characters,
 }: {
   level: SudokuLevel;
+  /** Set when entering from the landing page level buttons:
+   *  start fresh instead of resuming the saved game. */
+  newGame?: boolean;
   characters: Character[];
 }) {
   const { t, slug } = useI18n();
   const { playSound } = useSoundEffects();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const userId = user?.id ?? null;
+  const hasLoadedRef = useRef(false);
+  const pendingGenerationRef = useRef<number | null>(null);
   const [level, setLevel] = useState<SudokuLevel>(initialLevel);
   const [puzzle, setPuzzle] = useState<SudokuPuzzle | null>(null);
   const [grid, setGrid] = useState<(number | null)[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
   const [erasing, setErasing] = useState(false);
-  const [round, setRound] = useState(0);
   const [showTutorial, setShowTutorial] = useState(false);
   const [levelDropdownOpen, setLevelDropdownOpen] = useState(false);
   const [hasSavedGame, setHasSavedGame] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [showHints, setShowHints] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [playerName, setPlayerName] = useState<string | null>(null);
+  const [showSolvedModal, setShowSolvedModal] = useState(false);
+  const [timeImproved, setTimeImproved] = useState(true);
+  // Prevents the same board from being reported as solved more than once.
+  const solvedRef = useRef(false);
 
   // Show tutorial on first visit
   useEffect(() => {
@@ -205,10 +249,57 @@ export function SudokuBoard({
     setStorageItem(TUTORIAL_STORAGE_KEY, "1");
   };
 
-  // Load saved game on mount
+  // Session id and player name: registered players use their email
+  // prefix, everyone else gets an auto-generated name. The name
+  // can be replaced from the solved-board modal.
   useEffect(() => {
-    const saved = loadSudokuState(userId);
-    if (saved && saved.level === initialLevel) {
+    let currentSessionId = getStorageItem(SESSION_ID_KEY);
+    if (!currentSessionId) {
+      currentSessionId = generateSessionId();
+      setStorageItem(SESSION_ID_KEY, currentSessionId);
+    }
+    setSessionId(currentSessionId);
+
+    if (user?.email) {
+      setPlayerName(user.email.split("@")[0]);
+    } else {
+      let savedPlayerName = getStorageItem(PLAYER_NAME_KEY);
+      if (!savedPlayerName) {
+        savedPlayerName = generateRandomPlayerName();
+        setStorageItem(PLAYER_NAME_KEY, savedPlayerName);
+      }
+      setPlayerName(savedPlayerName);
+    }
+  }, [user]);
+
+  const handleRename = async (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setStorageItem(PLAYER_NAME_KEY, trimmed);
+    setPlayerName(trimmed);
+
+    // The solved board was already submitted with the old name, so
+    // patch the session row instead of waiting for the next board.
+    const currentSessionId = sessionId ?? getStorageItem(SESSION_ID_KEY);
+    if (!currentSessionId) return;
+    try {
+      await scores.rename(currentSessionId, trimmed);
+    } catch (error) {
+      console.error("Failed to rename the score record:", error);
+    }
+  };
+
+  // Load saved game once auth has settled, so the save key is final
+  useEffect(() => {
+    if (authLoading || hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
+    // Starting from a landing page level button discards any
+    // in-progress save instead of resuming it.
+    if (newGame) {
+      clearSudokuState(userId);
+    }
+    const saved = newGame ? null : loadSudokuState(userId);
+    if (saved) {
       setLevel(saved.level);
       setPuzzle({
         level: saved.level,
@@ -220,6 +311,7 @@ export function SudokuBoard({
       setSeconds(saved.seconds);
       setShowHints(saved.showHints ?? false);
       setHasSavedGame(true);
+      setLoaded(true);
     } else {
       setHasSavedGame(false);
       setPuzzle(null);
@@ -231,22 +323,54 @@ export function SudokuBoard({
         setErasing(false);
         setSeconds(0);
         setShowHints(false);
+        setLoaded(true);
       }, 20);
       return () => window.clearTimeout(id);
     }
-  }, [initialLevel, userId]);
+  }, [authLoading, userId, level, newGame]);
 
-  const handleLevelChange = (newLevel: SudokuLevel) => {
-    setLevel(newLevel);
-    setLevelDropdownOpen(false);
+  // Clear any pending puzzle generation on unmount
+  useEffect(() => {
+    return () => {
+      if (pendingGenerationRef.current !== null) {
+        window.clearTimeout(pendingGenerationRef.current);
+      }
+    };
+  }, []);
+
+  const startNewGame = (newLevel: SudokuLevel) => {
     clearSudokuState(userId);
     setHasSavedGame(false);
+    setLevel(newLevel);
+    setPuzzle(null);
+    setGrid([]);
+    setSelected(null);
+    setErasing(false);
+    setSeconds(0);
+    setShowHints(false);
+    setShowSolvedModal(false);
+    setTimeImproved(true);
+    solvedRef.current = false;
+    if (pendingGenerationRef.current !== null) {
+      window.clearTimeout(pendingGenerationRef.current);
+    }
+    const id = window.setTimeout(() => {
+      pendingGenerationRef.current = null;
+      const next = generateSudoku(newLevel);
+      setPuzzle(next);
+      setGrid([...next.puzzle]);
+      setLoaded(true);
+    }, 20);
+    pendingGenerationRef.current = id;
+  };
+
+  const handleLevelChange = (newLevel: SudokuLevel) => {
+    setLevelDropdownOpen(false);
+    startNewGame(newLevel);
   };
 
   const handleNewGame = () => {
-    clearSudokuState(userId);
-    setHasSavedGame(false);
-    setRound((r) => r + 1);
+    startNewGame(level);
   };
 
   const solved = useMemo(() => grid.length === 81 && isSudokuSolved(grid), [grid]);
@@ -266,6 +390,7 @@ export function SudokuBoard({
 
   // Auto-save game state
   useEffect(() => {
+    if (!loaded) return;
     if (!puzzle || solved) {
       clearSudokuState(userId);
       setHasSavedGame(false);
@@ -285,12 +410,51 @@ export function SudokuBoard({
 
     saveSudokuState(userId, saveState);
     setHasSavedGame(true);
-  }, [grid, seconds, level, puzzle, solved, userId, showHints]);
+  }, [grid, seconds, level, puzzle, solved, userId, showHints, loaded]);
   useEffect(() => {
     if (solved) {
       playSound("win");
     }
   }, [playSound, solved]);
+
+  // A solved board is reported to the ranking once, with the time
+  // and level of that solve. Only saves if it improves the previous time.
+  useEffect(() => {
+    if (!solved || solvedRef.current) return;
+    solvedRef.current = true;
+    if (!sessionId || !playerName) {
+      setTimeImproved(true);
+      setShowSolvedModal(true);
+      return;
+    }
+    void (async () => {
+      try {
+        const existing = await scores.fetchBySession(sessionId, level);
+        if (existing && seconds >= existing.seconds) {
+          // Time not improved — show modal with message, don't save
+          setTimeImproved(false);
+          setShowSolvedModal(true);
+          return;
+        }
+        // Time improved (or first time) — save and show modal
+        await scores.submit(
+          level,
+          playerName,
+          seconds,
+          sessionId,
+          Math.floor(Date.now() / 1000),
+          undefined,
+          100,
+        );
+        setTimeImproved(true);
+        setShowSolvedModal(true);
+      } catch (error) {
+        console.error("Failed to check/save score to database:", error);
+        setTimeImproved(true);
+        setShowSolvedModal(true);
+      }
+    })();
+  }, [solved, level, playerName, seconds, sessionId]);
 
   const counts = useMemo(() => {
     const out: Record<string, number> = {};
@@ -333,7 +497,6 @@ export function SudokuBoard({
         invalid.add(i);
       }
     }
-    console.log("Invalid cells:", invalid.size, "selected:", selected);
     return invalid;
   }, [showHints, selected, grid, puzzle]);
 
@@ -351,14 +514,9 @@ export function SudokuBoard({
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <div className="flex items-center gap-2">
-          {hasSavedGame && (
-            <span className="text-xs text-primary">{t("sudoku.continue")}</span>
-          )}
-          <h1 className="text-base font-bold tracking-widest text-primary">
-            {t("sudoku.title")} · {t(`sudoku.level.${level}`)}
-          </h1>
-        </div>
+        <h1 className="text-base font-bold tracking-widest text-primary">
+          {t("sudoku.title")} · {t(`sudoku.level.${level}`)}
+        </h1>
         <button
           type="button"
           onClick={() => {
@@ -527,6 +685,14 @@ export function SudokuBoard({
         </div>
       </nav>
       <SudokuTutorial open={showTutorial} onClose={handleTutorialClose} />
+      <SudokuSolvedModal
+        open={showSolvedModal}
+        time={formatTime(seconds)}
+        playerName={playerName}
+        timeImproved={timeImproved}
+        onRename={handleRename}
+        onNewGame={() => startNewGame(level)}
+      />
     </div>
   );
 }

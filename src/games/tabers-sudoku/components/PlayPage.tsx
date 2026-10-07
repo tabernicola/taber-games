@@ -13,19 +13,25 @@ type PlaySearch = {
   level?: string;
   size?: number;
   puzzle?: string;
+  newGame?: string;
 };
 
 export function PlayPage() {
   const search = useSearch({ strict: false }) as PlaySearch;
   const mode = search?.mode ?? "case";
-  return <SudokuPlay level={(search?.level as SudokuLevel) ?? "easy"} />;
+  return (
+    <SudokuPlay
+      level={(search?.level as SudokuLevel) ?? "easy"}
+      newGame={search?.newGame === "1"}
+    />
+  );
 }
 
 function useCharacters() {
   return useQuery({ queryKey: charactersQueryKey, queryFn: fetchCharacters });
 }
 
-function SudokuPlay({ level }: { level: SudokuLevel }) {
+function SudokuPlay({ level, newGame }: { level: SudokuLevel; newGame: boolean }) {
   const { t } = useI18n();
   const { data: characters = [], isPending } = useCharacters();
 
@@ -43,5 +49,5 @@ function SudokuPlay({ level }: { level: SudokuLevel }) {
       </div>
     );
   }
-  return <SudokuBoard level={level} characters={characters.slice(0, 9)} />;
+  return <SudokuBoard level={level} newGame={newGame} characters={characters.slice(0, 9)} />;
 }

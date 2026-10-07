@@ -113,7 +113,7 @@ export function generateSudoku(level: SudokuLevel, rand: () => number = Math.ran
 
   const puzzle: (number | null)[] = [...solution];
   const target = GIVENS[level];
-  
+
   // Eliminar celdas mientras maintaining unique solution
   for (const index of shuffle([...Array(81).keys()], rand)) {
     const filled = puzzle.filter((v) => v !== null).length;
@@ -130,10 +130,10 @@ export function generateSudoku(level: SudokuLevel, rand: () => number = Math.ran
   while (attempts < maxAttempts) {
     attempts++;
     const techniques = getRequiredTechniques(puzzle);
-    
+
     // Verificar si el puzzle cumple con el nivel de dificultad
     const meetsDifficulty = checkDifficultyRequirements(level, techniques);
-    
+
     if (meetsDifficulty) break;
 
     // Si no cumple, intentar eliminar más celdas
@@ -159,17 +159,31 @@ function checkDifficultyRequirements(level: SudokuLevel, techniques: RequiredTec
       return techniques.naked && techniques.hidden && !techniques.pairs;
     case "hard":
       // Hard: requiere pairs
-      return techniques.naked && techniques.hidden && techniques.pairs && !techniques.triples && !techniques.advanced;
+      return (
+        techniques.naked &&
+        techniques.hidden &&
+        techniques.pairs &&
+        !techniques.triples &&
+        !techniques.advanced
+      );
     case "expert":
       // Expert: requiere técnicas avanzadas o triples
-      return techniques.naked && techniques.hidden && techniques.pairs && 
-             (techniques.triples || techniques.advanced || techniques.backtracking);
+      return (
+        techniques.naked &&
+        techniques.hidden &&
+        techniques.pairs &&
+        (techniques.triples || techniques.advanced || techniques.backtracking)
+      );
     default:
       return true;
   }
 }
 
-function removeMoreCells(puzzle: (number | null)[], level: SudokuLevel, rand: () => number): boolean {
+function removeMoreCells(
+  puzzle: (number | null)[],
+  level: SudokuLevel,
+  rand: () => number,
+): boolean {
   const minGivens = {
     easy: 40,
     medium: 32,
@@ -184,7 +198,7 @@ function removeMoreCells(puzzle: (number | null)[], level: SudokuLevel, rand: ()
     if (puzzle[index] === null) continue;
     const backup = puzzle[index];
     puzzle[index] = null;
-    
+
     if (countSolutions(puzzle, 2) !== 1) {
       puzzle[index] = backup;
       continue;
@@ -204,11 +218,11 @@ function removeMoreCells(puzzle: (number | null)[], level: SudokuLevel, rand: ()
 
 // Técnicas de resolución
 type RequiredTechniques = {
-  naked: boolean;      // Naked singles
-  hidden: boolean;    // Hidden singles
-  pairs: boolean;     // Naked/hidden pairs
-  triples: boolean;   // Naked/hidden triples
-  advanced: boolean;  // X-Wing, Swordfish, XY-Wing, etc.
+  naked: boolean; // Naked singles
+  hidden: boolean; // Hidden singles
+  pairs: boolean; // Naked/hidden pairs
+  triples: boolean; // Naked/hidden triples
+  advanced: boolean; // X-Wing, Swordfish, XY-Wing, etc.
   backtracking: boolean; // Requiere búsqueda trial-and-error
 };
 

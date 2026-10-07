@@ -1,10 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
 
+/** A level is a number (most games) or a text id (e.g. sudoku difficulties). */
+export type ScoreLevel = number | string;
+
 export type Score = {
   id: string;
   player_name: string;
   seconds: number;
-  level: number;
+  level: ScoreLevel;
   session_id?: string;
   last_completion_time?: number;
   max_level?: number;
@@ -24,9 +27,14 @@ export type ScoreTable =
 export type ScoresService = {
   /** Supabase table backing this service (one per game). */
   table: ScoreTable;
-  fetchTop(level?: number): Promise<Score[]>;
+  fetchTop(level?: ScoreLevel): Promise<Score[]>;
+  /**
+   * Fetch the score for a specific session and level (if any).
+   * Returns null if no score exists for that session+level.
+   */
+  fetchBySession(sessionId: string, level: ScoreLevel): Promise<Score | null>;
   submit(
-    level: number,
+    level: ScoreLevel,
     playerName: string,
     seconds: number,
     sessionId?: string,
@@ -47,7 +55,7 @@ export function createScoresService(table: ScoreTable): ScoresService {
 
   return {
     table,
-    async fetchTop(level?: number): Promise<Score[]> {
+    async fetchTop(level?: ScoreLevel): Promise<Score[]> {
       let query = fromScores().select(
         "id, player_name, seconds, level, created_at, max_level, level_progress",
       );
@@ -58,6 +66,18 @@ export function createScoresService(table: ScoreTable): ScoresService {
       const { data, error } = await query.limit(5);
       if (error) throw error;
       return (data ?? []) as unknown as Score[];
+    },
+
+    async fetchBySession(sessionId: string, level: ScoreLevel): Promise<Score | null> {
+      const { data, error } = await fromScores()
+        .select(
+          "id, player_name, seconds, level, created_at, max_level, level_progress, session_id",
+        )
+        .eq("session_id", sessionId)
+        .eq("level", level)
+        .maybeSingle();
+      if (error) throw error;
+      return (data ?? null) as unknown as Score | null;
     },
 
     async submit(
@@ -78,31 +98,28 @@ export function createScoresService(table: ScoreTable): ScoresService {
       };
 
       if (sessionId) {
-        // Check if session already exists
+        // Check if session+level already exists (one row per session+level)
         const { data: existing } = await fromScores()
           .select("id, level")
           .eq("session_id", sessionId)
-          .single();
+          .eq("level", level)
+          .maybeSingle();
 
         if (existing) {
-          // Update existing record. The stored level is the furthest one reached,
-          // so replaying an earlier level never lowers it.
-          const storedLevel = Number(existing.level) || 0;
-          const reachedFurthest = level >= storedLevel;
+          // Update the specific session+level row with the new time.
+          // For text levels (sudoku difficulties) each level is independent.
+          // For numeric levels, they are also independent per level.
           const { error } = await fromScores()
             .update({
               player_name: name,
-              level: reachedFurthest ? level : storedLevel,
               seconds,
-              max_level: Math.max(storedLevel, maxLevel ?? 0),
               ...(lastCompletionTime === undefined
                 ? {}
                 : { last_completion_time: lastCompletionTime }),
-              ...(reachedFurthest && levelProgress !== undefined
-                ? { level_progress: levelProgress }
-                : {}),
+              ...(levelProgress !== undefined ? { level_progress: levelProgress } : {}),
             } as never)
-            .eq("session_id", sessionId);
+            .eq("session_id", sessionId)
+            .eq("level", level);
           if (error) throw error;
           return;
         }
