@@ -28,10 +28,6 @@ export function SudokuTutorial({ open, onClose }: SudokuTutorialProps) {
       title: t("sudoku.tutorial.stepPlaceTitle"),
       desc: t("sudoku.tutorial.stepPlaceDesc"),
     },
-    {
-      title: t("sudoku.tutorial.stepCountsTitle"),
-      desc: t("sudoku.tutorial.stepCountsDesc"),
-    },
   ];
 
   const [stepIndex, setStepIndex] = useState(0);

@@ -55,6 +55,7 @@ function ModeSelect({ slug }: { slug: "eus" | "es" | "en" }) {
               key={level}
               to="/$lang/taberdoku/tabers-sudoku/play"
               params={{ lang: slug }}
+              search={{ level }}
               className="rounded-lg border border-primary bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/20"
             >
               {t(`sudoku.level.${level}`)}

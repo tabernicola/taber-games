@@ -17,6 +17,8 @@ export const dict: Dict = {
   "sudoku.back": "Volver",
   "sudoku.reset": "Reiniciar",
   "sudoku.newBoard": "Nuevo tablero",
+  "sudoku.continue": "Continuar",
+  "sudoku.hints": "Pistas",
   "sudoku.needNineCharacters": "Hacen falta nueve personajes para este modo.",
   "sudoku.tutorial.title": "Cómo jugar",
   "sudoku.tutorial.desc":
@@ -31,7 +33,7 @@ export const dict: Dict = {
     "No puede haber personajes repetidos en la misma fila, columna o cuadro 3×3. Usa la lógica para deducir dónde va cada uno.",
   "sudoku.tutorial.stepPlaceTitle": "Coloca un personaje",
   "sudoku.tutorial.stepPlaceDesc":
-    "Toca un personaje en la barra inferior y luego toca una casilla vacía para colocarlo. Si te equivocas, usa el borrador.",
+    "Toca un personaje en la barra inferior y luego toca una casilla vacía para colocarlo. Para quitarlo, vuelve a tocar la misma casilla.",
   "sudoku.tutorial.stepCountsTitle": "Cuenta los personajes",
   "sudoku.tutorial.stepCountsDesc":
     "Debajo de cada personaje ves cuántos te quedan por colocar. Cuando llegues a cero, ese personaje está completo.",

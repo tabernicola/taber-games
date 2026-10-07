@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, Clock, Eraser, HelpCircle, RotateCcw } from "lucide-react";
+import { ChevronDown, ChevronLeft, Clock, Eraser, Eye, HelpCircle, RotateCcw } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
 import { useTimer } from "@/platform/hooks/useTimer";
 import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
+import { useAuth } from "@/platform/hooks/useAuth";
 import { formatTime } from "@/platform/scores/formatTime";
 import type { Character } from "@/platform/characters/characters";
 import {
   generateSudoku,
+  isAllowed,
   isSudokuSolved,
   sudokuConflicts,
   type SudokuLevel,
@@ -15,10 +17,55 @@ import {
 } from "../logic/sudoku";
 import { CharacterTray } from "./CharacterTray";
 import { SudokuTutorial } from "./SudokuTutorial";
-import { getStorageItem, setStorageItem } from "@/platform/storage";
+import { getStorageItem, removeStorageItem, setStorageItem } from "@/platform/storage";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import "@/games/tabers-sudoku/light-theme.css";
 
 const TUTORIAL_STORAGE_KEY = "tabers-sudoku-tutorial-completed";
+
+type SavedSudokuState = {
+  level: SudokuLevel;
+  puzzle: (number | null)[];
+  solution: number[];
+  fixed: number[];
+  grid: (number | null)[];
+  seconds: number;
+  timestamp: number;
+  showHints: boolean;
+};
+
+function getSaveKey(userId: string | null): string {
+  return userId ? `tabers-sudoku-save-${userId}` : "tabers-sudoku-save-anonymous";
+}
+
+function saveSudokuState(
+  userId: string | null,
+  state: SavedSudokuState,
+): void {
+  const key = getSaveKey(userId);
+  setStorageItem(key, JSON.stringify(state));
+}
+
+function loadSudokuState(userId: string | null): SavedSudokuState | null {
+  const key = getSaveKey(userId);
+  const saved = getStorageItem(key);
+  if (!saved) return null;
+  try {
+    return JSON.parse(saved);
+  } catch {
+    return null;
+  }
+}
+
+function clearSudokuState(userId: string | null): void {
+  const key = getSaveKey(userId);
+  removeStorageItem(key);
+}
 
 function spritePathFor(image: string | undefined): string | undefined {
   if (!image) return undefined;
@@ -121,7 +168,7 @@ function SpriteAnimation({
 }
 
 export function SudokuBoard({
-  level,
+  level: initialLevel,
   characters,
 }: {
   level: SudokuLevel;
@@ -129,14 +176,21 @@ export function SudokuBoard({
 }) {
   const { t, slug } = useI18n();
   const { playSound } = useSoundEffects();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
+  const userId = user?.id ?? null;
+  const [level, setLevel] = useState<SudokuLevel>(initialLevel);
   const [puzzle, setPuzzle] = useState<SudokuPuzzle | null>(null);
   const [grid, setGrid] = useState<(number | null)[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
   const [erasing, setErasing] = useState(false);
   const [round, setRound] = useState(0);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [levelDropdownOpen, setLevelDropdownOpen] = useState(false);
+  const [hasSavedGame, setHasSavedGame] = useState(false);
+  const [seconds, setSeconds] = useState(0);
+  const [showHints, setShowHints] = useState(false);
 
   // Show tutorial on first visit
   useEffect(() => {
@@ -151,24 +205,87 @@ export function SudokuBoard({
     setStorageItem(TUTORIAL_STORAGE_KEY, "1");
   };
 
+  // Load saved game on mount
   useEffect(() => {
-    setPuzzle(null);
-    const id = window.setTimeout(() => {
-      const next = generateSudoku(level);
-      setPuzzle(next);
-      setGrid([...next.puzzle]);
-      setSelected(null);
-      setErasing(false);
-    }, 20);
-    return () => window.clearTimeout(id);
-  }, [level, round]);
+    const saved = loadSudokuState(userId);
+    if (saved && saved.level === initialLevel) {
+      setLevel(saved.level);
+      setPuzzle({
+        level: saved.level,
+        puzzle: saved.puzzle,
+        solution: saved.solution,
+        fixed: new Set(saved.fixed),
+      });
+      setGrid(saved.grid);
+      setSeconds(saved.seconds);
+      setShowHints(saved.showHints ?? false);
+      setHasSavedGame(true);
+    } else {
+      setHasSavedGame(false);
+      setPuzzle(null);
+      const id = window.setTimeout(() => {
+        const next = generateSudoku(level);
+        setPuzzle(next);
+        setGrid([...next.puzzle]);
+        setSelected(null);
+        setErasing(false);
+        setSeconds(0);
+        setShowHints(false);
+      }, 20);
+      return () => window.clearTimeout(id);
+    }
+  }, [initialLevel, userId]);
+
+  const handleLevelChange = (newLevel: SudokuLevel) => {
+    setLevel(newLevel);
+    setLevelDropdownOpen(false);
+    clearSudokuState(userId);
+    setHasSavedGame(false);
+  };
+
+  const handleNewGame = () => {
+    clearSudokuState(userId);
+    setHasSavedGame(false);
+    setRound((r) => r + 1);
+  };
 
   const solved = useMemo(() => grid.length === 81 && isSudokuSolved(grid), [grid]);
-  const { seconds } = useTimer(!!puzzle && !solved);
   const conflicts = useMemo(
     () => (grid.length === 81 ? sudokuConflicts(grid) : new Set<number>()),
     [grid],
   );
+
+  // Timer
+  useEffect(() => {
+    if (!puzzle || solved) return;
+    const interval = setInterval(() => {
+      setSeconds((s) => s + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [puzzle, solved]);
+
+  // Auto-save game state
+  useEffect(() => {
+    if (!puzzle || solved) {
+      clearSudokuState(userId);
+      setHasSavedGame(false);
+      return;
+    }
+
+    const saveState: SavedSudokuState = {
+      level,
+      puzzle: puzzle.puzzle,
+      solution: puzzle.solution,
+      fixed: Array.from(puzzle.fixed),
+      grid,
+      seconds,
+      timestamp: Date.now(),
+      showHints,
+    };
+
+    saveSudokuState(userId, saveState);
+    setHasSavedGame(true);
+  }, [grid, seconds, level, puzzle, solved, userId, showHints]);
   useEffect(() => {
     if (solved) {
       playSound("win");
@@ -204,6 +321,22 @@ export function SudokuBoard({
 
   const selectedCharId = selected !== null ? (characters[selected]?.id ?? null) : null;
 
+  // Calculate cells where selected character cannot be placed
+  const invalidCells = useMemo(() => {
+    if (!showHints || selected === null || !puzzle) return new Set<number>();
+    const invalid = new Set<number>();
+    for (let i = 0; i < 81; i++) {
+      // Skip cells that already have the selected character
+      if (grid[i] === selected) continue;
+      // Mark cells where the character cannot be placed
+      if (!isAllowed(grid, i, selected)) {
+        invalid.add(i);
+      }
+    }
+    console.log("Invalid cells:", invalid.size, "selected:", selected);
+    return invalid;
+  }, [showHints, selected, grid, puzzle]);
+
   return (
     <div className="tabers-sudoku-light min-h-screen">
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/80 px-3 py-2 backdrop-blur">
@@ -218,9 +351,14 @@ export function SudokuBoard({
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-base font-bold tracking-widest text-primary">
-          {t("sudoku.title")} · {t(`sudoku.level.${level}`)}
-        </h1>
+        <div className="flex items-center gap-2">
+          {hasSavedGame && (
+            <span className="text-xs text-primary">{t("sudoku.continue")}</span>
+          )}
+          <h1 className="text-base font-bold tracking-widest text-primary">
+            {t("sudoku.title")} · {t(`sudoku.level.${level}`)}
+          </h1>
+        </div>
         <button
           type="button"
           onClick={() => {
@@ -255,15 +393,17 @@ export function SudokuBoard({
                 const bad = conflicts.has(index);
                 const isSelected = selected !== null && value === selected;
                 const highlight = isSelected ? "ring-2 ring-inset ring-primary" : "";
+                const invalid = invalidCells.has(index);
                 const spritePath = char?.image ? spritePathFor(char.image) : undefined;
+                let bgColor = fixed ? "bg-slate-100" : "bg-white";
+                if (bad) bgColor = "bg-rose-200";
+                if (invalid) bgColor = "bg-slate-300";
                 return (
                   <button
                     key={index}
                     type="button"
                     onClick={() => handleCell(index)}
-                    className={`relative aspect-square ${fixed ? "bg-slate-100" : "bg-white"} ${
-                      bad ? "bg-rose-200" : ""
-                    } ${highlight}`}
+                    className={`relative aspect-square ${bgColor} ${highlight}`}
                     style={{
                       borderRight:
                         col % 3 === 2 && col !== 8 ? "2px solid #334155" : "1px solid #cbd5e1",
@@ -329,13 +469,56 @@ export function SudokuBoard({
               type="button"
               onClick={() => {
                 playSound("click");
-                setRound((r) => r + 1);
+                setShowHints((h) => !h);
               }}
-              className="flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-muted-foreground"
+              className={`flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold ${
+                showHints ? "text-primary" : "text-muted-foreground"
+              }`}
             >
-              <Eraser className="h-5 w-5" />
-              {t("game.new")}
+              <Eye className="h-5 w-5" />
+              {t("sudoku.hints")}
             </button>
+            <div className="flex flex-1 items-center">
+              <button
+                type="button"
+                onClick={() => {
+                  playSound("click");
+                  handleNewGame();
+                }}
+                className="flex flex-1 flex-col items-center gap-1 rounded-l-lg px-2 py-1.5 text-[10px] font-semibold text-muted-foreground border-r border-border"
+              >
+                <Eraser className="h-5 w-5" />
+                {t("game.new")}
+              </button>
+              <DropdownMenu open={levelDropdownOpen} onOpenChange={setLevelDropdownOpen}>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      playSound("click");
+                    }}
+                    className="flex h-full w-8 items-center justify-center rounded-r-lg px-1 text-muted-foreground hover:bg-muted"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" sideOffset={8}>
+                  {(["easy", "medium", "hard", "expert"] as const).map((lvl) => (
+                    <DropdownMenuItem
+                      key={lvl}
+                      onClick={() => {
+                        playSound("click");
+                        handleLevelChange(lvl);
+                      }}
+                    >
+                      {t(`sudoku.level.${lvl}`)}
+                      {lvl === level && <span className="ml-auto">✓</span>}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
           <span className="flex items-center gap-1 text-sm font-semibold text-muted-foreground">
             <Clock className="h-4 w-4" />

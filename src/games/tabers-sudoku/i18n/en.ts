@@ -17,6 +17,8 @@ export const dict: Dict = {
   "sudoku.back": "Back",
   "sudoku.reset": "Reset",
   "sudoku.newBoard": "New board",
+  "sudoku.continue": "Continue",
+  "sudoku.hints": "Hints",
   "sudoku.needNineCharacters": "This game needs nine characters.",
   "sudoku.tutorial.title": "How to play",
   "sudoku.tutorial.desc":
@@ -31,7 +33,7 @@ export const dict: Dict = {
     "No character can repeat in the same row, column, or 3×3 box. Use logic to deduce where each one goes.",
   "sudoku.tutorial.stepPlaceTitle": "Place a character",
   "sudoku.tutorial.stepPlaceDesc":
-    "Tap a character in the bottom tray, then tap an empty cell to place it. If you make a mistake, use the eraser.",
+    "Tap a character in the bottom tray, then tap an empty cell to place it. To remove it, tap the same cell again.",
   "sudoku.tutorial.stepCountsTitle": "Track remaining",
   "sudoku.tutorial.stepCountsDesc":
     "Below each character you can see how many are left to place. When it reaches zero, that character is complete.",
