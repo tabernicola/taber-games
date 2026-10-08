@@ -51,6 +51,7 @@ export function Home() {
             href="/$lang/taberdoku/tabers-sudoku"
             slug={slug}
             emoji="🔢"
+            image="/taberdoku/sudoku-numbers.png"
           />
         </section>
 
@@ -67,12 +68,14 @@ function SubGameCard({
   href,
   slug,
   emoji,
+  image,
 }: {
   title: string;
   description: string;
   href: string;
   slug: string;
   emoji: string;
+  image?: string;
 }) {
   const { t } = useI18n();
   return (
@@ -81,9 +84,17 @@ function SubGameCard({
       params={{ lang: slug }}
       className="group flex flex-col items-center rounded-xl border border-border bg-card p-6 text-center transition-all hover:-translate-y-0.5 hover:border-primary"
     >
-      <span className="text-4xl" aria-hidden>
-        {emoji}
-      </span>
+      {image ? (
+        <img
+          src={image}
+          alt={title}
+          className="h-24 w-full object-contain"
+        />
+      ) : (
+        <span className="text-4xl" aria-hidden>
+          {emoji}
+        </span>
+      )}
       <h3 className="mt-3 text-lg font-semibold text-foreground group-hover:text-primary">
         {title}
       </h3>
