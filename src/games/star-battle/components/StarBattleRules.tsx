@@ -216,7 +216,7 @@ export function StarBattleRules({ characters }: { characters: Character[] }) {
     <div className="mx-auto mb-3 max-w-[480px]">
       <div className="flex flex-wrap items-center justify-center gap-2">
         {RULE_DEMOS.map((demo, index) => (
-          <RuleCard key={index} title={t(`taberdoku.rule${index + 1}`)}>
+          <RuleCard key={index} title={t(`starBattle.rule${index + 1}`)}>
             <MiniBoard
               size={3}
               cellColors={demo.cellColors}
