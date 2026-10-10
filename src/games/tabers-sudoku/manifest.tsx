@@ -14,7 +14,7 @@ function Card({ lang }: GameCardProps) {
   return (
     <>
       <Link
-        to="/$lang/tabers-sudoku"
+        to="/$lang/taberdoku/tabers-sudoku"
         params={{ lang }}
         className="group relative flex h-[128px] w-[128px] overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-0.5 hover:border-muted-foreground/40"
       >

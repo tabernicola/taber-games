@@ -160,7 +160,7 @@ export function CaseEditor() {
       });
       setSubmitSuccess(true);
       setTimeout(() => {
-        void navigate({ to: "/$lang/murdoku", params: { lang: slug } });
+        void navigate({ to: "/$lang/taberdoku/murdoku", params: { lang: slug } });
       }, 1500);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : t("creator.invalidCase"));
