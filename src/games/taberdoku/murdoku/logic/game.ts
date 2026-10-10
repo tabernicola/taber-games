@@ -220,8 +220,10 @@ export function validateSolution(content: CaseContent): ValidationResult {
   const killerPos = getPlacement(solution.placements, solution.killerId);
   const victimPos = getPlacement(solution.placements, solution.victimId);
   if (killerPos && victimPos) {
-    if (killerPos.row !== victimPos.row || killerPos.col !== victimPos.col) {
-      errors.push("Killer and victim must be in the same cell (the murder scene)");
+    const kr = getRoomForCell(content.rooms, killerPos);
+    const vr = getRoomForCell(content.rooms, victimPos);
+    if (!kr || kr.id !== vr?.id) {
+      errors.push("Killer and victim must be in the same room (the murder scene)");
     }
   }
 
@@ -232,19 +234,12 @@ export function validateSolution(content: CaseContent): ValidationResult {
 
 export function checkSudokuConstraints(content: CaseContent, placements: Placement[]): string[] {
   const errors: string[] = [];
-  const { killerId, victimId } = content.solution ?? {
-    killerId: "",
-    victimId: "",
-  };
 
   const byRow = new Map<string, Placement[]>();
   const byCol = new Map<string, Placement[]>();
   const byRoom = new Map<string, Placement[]>();
 
   for (const placement of placements) {
-    const key = posKey(placement.row, placement.col);
-    const isKillerOrVictim =
-      placement.characterId === killerId || placement.characterId === victimId;
 
     const rowKey = `row:${placement.row}`;
     const colKey = `col:${placement.col}`;
@@ -268,13 +263,10 @@ export function checkSudokuConstraints(content: CaseContent, placements: Placeme
   const checkGroup = (label: string, groups: Map<string, Placement[]>): void => {
     for (const [key, group] of groups) {
       if (group.length > 1) {
-        const areKillerVictim =
-          group.length === 2 &&
-          group.every((p) => p.characterId === killerId || p.characterId === victimId);
-        if (!areKillerVictim) {
+        {
           const names = group.map((p) => p.characterId).join(", ");
           errors.push(
-            `${label} ${key} has ${group.length} characters: ${names} (max 1 allowed, except killer+victim)`,
+            `${label} ${key} has ${group.length} characters: ${names} (max 1 allowed)`,
           );
         }
       }
@@ -283,7 +275,6 @@ export function checkSudokuConstraints(content: CaseContent, placements: Placeme
 
   checkGroup("Row", byRow);
   checkGroup("Column", byCol);
-  checkGroup("Room", byRoom);
 
   return errors;
 }
