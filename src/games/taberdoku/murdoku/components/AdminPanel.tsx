@@ -99,7 +99,7 @@ export function AdminPanel() {
             {t("admin.title")}
           </h1>
           <Link
-            to="/$lang/murdoku"
+            to="/$lang/taberdoku/murdoku"
             params={{ lang: slug }}
             className="text-sm text-muted-foreground hover:text-neon-cyan"
           >
