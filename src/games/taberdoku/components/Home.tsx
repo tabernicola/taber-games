@@ -37,6 +37,7 @@ export function Home() {
             href="/$lang/taberdoku/murdoku"
             slug={slug}
             emoji="🕵️"
+            image="/taberdoku/murdoku-img.jpg"
           />
           <SubGameCard
             title={t("taberdoku.starBattle.title")}
@@ -44,6 +45,7 @@ export function Home() {
             href="/$lang/taberdoku/star-battle"
             slug={slug}
             emoji="⭐"
+            image="/taberdoku/star-battle-img.png"
           />
           <SubGameCard
             title={t("taberdoku.sudoku.title")}
@@ -55,7 +57,7 @@ export function Home() {
           />
         </section>
 
-        <GameFooter basedOn="Taberdoku — three Sudoku-style deduction games in one." />
+        <GameFooter basedOn={t("taberdoku.umbrellaDesc")} />
       </main>
       </div>
     </div>
@@ -84,20 +86,23 @@ function SubGameCard({
       params={{ lang: slug }}
       className="group flex flex-col items-center rounded-xl border border-border bg-card p-6 text-center transition-all hover:-translate-y-0.5 hover:border-primary"
     >
+      <h3 className="mt-3 text-lg font-semibold text-foreground group-hover:text-primary">
+        {title}
+      </h3>
       {image ? (
-        <img
-          src={image}
-          alt={title}
-          className="h-24 w-full object-contain"
-        />
+        <div className="h-full overflow-hidden rounded-lg  bg-card">
+          <img
+            src={image}
+            alt={title}
+            className="h-full w-full object-contain"
+          />
+        </div>
       ) : (
         <span className="text-4xl" aria-hidden>
           {emoji}
         </span>
       )}
-      <h3 className="mt-3 text-lg font-semibold text-foreground group-hover:text-primary">
-        {title}
-      </h3>
+      
       <p className="mt-1 text-xs text-muted-foreground">{description}</p>
       <span className="mt-3 text-xs font-semibold text-primary">{t("taberdoku.play")}</span>
     </Link>

@@ -47,6 +47,7 @@ export function LandingPage() {
   const { user } = useAuth();
   const userId = user?.id ?? null;
   const savedGame = loadSudokuState(userId);
+  const [activeLevel, setActiveLevel] = useState<SudokuLevel>("easy");
 
   return (
     <div className="min-h-screen">
@@ -55,7 +56,7 @@ export function LandingPage() {
         <main className="mx-auto max-w-4xl px-4 pb-24 pt-10">
           <SubGameTabs active="tabers-sudoku" />
           <div className="relative">
-            
+
           <header className="mt-8 text-center">
             <h1
               className="text-3xl font-bold tracking-widest text-primary sm:text-4xl"
@@ -64,10 +65,10 @@ export function LandingPage() {
               {t("sudoku.title")}
             </h1>
           </header>
-          
+
             <div className="relative z-10 bg-background/80">
               <div
-              className="absolute top-0 left-0 right-0 bottom-0 opacity-10"
+              className="pointer-events-none absolute top-0 left-0 right-0 bottom-0 opacity-10"
               style={{
                 backgroundImage: "url(/taberdoku/sudoku-numbers.png)",
                 backgroundSize: "contain",
@@ -79,18 +80,35 @@ export function LandingPage() {
             />
               <ModeSelect slug={slug} savedGame={savedGame} userId={userId} />
 
-              <section className="mt-12 grid gap-6 sm:grid-cols-2">
-                {RANKING_LEVELS.map((lvl) => (
-                  <Ranking
-                    key={lvl}
-                    service={scores}
-                    level={lvl}
-                    title={`${t("landing.ranking")} · ${t(`sudoku.level.${lvl}`)}`}
-                  />
-                ))}
+              <section className="mt-12">
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <h3 className="text-lg font-semibold text-primary">{t("landing.ranking")}</h3>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {RANKING_LEVELS.map((lvl) => (
+                      <button
+                        key={lvl}
+                        onClick={() => setActiveLevel(lvl)}
+                        className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                          activeLevel === lvl
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border bg-background text-muted-foreground hover:border-primary/50"
+                        }`}
+                      >
+                        {t(`sudoku.level.${lvl}`)}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-4">
+                    <Ranking
+                      service={scores}
+                      level={activeLevel}
+                      title={`${t("landing.level")} · ${t(`sudoku.level.${activeLevel}`)}`}
+                    />
+                  </div>
+                </div>
               </section>
 
-              <GameFooter basedOn="{t('taberdoku.sudoku.desc')}" />
+              <GameFooter basedOn={t('taberdoku.sudoku.desc')} />
             </div>
           </div>
         </main>
