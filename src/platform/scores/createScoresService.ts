@@ -21,6 +21,7 @@ export type ScoreTable =
   | "scores_tabers_star"
   | "scores_eternity_ii"
   | "scores_murdoku"
+  | "scores_taberdoku"
   | "scores_tabers_sudoku"
   | "scores_star_battle";
 
@@ -51,7 +52,7 @@ export type ScoresService = {
 
 /** Data access for a game's score table. One instance per game slice. */
 export function createScoresService(table: ScoreTable): ScoresService {
-  const fromScores = () => supabase.from(table as "scores_taberdoku");
+  const fromScores = () => supabase.from(table as "scores_tabers_sudoku");
 
   return {
     table,
