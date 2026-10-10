@@ -61,7 +61,7 @@ export function createScoresService(table: ScoreTable): ScoresService {
         "id, player_name, seconds, level, created_at, max_level, level_progress",
       );
       if (level !== undefined) {
-        query = query.eq("level", level);
+        query = query.eq("level", level as string);
       }
       query = query.order("level", { ascending: false }).order("seconds", { ascending: true });
       const { data, error } = await query.limit(5);
@@ -75,7 +75,7 @@ export function createScoresService(table: ScoreTable): ScoresService {
           "id, player_name, seconds, level, created_at, max_level, level_progress, session_id",
         )
         .eq("session_id", sessionId)
-        .eq("level", level)
+        .eq("level", level as string)
         .maybeSingle();
       if (error) throw error;
       return (data ?? null) as unknown as Score | null;
@@ -103,7 +103,7 @@ export function createScoresService(table: ScoreTable): ScoresService {
         const { data: existing } = await fromScores()
           .select("id, level")
           .eq("session_id", sessionId)
-          .eq("level", level)
+          .eq("level", level as string)
           .maybeSingle();
 
         if (existing) {
@@ -120,7 +120,7 @@ export function createScoresService(table: ScoreTable): ScoresService {
               ...(levelProgress !== undefined ? { level_progress: levelProgress } : {}),
             } as never)
             .eq("session_id", sessionId)
-            .eq("level", level);
+            .eq("level", level as string);
           if (error) throw error;
           return;
         }
