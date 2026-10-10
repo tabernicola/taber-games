@@ -52,7 +52,7 @@ export type ScoresService = {
 
 /** Data access for a game's score table. One instance per game slice. */
 export function createScoresService(table: ScoreTable): ScoresService {
-  const fromScores = () => supabase.from(table as "scores_tabers_sudoku") as unknown as ReturnType<typeof supabase.from<"scores_star_battle">> & { eq(c: string, v: unknown): never };
+  const fromScores = () => supabase.from(table as "scores_tabers_sudoku");
 
   return {
     table,
