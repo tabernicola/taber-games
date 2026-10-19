@@ -8,6 +8,7 @@ export type Position = {
 export type RoomElement = {
   name: string;
   icon: string;
+  image?: string;
   position: Position;
   walkable: boolean;
 };

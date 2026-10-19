@@ -150,9 +150,7 @@ export const dict: Dict = {
   "murdoku.viewDetails": "View details",
   "murdoku.noCluesForChar": "No clues for this character",
   "murdoku.viewGrid": "Grid",
-  "murdoku.viewCarousel": "Carousel",
-  "murdoku.prevCharacter": "Previous character",
-  "murdoku.nextCharacter": "Next character",
+  "murdoku.viewTabs": "Tabs",
   "murdoku.mode.case": "Investigation",
   "murdoku.mode.caseDesc": "Solve cases from the clues and accuse the killer and the victim.",
 };

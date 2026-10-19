@@ -150,9 +150,7 @@ export const dict: Dict = {
   "murdoku.viewDetails": "Ikus xehetasunak",
   "murdoku.noCluesForChar": "Ez dago pertsonaia hori zerikusitza pistaik",
   "murdoku.viewGrid": "Sareta",
-  "murdoku.viewCarousel": "Karousel",
-  "murdoku.prevCharacter": "Aurreko pertsonaia",
-  "murdoku.nextCharacter": "Hurrengo pertsonaia",
+  "murdoku.viewTabs": "Fitxak",
   "murdoku.mode.case": "Taber's Murdoku",
   "murdoku.mode.caseDesc": "Ebatzi kasuak arrastoen bidez eta salatu hiltzailea eta biktima.",
 };

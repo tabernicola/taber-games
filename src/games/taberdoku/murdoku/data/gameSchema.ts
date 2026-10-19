@@ -83,13 +83,64 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
       ],
       "elements": [
         {
-          "name": "Río",
-          "icon": "🌊",
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/00-00.png",
+          "position": {
+            "row": 0,
+            "col": 0
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/01-00.png",
+          "position": {
+            "row": 0,
+            "col": 1
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/00-01.png",
+          "position": {
+            "row": 1,
+            "col": 0
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/01-01.png",
+          "position": {
+            "row": 1,
+            "col": 1
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/00-02.png",
           "position": {
             "row": 2,
             "col": 0
           },
-          "walkable": false
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/01-02.png",
+          "position": {
+            "row": 2,
+            "col": 1
+          },
+          "walkable": true
         }
       ]
     },
@@ -160,8 +211,29 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
       ],
       "elements": [
         {
-          "name": "Frontón cubierto y bar",
-          "icon": "🏟️",
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/02-00.png",
+          "position": {
+            "row": 0,
+            "col": 2
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/03-00.png",
+          "position": {
+            "row": 0,
+            "col": 3
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/04-00.png",
           "position": {
             "row": 0,
             "col": 4
@@ -169,8 +241,9 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
           "walkable": false
         },
         {
-          "name": "Frontón cubierto y bar",
-          "icon": "🍺",
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/05-00.png",
           "position": {
             "row": 0,
             "col": 5
@@ -178,31 +251,114 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
           "walkable": false
         },
         {
-          "name": "Río",
-          "icon": "🌊",
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/06-00.png",
+          "position": {
+            "row": 0,
+            "col": 6
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/02-01.png",
+          "position": {
+            "row": 1,
+            "col": 2
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/03-01.png",
+          "position": {
+            "row": 1,
+            "col": 3
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/04-01.png",
+          "position": {
+            "row": 1,
+            "col": 4
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/05-01.png",
+          "position": {
+            "row": 1,
+            "col": 5
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/06-01.png",
+          "position": {
+            "row": 1,
+            "col": 6
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/02-02.png",
+          "position": {
+            "row": 2,
+            "col": 2
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/03-02.png",
           "position": {
             "row": 2,
             "col": 3
           },
-          "walkable": false
+          "walkable": true
         },
         {
-          "name": "Río",
-          "icon": "🌊",
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/04-02.png",
           "position": {
             "row": 2,
             "col": 4
           },
-          "walkable": false
+          "walkable": true
         },
         {
-          "name": "Río",
-          "icon": "🌊",
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/05-02.png",
           "position": {
             "row": 2,
             "col": 5
           },
-          "walkable": false
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/06-02.png",
+          "position": {
+            "row": 2,
+            "col": 6
+          },
+          "walkable": true
         }
       ]
     },
@@ -237,19 +393,70 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
       ],
       "elements": [
         {
-          "name": "Río",
-          "icon": "🌊",
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/07-00.png",
+          "position": {
+            "row": 0,
+            "col": 7
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/08-00.png",
+          "position": {
+            "row": 0,
+            "col": 8
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/07-01.png",
+          "position": {
+            "row": 1,
+            "col": 7
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/08-01.png",
+          "position": {
+            "row": 1,
+            "col": 8
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/07-02.png",
+          "position": {
+            "row": 2,
+            "col": 7
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/08-02.png",
           "position": {
             "row": 2,
             "col": 8
           },
-          "walkable": false
+          "walkable": true
         }
       ]
     },
     {
       "id": "renfe",
-      "name": "Renfe",
+      "name": "Estación vieja",
       "cells": [
         {
           "row": 3,
@@ -270,9 +477,74 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
         {
           "row": 7,
           "col": 0
+        },
+        {
+          "row": 8,
+          "col": 0
         }
       ],
-      "elements": []
+      "elements": [
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/00-03.png",
+          "position": {
+            "row": 3,
+            "col": 0
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/00-04.png",
+          "position": {
+            "row": 4,
+            "col": 0
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/00-05.png",
+          "position": {
+            "row": 5,
+            "col": 0
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/00-06.png",
+          "position": {
+            "row": 6,
+            "col": 0
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/00-07.png",
+          "position": {
+            "row": 7,
+            "col": 0
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/00-08.png",
+          "position": {
+            "row": 8,
+            "col": 0
+          },
+          "walkable": true
+        }
+      ]
     },
     {
       "id": "fronton-viejo",
@@ -311,7 +583,88 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
           "col": 1
         }
       ],
-      "elements": []
+      "elements": [
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/01-03.png",
+          "position": {
+            "row": 3,
+            "col": 1
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/02-03.png",
+          "position": {
+            "row": 3,
+            "col": 2
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/01-04.png",
+          "position": {
+            "row": 4,
+            "col": 1
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/02-04.png",
+          "position": {
+            "row": 4,
+            "col": 2
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/01-05.png",
+          "position": {
+            "row": 5,
+            "col": 1
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/02-05.png",
+          "position": {
+            "row": 5,
+            "col": 2
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/01-06.png",
+          "position": {
+            "row": 6,
+            "col": 1
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/01-07.png",
+          "position": {
+            "row": 7,
+            "col": 1
+          },
+          "walkable": true
+        }
+      ]
     },
     {
       "id": "azoka",
@@ -354,7 +707,98 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
           "col": 5
         }
       ],
-      "elements": []
+      "elements": [
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/03-03.png",
+          "position": {
+            "row": 3,
+            "col": 3
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/04-03.png",
+          "position": {
+            "row": 3,
+            "col": 4
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/05-03.png",
+          "position": {
+            "row": 3,
+            "col": 5
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/03-04.png",
+          "position": {
+            "row": 4,
+            "col": 3
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/04-04.png",
+          "position": {
+            "row": 4,
+            "col": 4
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/05-04.png",
+          "position": {
+            "row": 4,
+            "col": 5
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/03-05.png",
+          "position": {
+            "row": 5,
+            "col": 3
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/04-05.png",
+          "position": {
+            "row": 5,
+            "col": 4
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/05-05.png",
+          "position": {
+            "row": 5,
+            "col": 5
+          },
+          "walkable": true
+        }
+      ]
     },
     {
       "id": "axular",
@@ -397,7 +841,98 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
           "col": 8
         }
       ],
-      "elements": []
+      "elements": [
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/06-03.png",
+          "position": {
+            "row": 3,
+            "col": 6
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/07-03.png",
+          "position": {
+            "row": 3,
+            "col": 7
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/08-03.png",
+          "position": {
+            "row": 3,
+            "col": 8
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/06-04.png",
+          "position": {
+            "row": 4,
+            "col": 6
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/07-04.png",
+          "position": {
+            "row": 4,
+            "col": 7
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/08-04.png",
+          "position": {
+            "row": 4,
+            "col": 8
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/06-05.png",
+          "position": {
+            "row": 5,
+            "col": 6
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/07-05.png",
+          "position": {
+            "row": 5,
+            "col": 7
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/08-05.png",
+          "position": {
+            "row": 5,
+            "col": 8
+          },
+          "walkable": true
+        }
+      ]
     },
     {
       "id": "alameda",
@@ -437,10 +972,6 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
         },
         {
           "row": 8,
-          "col": 0
-        },
-        {
-          "row": 8,
           "col": 1
         },
         {
@@ -466,8 +997,9 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
       ],
       "elements": [
         {
-          "name": "Iglesia",
-          "icon": "⛪",
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/02-06.png",
           "position": {
             "row": 6,
             "col": 2
@@ -475,13 +1007,134 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
           "walkable": false
         },
         {
-          "name": "Iglesia",
-          "icon": "⛪",
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/03-06.png",
+          "position": {
+            "row": 6,
+            "col": 3
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/04-06.png",
+          "position": {
+            "row": 6,
+            "col": 4
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/05-06.png",
+          "position": {
+            "row": 6,
+            "col": 5
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/02-07.png",
           "position": {
             "row": 7,
             "col": 2
           },
           "walkable": false
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/03-07.png",
+          "position": {
+            "row": 7,
+            "col": 3
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/04-07.png",
+          "position": {
+            "row": 7,
+            "col": 4
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/05-07.png",
+          "position": {
+            "row": 7,
+            "col": 5
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/01-08.png",
+          "position": {
+            "row": 8,
+            "col": 1
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/02-08.png",
+          "position": {
+            "row": 8,
+            "col": 2
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/03-08.png",
+          "position": {
+            "row": 8,
+            "col": 3
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/04-08.png",
+          "position": {
+            "row": 8,
+            "col": 4
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/05-08.png",
+          "position": {
+            "row": 8,
+            "col": 5
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/06-08.png",
+          "position": {
+            "row": 8,
+            "col": 6
+          },
+          "walkable": true
         }
       ]
     },
@@ -524,13 +1177,84 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
       ],
       "elements": [
         {
-          "name": "Ambulatorio",
-          "icon": "🏥",
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/06-06.png",
+          "position": {
+            "row": 6,
+            "col": 6
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/07-06.png",
+          "position": {
+            "row": 6,
+            "col": 7
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/08-06.png",
           "position": {
             "row": 6,
             "col": 8
           },
           "walkable": false
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/06-07.png",
+          "position": {
+            "row": 7,
+            "col": 6
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/07-07.png",
+          "position": {
+            "row": 7,
+            "col": 7
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/08-07.png",
+          "position": {
+            "row": 7,
+            "col": 8
+          },
+          "walkable": true
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/07-08.png",
+          "position": {
+            "row": 8,
+            "col": 7
+          },
+          "walkable": false
+        },
+        {
+          "name": "Casilla",
+          "icon": "",
+          "image": "/taberdoku/murdoku/antxo/08-08.png",
+          "position": {
+            "row": 8,
+            "col": 8
+          },
+          "walkable": true
         }
       ]
     }
