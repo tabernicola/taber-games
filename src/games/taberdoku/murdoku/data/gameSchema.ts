@@ -1404,7 +1404,7 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
       {
         "characterId": "icequeen",
         "row": 2,
-        "col": 7
+        "col": 6
       },
       {
         "characterId": "lord-shadow",
@@ -1424,7 +1424,7 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
       {
         "characterId": "dna-noelia",
         "row": 6,
-        "col": 6
+        "col": 7
       },
       {
         "characterId": "luigi",
@@ -1462,9 +1462,9 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
     {
       "id": "clue-icequeen",
       "text": {
-        "es": "Ice Queen miraba el río desde el Skatepark, en la orilla, pero sin mojarse.",
-        "eu": "Ice Queen Skateparketik ibaiari begira zegoen, ertzean, baina busti gabe.",
-        "en": "Ice Queen watched the river from the Skatepark, on the bank, without getting wet."
+        "es": "Ice Queen se daba un baño helado en la ría, a la altura de Ibaiondo.",
+        "eu": "Ice Queen rian bainu hotz bat hartzen ari zen, Ibaiondo parean.",
+        "en": "Ice Queen was taking an icy bath in the river, right by Ibaiondo."
       },
       "type": "clue",
       "characterId": "icequeen"
@@ -1492,9 +1492,9 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
     {
       "id": "clue-stylist",
       "text": {
-        "es": "Moon scissors cortaba el pelo en el Frontón viejo, en su fila más al sur.",
-        "eu": "Moon scissors Frontoi zaharrean ilea mozten ari zen, hegoaldeko errenkadan.",
-        "en": "Moon scissors was cutting hair in the old frontón, in its southernmost row."
+        "es": "Moon scissors cortaba el pelo en el Frontón viejo, justo encima del campo de fútbol.",
+        "eu": "Moon scissors Frontoi zaharrean ilea mozten ari zen, futbol zelaiaren gainean.",
+        "en": "Moon scissors was cutting hair in the old frontón, right above the football pitch."
       },
       "type": "clue",
       "characterId": "stylist"
