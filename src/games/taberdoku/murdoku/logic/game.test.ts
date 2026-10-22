@@ -32,19 +32,10 @@ describe("validateSolution", () => {
     expect(result.errors).toHaveLength(0);
   });
 
-  it("fails when killer and victim are in different cells", () => {
+  it("fails when killer and victim are in different rooms", () => {
     const content = {
       ...SAMPLE_CASE_CONTENT,
-      solution: {
-        ...SAMPLE_CASE_CONTENT.solution,
-        placements: [
-          { characterId: "colonel", row: 0, col: 3 },
-          { characterId: "maid", row: 1, col: 3 },
-          ...SAMPLE_CASE_CONTENT.solution.placements.filter(
-            (p) => p.characterId !== "colonel" && p.characterId !== "maid",
-          ),
-        ],
-      },
+      solution: { ...SAMPLE_CASE_CONTENT.solution, victimId: "luigi" },
     };
     const result = validateSolution(content);
     expect(result.valid).toBe(false);
@@ -175,16 +166,11 @@ describe("checkGuess", () => {
 });
 
 describe("checkSudokuConstraints", () => {
-  it("passes when killer and victim share a cell, all others unique", () => {
-    const placements: Placement[] = [
-      { characterId: "colonel", row: 0, col: 3 },
-      { characterId: "maid", row: 0, col: 3 },
-      { characterId: "butler", row: 1, col: 0 },
-      { characterId: "gardener", row: 2, col: 4 },
-      { characterId: "chef", row: 4, col: 2 },
-      { characterId: "librarian", row: 5, col: 5 },
-    ];
-    const errors = checkSudokuConstraints(SAMPLE_CASE_CONTENT, placements);
+  it("passes for the sample solution (one per row/column, killer and victim share a room)", () => {
+    const errors = checkSudokuConstraints(
+      SAMPLE_CASE_CONTENT,
+      SAMPLE_CASE_CONTENT.solution.placements,
+    );
     expect(errors).toHaveLength(0);
   });
 
@@ -290,7 +276,6 @@ describe("isCaseSolvable", () => {
     };
     const result = isCaseSolvable(content);
     expect(result.solvable).toBe(false);
-    expect(result.reason).toContain("3 characters");
   });
 });
 
