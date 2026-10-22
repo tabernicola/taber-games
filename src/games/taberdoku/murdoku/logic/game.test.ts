@@ -32,23 +32,14 @@ describe("validateSolution", () => {
     expect(result.errors).toHaveLength(0);
   });
 
-  it("fails when killer and victim are in different cells", () => {
+  it("fails when killer and victim are in different rooms", () => {
     const content = {
       ...SAMPLE_CASE_CONTENT,
-      solution: {
-        ...SAMPLE_CASE_CONTENT.solution,
-        placements: [
-          { characterId: "colonel", row: 0, col: 3 },
-          { characterId: "maid", row: 1, col: 3 },
-          ...SAMPLE_CASE_CONTENT.solution.placements.filter(
-            (p) => p.characterId !== "colonel" && p.characterId !== "maid",
-          ),
-        ],
-      },
+      solution: { ...SAMPLE_CASE_CONTENT.solution, victimId: "luigi" },
     };
     const result = validateSolution(content);
     expect(result.valid).toBe(false);
-    expect(result.errors.some((e) => e.includes("same cell"))).toBe(true);
+    expect(result.errors.some((e) => e.includes("same room"))).toBe(true);
   });
 
   it("fails when two characters share a row (not killer/victim)", () => {
@@ -91,27 +82,6 @@ describe("validateSolution", () => {
     const result = validateSolution(content);
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes("Column"))).toBe(true);
-  });
-
-  it("fails when two characters share a room (not killer/victim)", () => {
-    const content: CaseContent = {
-      ...SAMPLE_CASE_CONTENT,
-      solution: {
-        killerId,
-        victimId,
-        placements: [
-          { characterId: "colonel", row: 0, col: 3 },
-          { characterId: "maid", row: 0, col: 3 },
-          { characterId: "butler", row: 1, col: 2 },
-          { characterId: "gardener", row: 2, col: 4 },
-          { characterId: "chef", row: 4, col: 2 },
-          { characterId: "librarian", row: 5, col: 5 },
-        ],
-      },
-    };
-    const result = validateSolution(content);
-    expect(result.valid).toBe(false);
-    expect(result.errors.some((e) => e.includes("Room"))).toBe(true);
   });
 
   it("fails when killer and victim are the same character", () => {
@@ -196,16 +166,11 @@ describe("checkGuess", () => {
 });
 
 describe("checkSudokuConstraints", () => {
-  it("passes when killer and victim share a cell, all others unique", () => {
-    const placements: Placement[] = [
-      { characterId: "colonel", row: 0, col: 3 },
-      { characterId: "maid", row: 0, col: 3 },
-      { characterId: "butler", row: 1, col: 0 },
-      { characterId: "gardener", row: 2, col: 4 },
-      { characterId: "chef", row: 4, col: 2 },
-      { characterId: "librarian", row: 5, col: 5 },
-    ];
-    const errors = checkSudokuConstraints(SAMPLE_CASE_CONTENT, placements);
+  it("passes for the sample solution (one per row/column, killer and victim share a room)", () => {
+    const errors = checkSudokuConstraints(
+      SAMPLE_CASE_CONTENT,
+      SAMPLE_CASE_CONTENT.solution.placements,
+    );
     expect(errors).toHaveLength(0);
   });
 
@@ -235,17 +200,29 @@ describe("checkSudokuConstraints", () => {
     expect(errors.some((e) => e.includes("Column"))).toBe(true);
   });
 
-  it("detects room conflict", () => {
-    const placements: Placement[] = [
-      { characterId: "colonel", row: 0, col: 3 },
-      { characterId: "maid", row: 0, col: 3 },
-      { characterId: "butler", row: 0, col: 2 },
-      { characterId: "gardener", row: 2, col: 4 },
-      { characterId: "chef", row: 4, col: 2 },
-      { characterId: "librarian", row: 5, col: 5 },
-    ];
-    const errors = checkSudokuConstraints(SAMPLE_CASE_CONTENT, placements);
-    expect(errors.some((e) => e.includes("Room"))).toBe(true);
+});
+
+describe("sample case board", () => {
+  it("has no character placed on a non-walkable cell", () => {
+    const blocked = new Set<string>();
+    for (const room of SAMPLE_CASE_CONTENT.rooms) {
+      for (const el of room.elements ?? []) {
+        if (!el.walkable) blocked.add(posKey(el.position.row, el.position.col));
+      }
+    }
+    expect(blocked.size).toBeGreaterThan(0);
+    for (const p of SAMPLE_CASE_CONTENT.solution.placements) {
+      expect(blocked.has(posKey(p.row, p.col))).toBe(false);
+    }
+  });
+
+  it("places killer and victim in the same room (the murder scene)", () => {
+    const { solution, rooms } = SAMPLE_CASE_CONTENT;
+    const killer = getPlacement(solution.placements, solution.killerId);
+    const victim = getPlacement(solution.placements, solution.victimId);
+    expect(killer).toBeDefined();
+    expect(victim).toBeDefined();
+    expect(getRoomForCell(rooms, killer!)?.id).toBe(getRoomForCell(rooms, victim!)?.id);
   });
 });
 
@@ -299,19 +276,18 @@ describe("isCaseSolvable", () => {
     };
     const result = isCaseSolvable(content);
     expect(result.solvable).toBe(false);
-    expect(result.reason).toContain("3 characters");
   });
 });
 
 describe("getRoomForCell", () => {
   it("returns the room containing a cell", () => {
     const room = getRoomForCell(SAMPLE_CASE_CONTENT.rooms, { row: 0, col: 0 });
-    expect(room?.id).toBe("study");
+    expect(room?.id).toBe("parque-gatos");
   });
 
-  it("returns the correct room for the kitchen", () => {
+  it("returns the correct room for Ibaiondo", () => {
     const room = getRoomForCell(SAMPLE_CASE_CONTENT.rooms, { row: 0, col: 4 });
-    expect(room?.id).toBe("kitchen");
+    expect(room?.id).toBe("ibaiondo");
   });
 
   it("returns undefined for a cell outside all rooms", () => {
@@ -322,7 +298,7 @@ describe("getRoomForCell", () => {
 
 describe("getPlacement", () => {
   it("returns the placement for a character", () => {
-    const p = getPlacement(SAMPLE_CASE_CONTENT.solution.placements, "colonel");
+    const p = getPlacement(SAMPLE_CASE_CONTENT.solution.placements, "taber");
     expect(p).toBeDefined();
     expect(p?.row).toBe(0);
     expect(p?.col).toBe(3);

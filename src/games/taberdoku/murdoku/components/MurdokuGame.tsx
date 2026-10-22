@@ -24,7 +24,7 @@ export function MurdokuGame({
   const navigate = useNavigate();
   const { content } = activeCase;
 
-  const [mode, setMode] = useState<GameMode>("place");
+  const [mode, setMode] = useState<GameMode>("notes");
   const [placements, setPlacements] = useState<Record<string, Position>>({});
   const [tentativeMarks, setTentativeMarks] = useState<Set<string>>(new Set());
   const [manualCrosses, setManualCrosses] = useState<Set<string>>(new Set());
@@ -175,7 +175,7 @@ export function MurdokuGame({
 
   const handlePlayAgain = () => {
     playSound("click");
-    setMode("place");
+    setMode("notes");
     setPlacements({});
     setTentativeMarks(new Set());
     setManualCrosses(new Set());
