@@ -46,7 +46,7 @@ export function MurdokuGame({
     const pkey = posKey(pos.row, pos.col);
     const hasChar = Object.values(placements).some((p) => p.row === pos.row && p.col === pos.col);
 
-    if (mode === "place" && selectedCharId) {
+    if (selectedCharId) {
       const existing = placements[selectedCharId];
 
       // Toggle off: same character at same cell
@@ -89,15 +89,6 @@ export function MurdokuGame({
       if (nextCrosses.has(pkey)) nextCrosses.delete(pkey);
       else nextCrosses.add(pkey);
       setManualCrosses(nextCrosses);
-      playSound("click");
-    } else if (mode === "erase") {
-      const nextCrosses = new Set(manualCrosses);
-      nextCrosses.delete(pkey);
-      setManualCrosses(nextCrosses);
-
-      const nextMarks = new Set(tentativeMarks);
-      nextMarks.delete(pkey);
-      setTentativeMarks(nextMarks);
       playSound("click");
     }
   };
@@ -230,20 +221,20 @@ export function MurdokuGame({
 
   return (
     <div className="murdoku-light min-h-screen">
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/80 px-3 py-2 backdrop-blur">
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/80 px-3 py-1 backdrop-blur">
         <button
           type="button"
           onClick={() => {
             playSound("click");
             void navigate({ to: "/$lang/taberdoku/murdoku", params: { lang: slug } });
           }}
-          className="rounded-lg p-1 text-muted-foreground hover:text-foreground hover:bg-muted"
+          className="rounded-lg p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted"
           aria-label={t("common.back")}
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
         <h1 className="text-lg font-bold tracking-widest text-primary">
-          {activeCase.title || t("murdoku.title")}
+          {t("murdoku.title")}
         </h1>
         <button
           type="button"
@@ -251,7 +242,7 @@ export function MurdokuGame({
             playSound("click");
             setTutorialOpen(true);
           }}
-          className="rounded-lg p-1 text-muted-foreground hover:text-foreground hover:bg-muted"
+          className="rounded-lg p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted"
           aria-label={t("murdoku.help")}
         >
           <HelpCircle className="h-5 w-5" />
@@ -259,6 +250,11 @@ export function MurdokuGame({
       </header>
 
       <main className="pb-24">
+        <div className="px-3 pt-1 pb-1">
+          <h2 className="text-xl font-bold text-center text-foreground">
+            {activeCase.title}
+          </h2>
+        </div>
         <MapView
           content={content}
           placements={placements}
@@ -279,8 +275,6 @@ export function MurdokuGame({
       <BottomNavigation
         mode={mode}
         onChangeMode={handleModeChange}
-        onAccuse={handleOpenAccusation}
-        accusationOpen={accusationOpen}
         showElementNames={showElementNames}
         onToggleElementNames={() => setShowElementNames(!showElementNames)}
       />

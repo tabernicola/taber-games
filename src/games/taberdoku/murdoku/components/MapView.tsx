@@ -1,7 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
-import { X, Info } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import type { CaseContent, Character, Clue, Position, Room, RoomElement } from "../data/gameSchema";
 import { useI18n } from "@/platform/i18n";
 import { getRoomForCell, posKey } from "../logic/game";
@@ -71,6 +68,23 @@ export function MapView({
     return clue.text[lang] ?? Object.values(clue.text)[0] ?? "";
   };
 
+  const renderClueText = (clue: Clue, char?: Character): React.ReactNode => {
+    const text = resolveClueText(clue);
+    if (!char) return text;
+
+    // Check if character name is in the text and highlight it
+    const nameParts = char.name.split(' ');
+    let highlightedText = text;
+    nameParts.forEach(namePart => {
+      if (namePart.length > 2) {
+        const regex = new RegExp(`(${namePart})`, 'gi');
+        highlightedText = highlightedText.replace(regex, '<strong>$1</strong>');
+      }
+    });
+
+    return <span dangerouslySetInnerHTML={{ __html: highlightedText }} />;
+  };
+
   const elementAt = (pos: Position): RoomElement | undefined => {
     for (const room of rooms) {
       if (!room.elements) continue;
@@ -88,37 +102,27 @@ export function MapView({
     return desc[lang] ?? Object.values(desc)[0] ?? "";
   };
 
-  const [modalCharId, setModalCharId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "tabs">("grid");
-  const [selectedTabId, setSelectedTabId] = useState<string | null>(null);
+  const cluesScrollRef = useRef<HTMLDivElement>(null);
 
+  // Scroll to first clue of selected character
   useEffect(() => {
-    if (viewMode === "tabs" && selectedTabId && selectedCharId !== selectedTabId) {
-      onSelectCharacter(selectedTabId);
+    if (selectedCharId && cluesScrollRef.current) {
+      const charClues = clues.filter((c) => c.characterId === selectedCharId);
+      if (charClues.length > 0) {
+        const firstClueEl = document.getElementById(`clue-${charClues[0].id}`);
+        if (firstClueEl && cluesScrollRef.current) {
+          const containerRect = cluesScrollRef.current.getBoundingClientRect();
+          const elementRect = firstClueEl.getBoundingClientRect();
+          const scrollTop = cluesScrollRef.current.scrollTop;
+          const elementTop = elementRect.top - containerRect.top + scrollTop;
+          cluesScrollRef.current.scrollTo({
+            top: elementTop,
+            behavior: "smooth"
+          });
+        }
+      }
     }
-  }, [viewMode, selectedTabId, selectedCharId, onSelectCharacter]);
-
-  useEffect(() => {
-    if (viewMode === "tabs" && !selectedTabId && characters.length > 0) {
-      setSelectedTabId(characters[0].id);
-    }
-  }, [viewMode, selectedTabId, characters]);
-
-  const handleTabChange = (charId: string) => {
-    setSelectedTabId(charId);
-  };
-
-  const charCluesMap = new Map(
-    characters.map((ch) => [ch.id, clues.filter((c) => c.characterId === ch.id)]),
-  );
-  const generalClues = clues.filter((c) => !c.characterId);
-
-  const openCharModal = (charId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setModalCharId(charId);
-  };
-
-  const closeCharModal = () => setModalCharId(null);
+  }, [selectedCharId, clues]);
 
   const cellHasNeighborInSameRoom = (pos: Position, direction: "right" | "bottom" | "top" | "left"): boolean => {
     const room = getRoomForCell(rooms, pos);
@@ -203,20 +207,8 @@ export function MapView({
   };
 
   return (
-    <div className="p-3 pb-24 overflow-visible">
-      {!showSolution && (
-        <p className="mb-3 text-center text-xs text-muted-foreground">
-          {mode === "place" && t("murdoku.placeCharacter")}
-          {mode === "notes" && t("murdoku.notesHelp")}
-          {mode === "crosses" && t("murdoku.crossesHelp")}
-          {mode === "erase" && t("murdoku.eraser")}
-        </p>
-      )}
-
+    <div className="pb-24 overflow-visible">
       <div className="mx-auto max-w-[480px]">
-        <div className="mb-2 text-center">
-          <h2 className="text-xl font-bold tracking-widest text-primary">{t("murdoku.grid")}</h2>
-        </div>
 
         <div
           className="relative grid gap-px rounded-2xl border-2 border-slate-300 bg-slate-200/80 p-1 shadow-sm overflow-visible"
@@ -359,9 +351,11 @@ export function MapView({
                     if (!showElementNames) return null;
                     const cellEl = elementAt(pos);
                     if (!cellEl) return null;
+                    const isEvenColumn = pos.col % 2 === 0;
+                    const alignmentClass = isEvenColumn ? "top-0.5" : "bottom-0.5";
                     return (
                       <span 
-                        className="absolute bottom-0.5 right-0.5 rounded bg-white/90 px-1 py-0.2 text-[8px] font-semibold text-slate-800 shadow-2xs backdrop-blur-xs z-10 whitespace-nowrap"
+                        className={`absolute ${alignmentClass} right-0.5 rounded bg-white/90 px-1 py-0.2 text-[8px] font-semibold text-slate-800 shadow-2xs backdrop-blur-xs z-10 whitespace-nowrap`}
                       >
                         {cellEl.name}
                       </span>
@@ -374,297 +368,114 @@ export function MapView({
         </div>
       </div>
 
-      <div className="mt-3">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-[11px] font-medium text-muted-foreground">
-            {t("murdoku.selectCharacter")}
-          </p>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setViewMode("grid")}
-              className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-colors ${
-                viewMode === "grid"
-                  ? "bg-primary text-primary-foreground shadow-2xs"
-                  : "bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-            >
-              {t("murdoku.viewGrid") ?? "Grid"}
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("tabs")}
-              className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-colors ${
-                viewMode === "tabs"
-                  ? "bg-primary text-primary-foreground shadow-2xs"
-                  : "bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-            >
-              {t("murdoku.viewTabs") ?? "Tabs"}
-            </button>
-          </div>
-        </div>
-
-        {viewMode === "grid" ? (
-          <div className="grid grid-cols-2 gap-2">
-            {characters.map((char) => {
-              const placed = placements[char.id];
-              const charClues = charCluesMap.get(char.id) ?? [];
-              return (
-                <div
-                  key={char.id}
-                  className={`relative rounded-xl border p-2.5 transition-all shadow-2xs ${
-                    selectedCharId === char.id
-                      ? "border-primary bg-primary/10 ring-2 ring-primary/30"
-                      : placed
-                        ? "border-secondary/40 bg-secondary/10"
-                        : "border-border bg-card hover:border-slate-300 hover:shadow-xs"
-                  }`}
-                >
-                  <button
-                    type="button"
-                    onClick={(e) => openCharModal(char.id, e)}
-                    className="absolute top-1.5 right-1.5 p-1 rounded-lg bg-muted text-muted-foreground hover:bg-slate-200 hover:text-foreground transition-colors"
-                    aria-label={t("murdoku.viewDetails") ?? "View details"}
-                  >
-                    <Info className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    disabled={showSolution}
-                    onClick={() => onSelectCharacter(char.id)}
-                    className="flex flex-col w-full text-left"
-                  >
-                    <span className="text-xs font-bold text-foreground text-center mb-1">
-                      {char.name}
-                    </span>
-                    <div className="flex items-start gap-2">
-                      {char.image ? (
-                        <img
-                          src={char.image}
-                          alt={char.name}
-                          className="h-10 w-10 rounded-full object-top object-cover flex-shrink-0 ring-1 ring-border shadow-2xs"
-                          title={getDescription(char.description)}
-                        />
-                      ) : (
-                        <span
-                          className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-xl flex-shrink-0"
-                          title={getDescription(char.description)}
-                        >
-                          {char.name[0]}
-                        </span>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        {charClues.length > 0 && (
-                          <div className="space-y-0.5">
-                            {charClues.map((clue) => (
-                              <div key={clue.id} className="rounded-md bg-muted/80 p-1 text-[9px]">
-                                <p className="text-foreground whitespace-pre-wrap truncate">
-                                  {resolveClueText(clue)}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <Tabs value={selectedTabId ?? ""} onValueChange={handleTabChange}>
-            <TabsList
-              className="grid h-auto p-1 bg-slate-200/80 border-b-2 border-slate-300"
-              style={{
-                gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
-              }}
-            >
-              {characters.map((char) => {
-                const placed = placements[char.id];
-                return (
-                  <TabsTrigger
-                    key={char.id}
-                    value={char.id}
-                    disabled={showSolution}
-                    className="relative aspect-square p-0 data-[state=active]:bg-card data-[state=active]:border-2 data-[state=active]:border-primary data-[state=active]:shadow-sm rounded-lg"
+      <div className="mt-3 px-3">
+        {/* Lista de personajes en cuadrícula del mismo tamaño que el tablero */}
+        <div
+          className="grid gap-px pb-2 mx-auto"
+          style={{
+            gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
+            maxWidth: '480px',
+          }}
+        >
+          {characters.map((char) => {
+            const placed = placements[char.id];
+            return (
+              <button
+                key={char.id}
+                type="button"
+                disabled={showSolution}
+                onClick={() => onSelectCharacter(char.id)}
+                className={`aspect-square rounded-lg border transition-all shadow-2xs ${
+                  selectedCharId === char.id
+                    ? "border-primary bg-primary/10 ring-2 ring-primary/30"
+                    : placed
+                      ? "border-secondary/40 bg-secondary/10"
+                      : "border-border bg-card hover:border-slate-300 hover:shadow-xs"
+                }`}
+              >
+                {char.image ? (
+                  <img
+                    src={char.image}
+                    alt={char.name}
+                    className="h-full w-full rounded-lg object-top object-cover"
+                    title={char.name}
+                  />
+                ) : (
+                  <span
+                    className="text-2xl font-bold"
                     title={char.name}
                   >
-                    {char.image ? (
-                      <img
-                        src={char.image}
-                        alt={char.name}
-                        className="h-full w-full rounded-lg object-top object-cover"
-                      />
-                    ) : (
-                      <span className="text-xl font-bold">{char.name[0]}</span>
-                    )}
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
+                    {char.name[0]}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
 
-            {characters.map((char) => {
-              const placed = placements[char.id];
-              const charClues = charCluesMap.get(char.id) ?? [];
+        {/* Pistas con altura fija y scroll vertical */}
+        <div
+          ref={cluesScrollRef}
+          className="h-48 overflow-y-auto overflow-x-hidden"
+        >
+          <div className="space-y-2">
+            {clues.map((clue) => {
+              const char = clue.characterId ? characters.find((c) => c.id === clue.characterId) : null;
               return (
-                <TabsContent key={char.id} value={char.id} className="mt-0">
-                  <div
-                    className={`border-2 border-t-0 border-slate-300 bg-card p-4 transition-all shadow-sm ${
-                      selectedCharId === char.id
-                        ? "border-primary bg-primary/5"
-                        : ""
-                    }`}
-                  >
-                    <div className="space-y-3">
-                      <div className="text-left mb-1">
-                        <span className="text-lg font-bold text-foreground">{char.name}</span>
-                      </div>
-                      {placed && (
-                        <span className="text-[15px] font-semibold text-secondary bg-secondary/15 px-2 py-0.5 rounded-full inline-block">
-                          {t("murdoku.occupied")}
-                        </span>
-                      )}
-                      {charClues.length > 0 && (
-                        <div className="space-y-2">
-                          {charClues.map((clue) => (
-                            <div key={clue.id} className="rounded-lg bg-muted/70 p-3 text-[15px]">
-                              <p className="text-foreground whitespace-pre-wrap">
-                                {resolveClueText(clue)}
-                              </p>
-                            </div>
-                          ))}
+                <div
+                  key={clue.id}
+                  id={`clue-${clue.id}`}
+                >
+                  {char ? (
+                    <div
+                      className={`rounded-xl border p-1 transition-all shadow-2xs ${
+                        selectedCharId === char.id
+                          ? "border-primary bg-primary/10"
+                          : "border-border bg-card"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        {char.image ? (
+                          <img
+                            src={char.image}
+                            alt={char.name}
+                            className="h-8 object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <span className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-lg flex-shrink-0 ring-1 ring-border">
+                            {char.name[0]}
+                          </span>
+                        )}
+                        <div className="flex-1 text-[13px]">
+                          <p className="text-foreground whitespace-pre-wrap">
+                            {renderClueText(clue, char)}
+                          </p>
                         </div>
-                      )}
-                      {charClues.length === 0 && (
-                        <p className="text-[15px] text-muted-foreground text-center py-2">
-                          {t("murdoku.noCluesForChar") ?? "No clues for this character"}
-                        </p>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                </TabsContent>
+                  ) : (
+                    <div className="rounded-xl border border-border bg-card p-3 shadow-2xs">
+                      <div className="rounded-lg bg-muted/70 p-2 text-[13px]">
+                        <p className="text-foreground whitespace-pre-wrap">
+                          {resolveClueText(clue)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               );
             })}
-          </Tabs>
-        )}
-
-        {generalClues.length > 0 && (
-          <div className="mt-3">
-            <p className="mb-1.5 text-center text-[11px] font-semibold text-muted-foreground">
-              General
-            </p>
-            <div className="grid grid-cols-2 gap-1.5">
-              {generalClues.map((clue) => (
-                <div
-                  key={clue.id}
-                  className="rounded-xl border border-border bg-card p-2 text-[10px] shadow-2xs"
-                >
-                  <p className="text-foreground truncate">{resolveClueText(clue)}</p>
-                </div>
-              ))}
-            </div>
           </div>
-        )}
+        </div>
       </div>
 
-      {modalCharId && (
-        <CharacterDetailModal
-          char={characters.find((c) => c.id === modalCharId)!}
-          clues={charCluesMap.get(modalCharId) ?? []}
-          t={t}
-          resolveText={resolveClueText}
-          onClose={closeCharModal}
-        />
+      {!showSolution && (
+        <p className="mt-3 text-center text-xs text-muted-foreground">
+          {selectedCharId && t("murdoku.placeCharacter")}
+          {mode === "notes" && !selectedCharId && t("murdoku.notesHelp")}
+          {mode === "crosses" && !selectedCharId && t("murdoku.crossesHelp")}
+        </p>
       )}
     </div>
-  );
-}
-
-function CharacterDetailModal({
-  char,
-  clues,
-  t,
-  resolveText,
-  onClose,
-}: {
-  char: Character;
-  clues: Clue[];
-  t: (key: string, vars?: Record<string, string | number>) => string;
-  resolveText: (clue: Clue) => string;
-  onClose: () => void;
-}) {
-  const { lang } = useI18n();
-  return (
-    <Dialog.Root open={true} onOpenChange={(o) => !o && onClose()}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm" />
-        <Dialog.Content className="murdoku-light fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-card p-6 shadow-2xl focus:outline-none">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              {char.image ? (
-                <img
-                  src={char.image}
-                  alt={char.name}
-                  className="h-16 w-16 rounded-full object-top object-cover ring-2 ring-primary/20 shadow-xs"
-                />
-              ) : (
-                <span className="h-16 w-16 rounded-full bg-muted flex items-center justify-center text-4xl">
-                  {char.name[0]}
-                </span>
-              )}
-              <div>
-                <h3 className="text-lg font-bold text-foreground">{char.name}</h3>
-                {char.description && (
-                  <p className="text-sm text-muted-foreground">
-                    {typeof char.description === "string"
-                      ? char.description
-                      : (char.description[lang] ?? Object.values(char.description)[0] ?? "")}
-                  </p>
-                )}
-              </div>
-            </div>
-            <Dialog.Close
-              onClick={onClose}
-              className="p-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </Dialog.Close>
-          </div>
-
-          {clues.length > 0 && (
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                {t("murdoku.clues") ?? "Clues"}
-              </h4>
-              {clues.map((clue) => (
-                <div
-                  key={clue.id}
-                  className="rounded-xl border border-border bg-muted/40 p-3 text-sm"
-                >
-                  <span
-                    className={`inline-block rounded-md px-2 py-0.5 text-[10px] font-bold uppercase ${
-                      clue.type === "fact"
-                        ? "bg-secondary/15 text-secondary"
-                        : "bg-destructive/15 text-destructive"
-                    }`}
-                  >
-                    {t(`murdoku.clueType.${clue.type}`)}
-                  </span>
-                  <p className="mt-2 text-foreground whitespace-pre-wrap">{resolveText(clue)}</p>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {clues.length === 0 && (
-            <p className="text-center text-sm text-muted-foreground py-4">
-              {t("murdoku.noCluesForChar") ?? "No clues for this character"}
-            </p>
-          )}
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
   );
 }

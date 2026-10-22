@@ -78,7 +78,7 @@ function CasePlay({ caseId }: { caseId?: string }) {
   };
 
   return (
-    <div className="murdoku-light min-h-screen pt-4">
+    <div className="murdoku-light min-h-screen">
       {!selectedCase && (
         <div className="flex min-h-[50vh] items-center justify-center">
           {isLoading ? (

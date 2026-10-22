@@ -1,20 +1,16 @@
-import { MapIcon, Edit, XCircle, Eraser, Eye, EyeOff } from "lucide-react";
+import { Edit, XCircle, Eye, EyeOff } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
 
-export type GameMode = "place" | "notes" | "crosses" | "erase";
+export type GameMode = "notes" | "crosses";
 
 export function BottomNavigation({
   mode,
   onChangeMode,
-  onAccuse,
-  accusationOpen,
   showElementNames,
   onToggleElementNames,
 }: {
   mode: GameMode;
   onChangeMode: (mode: GameMode) => void;
-  onAccuse: () => void;
-  accusationOpen: boolean;
   showElementNames: boolean;
   onToggleElementNames: () => void;
 }) {
@@ -26,12 +22,6 @@ export function BottomNavigation({
     >
       <div className="mx-auto flex max-w-md items-stretch justify-around gap-1 px-2 py-2">
         <ModeButton
-          icon={<MapIcon className="h-5 w-5" />}
-          label={t("murdoku.place")}
-          active={mode === "place"}
-          onClick={() => onChangeMode("place")}
-        />
-        <ModeButton
           icon={<Edit className="h-5 w-5" />}
           label={t("murdoku.notes")}
           active={mode === "notes"}
@@ -42,12 +32,6 @@ export function BottomNavigation({
           label={t("murdoku.crosses")}
           active={mode === "crosses"}
           onClick={() => onChangeMode("crosses")}
-        />
-        <ModeButton
-          icon={<Eraser className="h-5 w-5" />}
-          label={t("murdoku.erase")}
-          active={mode === "erase"}
-          onClick={() => onChangeMode("erase")}
         />
         <button
           type="button"
