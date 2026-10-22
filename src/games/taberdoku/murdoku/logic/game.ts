@@ -19,6 +19,9 @@ export type Room = {
   emoji?: string;
   elements?: RoomElement[];
   cells: Position[];
+  namePosition?: Position;
+  nameOrientation?: "horizontal" | "vertical";
+  nameAlignment?: "top" | "bottom";
 };
 
 export type Character = {

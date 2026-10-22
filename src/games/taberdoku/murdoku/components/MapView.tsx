@@ -18,6 +18,18 @@ const ROOM_COLORS = [
   "bg-fuchsia-100/75 hover:bg-fuchsia-100",
 ];
 
+const ROOM_BORDER_COLORS = [
+  "border-sky-400",
+  "border-emerald-400",
+  "border-amber-400",
+  "border-rose-400",
+  "border-purple-400",
+  "border-teal-400",
+  "border-orange-400",
+  "border-indigo-400",
+  "border-fuchsia-400",
+];
+
 export function MapView({
   content,
   placements,
@@ -31,6 +43,7 @@ export function MapView({
   solutionPositions,
   killerVictimCell,
   violationMap,
+  showElementNames,
 }: {
   content: CaseContent;
   placements: Record<string, Position>;
@@ -44,6 +57,7 @@ export function MapView({
   solutionPositions: Record<string, Position> | null;
   killerVictimCell: Position | null;
   violationMap: Record<string, boolean>;
+  showElementNames: boolean;
 }) {
   const { t, lang } = useI18n();
   const { gridRows, gridCols, characters, rooms, clues } = content;
@@ -106,30 +120,56 @@ export function MapView({
 
   const closeCharModal = () => setModalCharId(null);
 
-  const cellHasNeighborInSameRoom = (pos: Position, direction: "right" | "bottom"): boolean => {
+  const cellHasNeighborInSameRoom = (pos: Position, direction: "right" | "bottom" | "top" | "left"): boolean => {
     const room = getRoomForCell(rooms, pos);
     if (!room) return false;
     const neighbor =
       direction === "right"
         ? { row: pos.row, col: pos.col + 1 }
-        : { row: pos.row + 1, col: pos.col };
+        : direction === "bottom"
+          ? { row: pos.row + 1, col: pos.col }
+          : direction === "top"
+            ? { row: pos.row - 1, col: pos.col }
+            : { row: pos.row, col: pos.col - 1 };
     const neighborRoom = getRoomForCell(rooms, neighbor);
     return neighborRoom?.id === room.id;
   };
 
   const getCellBorder = (pos: Position): string => {
+    const room = getRoomForCell(rooms, pos);
+    const roomIdx = rooms.findIndex((r) => r.id === room?.id);
+    const borderColor = ROOM_BORDER_COLORS[roomIdx % ROOM_BORDER_COLORS.length] || "border-slate-800";
+    
+    const topBorder = !cellHasNeighborInSameRoom(pos, "top")
+      ? `border-t-2 ${borderColor}`
+      : "";
     const bottomBorder = !cellHasNeighborInSameRoom(pos, "bottom")
-      ? "border-b-4 border-slate-800"
+      ? `border-b-2 ${borderColor}`
+      : "";
+    const leftBorder = !cellHasNeighborInSameRoom(pos, "left")
+      ? `border-l-2 ${borderColor}`
       : "";
     const rightBorder = !cellHasNeighborInSameRoom(pos, "right")
-      ? "border-r-4 border-slate-800"
+      ? `border-r-2 ${borderColor}`
       : "";
-    return `${bottomBorder} ${rightBorder}`;
+    return `${topBorder} ${bottomBorder} ${leftBorder} ${rightBorder}`;
   };
 
-  const getRoomNameCell = (pos: Position): { name: string; isVertical: boolean } | null => {
+  const getRoomNameCell = (pos: Position): { name: string; isVertical: boolean; alignment: "top" | "bottom" } | null => {
     const room = getRoomForCell(rooms, pos);
     if (!room) return null;
+    
+    // Si la sala tiene una posición de nombre especificada, usarla
+    if (room.namePosition) {
+      if (pos.row === room.namePosition.row && pos.col === room.namePosition.col) {
+        const isVertical = room.nameOrientation === "vertical";
+        const alignment = room.nameAlignment || "top";
+        return { name: room.name, isVertical, alignment };
+      }
+      return null;
+    }
+    
+    // Lógica original para cálculo automático
     const topRow = Math.min(...room.cells.map((c) => c.row));
     if (pos.row !== topRow) return null;
     const topCells = room.cells.filter((c) => c.row === topRow);
@@ -141,8 +181,9 @@ export function MapView({
     // Check if room is single column
     const allCols = new Set(room.cells.map((c) => c.col));
     const isVertical = allCols.size === 1;
+    const alignment = room.nameAlignment || "top";
     
-    return { name: room.name, isVertical };
+    return { name: room.name, isVertical, alignment };
   };
 
   const getCharsAt = (pos: Position): Character[] => {
@@ -178,7 +219,7 @@ export function MapView({
         </div>
 
         <div
-          className="relative grid gap-0.5 rounded-2xl border-2 border-slate-300 bg-slate-200/80 p-1 shadow-sm overflow-visible"
+          className="relative grid gap-px rounded-2xl border-2 border-slate-300 bg-slate-200/80 p-1 shadow-sm overflow-visible"
           style={{
             gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
           }}
@@ -297,13 +338,32 @@ export function MapView({
                   {(() => {
                     const roomNameData = getRoomNameCell(pos);
                     if (!roomNameData) return null;
-                    const { name, isVertical } = roomNameData;
+                    const { name, isVertical, alignment } = roomNameData;
+                    const alignmentClass = alignment === "bottom" ? "bottom-0.5" : "top-0.5";
+                    const room = getRoomForCell(rooms, pos);
+                    const roomIdx = rooms.findIndex((r) => r.id === room?.id);
+                    const roomColorClass = ROOM_COLORS[roomIdx % ROOM_COLORS.length] || "bg-slate-100";
+                    // Convertir la clase de fondo a una clase con 60% de transparencia
+                    const bgColorClass = roomColorClass;//roomColorClass.replace('/75', '/75');
                     return (
                       <span 
-                        className={`absolute top-0.5 left-0 rounded bg-white/85 px-1 py-0.2 text-[10px] font-bold text-slate-700 shadow-2xs backdrop-blur-xs z-10 whitespace-nowrap`}
+                        className={`absolute ${alignmentClass} left-0 rounded ${bgColorClass} px-1 py-0.2 text-[10px] font-bold text-slate-700 shadow-2xs backdrop-blur-xs z-10 whitespace-nowrap`}
                         style={isVertical ? { writingMode: 'vertical-rl' } : undefined}
                       >
                         {name}
+                      </span>
+                    );
+                  })()}
+
+                  {(() => {
+                    if (!showElementNames) return null;
+                    const cellEl = elementAt(pos);
+                    if (!cellEl) return null;
+                    return (
+                      <span 
+                        className="absolute bottom-0.5 right-0.5 rounded bg-white/90 px-1 py-0.2 text-[8px] font-semibold text-slate-800 shadow-2xs backdrop-blur-xs z-10 whitespace-nowrap"
+                      >
+                        {cellEl.name}
                       </span>
                     );
                   })()}

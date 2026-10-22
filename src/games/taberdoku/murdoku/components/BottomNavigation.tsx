@@ -1,4 +1,4 @@
-import { MapIcon, Edit, XCircle, Eraser, Skull } from "lucide-react";
+import { MapIcon, Edit, XCircle, Eraser, Eye, EyeOff } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
 
 export type GameMode = "place" | "notes" | "crosses" | "erase";
@@ -8,11 +8,15 @@ export function BottomNavigation({
   onChangeMode,
   onAccuse,
   accusationOpen,
+  showElementNames,
+  onToggleElementNames,
 }: {
   mode: GameMode;
   onChangeMode: (mode: GameMode) => void;
   onAccuse: () => void;
   accusationOpen: boolean;
+  showElementNames: boolean;
+  onToggleElementNames: () => void;
 }) {
   const { t } = useI18n();
   return (
@@ -47,13 +51,16 @@ export function BottomNavigation({
         />
         <button
           type="button"
-          onClick={onAccuse}
-          disabled={accusationOpen}
-          className="flex flex-1 flex-col items-center gap-1 rounded-lg border border-primary bg-primary/10 px-2 py-1.5 text-[10px] font-semibold text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
-          aria-label={t("murdoku.accuse")}
+          onClick={onToggleElementNames}
+          className={`flex flex-1 flex-col items-center gap-1 rounded-lg border px-2 py-1.5 text-[10px] font-semibold transition-all ${
+            showElementNames
+              ? "border-primary bg-primary/10 text-primary"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          }`}
+          aria-label={showElementNames ? "Ocultar nombres" : "Mostrar nombres"}
         >
-          <Skull className="h-5 w-5" />
-          {t("murdoku.accuse")}
+          {showElementNames ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          {showElementNames ? "Ocultar" : "Nombres"}
         </button>
       </div>
     </nav>

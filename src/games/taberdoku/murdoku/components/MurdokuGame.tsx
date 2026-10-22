@@ -33,6 +33,7 @@ export function MurdokuGame({
   const [guessResult, setGuessResult] = useState<GuessResult | null>(null);
   const [showSolution, setShowSolution] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [showElementNames, setShowElementNames] = useState(false);
 
   const handleSelectCharacter = (charId: string) => {
     if (showSolution) return;
@@ -271,6 +272,7 @@ export function MurdokuGame({
           solutionPositions={solutionPlacements}
           killerVictimCell={killerVictimCell}
           violationMap={violationMap}
+          showElementNames={showElementNames}
         />
       </main>
 
@@ -279,6 +281,8 @@ export function MurdokuGame({
         onChangeMode={handleModeChange}
         onAccuse={handleOpenAccusation}
         accusationOpen={accusationOpen}
+        showElementNames={showElementNames}
+        onToggleElementNames={() => setShowElementNames(!showElementNames)}
       />
 
       <AccusationModal
