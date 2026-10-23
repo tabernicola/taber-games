@@ -1,7 +1,7 @@
 import { Edit, XCircle, Eye, EyeOff } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
 
-export type GameMode = "notes" | "crosses";
+export type GameMode = "notes" | "crosses" | null;
 
 export function BottomNavigation({
   mode,
@@ -15,6 +15,13 @@ export function BottomNavigation({
   onToggleElementNames: () => void;
 }) {
   const { t } = useI18n();
+  const handleModeClick = (target: "notes" | "crosses") => {
+    if (mode === target) {
+      onChangeMode(null);
+    } else {
+      onChangeMode(target);
+    }
+  };
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
@@ -25,13 +32,13 @@ export function BottomNavigation({
           icon={<Edit className="h-5 w-5" />}
           label={t("murdoku.notes")}
           active={mode === "notes"}
-          onClick={() => onChangeMode("notes")}
+          onClick={() => handleModeClick("notes")}
         />
         <ModeButton
           icon={<XCircle className="h-5 w-5" />}
           label={t("murdoku.crosses")}
           active={mode === "crosses"}
-          onClick={() => onChangeMode("crosses")}
+          onClick={() => handleModeClick("crosses")}
         />
         <button
           type="button"

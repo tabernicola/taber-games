@@ -49,7 +49,7 @@ export function MapView({
   selectedCharId: string | null;
   onSelectCharacter: (charId: string) => void;
   onCellAction: (pos: Position) => void;
-  mode: "place" | "notes" | "crosses" | "erase";
+  mode: "place" | "notes" | "crosses" | "erase" | null;
   showSolution: boolean;
   solutionPositions: Record<string, Position> | null;
   killerVictimCell: Position | null;
@@ -238,7 +238,7 @@ export function MapView({
               const cellHasNonWalkable = cellEl && !cellEl.walkable;
 
               const handleCellClick = () => {
-                if (mode === "place" && selectedCharId && cellHasNonWalkable) return;
+                if ((mode === "place" || mode === null) && selectedCharId && cellHasNonWalkable) return;
                 onCellAction(pos);
               };
 
@@ -246,22 +246,22 @@ export function MapView({
                 <button
                   key={key}
                   type="button"
-                  disabled={
-                    showSolution ||
-                    Boolean(mode === "place" && selectedCharId && cellHasNonWalkable)
-                  }
-                  onClick={handleCellClick}
-                  className={`relative flex aspect-square items-center justify-center text-xs font-medium transition-all overflow-visible ${
-                    ROOM_COLORS[roomIdx % ROOM_COLORS.length]
-                  } ${border} ${
-                    hasViolation
-                      ? "ring-2 ring-destructive ring-offset-1 z-20"
-                      : isKvCell && showSolution
-                        ? "ring-2 ring-amber-500 ring-offset-1 z-20"
-                        : isClicked
-                          ? "ring-2 ring-primary ring-offset-1 z-20"
-                          : ""
-                  }`}
+              disabled={
+                showSolution ||
+                Boolean((mode === "place" || mode === null) && selectedCharId && cellHasNonWalkable)
+              }
+              onClick={handleCellClick}
+              className={`relative flex aspect-square items-center justify-center text-xs font-medium transition-all overflow-visible ${
+                ROOM_COLORS[roomIdx % ROOM_COLORS.length]
+              } ${border} ${
+                hasViolation
+                  ? "ring-2 ring-destructive ring-offset-1 z-20"
+                  : isKvCell && showSolution
+                    ? "ring-2 ring-amber-500 ring-offset-1 z-20"
+                    : isClicked
+                      ? "ring-2 ring-primary ring-offset-1 z-20"
+                      : ""
+              }`}
                 >
                   {isCrossed && charsHere.length === 0 && (
                     <span className="z-10 w-[75%] h-[75%] flex items-center justify-center text-3xl sm:text-4xl text-destructive font-bold select-none">
@@ -418,7 +418,7 @@ export function MapView({
           ref={cluesScrollRef}
           className="h-48 overflow-y-auto overflow-x-hidden"
         >
-          <div className="space-y-2">
+          <div className="space-y-2 mx-auto max-w-[480px]">
             {clues.map((clue) => {
               const char = clue.characterId ? characters.find((c) => c.id === clue.characterId) : null;
               return (
@@ -427,11 +427,14 @@ export function MapView({
                   id={`clue-${clue.id}`}
                 >
                   {char ? (
-                    <div
-                      className={`rounded-xl border p-1 transition-all shadow-2xs ${
+                    <button
+                      type="button"
+                      disabled={showSolution}
+                      onClick={() => onSelectCharacter(char.id)}
+                      className={`rounded-xl border p-1 transition-all shadow-2xs w-full text-left ${
                         selectedCharId === char.id
                           ? "border-primary bg-primary/10"
-                          : "border-border bg-card"
+                          : "border-border bg-card hover:border-slate-300"
                       }`}
                     >
                       <div className="flex items-center gap-2">
@@ -452,7 +455,7 @@ export function MapView({
                           </p>
                         </div>
                       </div>
-                    </div>
+                    </button>
                   ) : (
                     <div className="rounded-xl border border-border bg-card p-3 shadow-2xs">
                       <div className="rounded-lg bg-muted/70 p-2 text-[13px]">

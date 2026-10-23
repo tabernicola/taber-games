@@ -176,7 +176,7 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
           "walkable": true
         },
         {
-          "name": "terraza",
+          "name": "Terraza",
           "icon": "",
           "image": "/taberdoku/murdoku/antxo/03-00.png",
           "position": {
@@ -874,7 +874,7 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
       ],
       "elements": [
         {
-          "name": "terraza",
+          "name": "Terraza",
           "icon": "",
           "image": "/taberdoku/murdoku/antxo/06-03.png",
           "position": {
@@ -884,7 +884,7 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
           "walkable": true
         },
         {
-          "name": "terraza",
+          "name": "Terraza",
           "icon": "",
           "image": "/taberdoku/murdoku/antxo/07-03.png",
           "position": {
@@ -894,7 +894,7 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
           "walkable": true
         },
         {
-          "name": "terraza",
+          "name": "Terraza",
           "icon": "",
           "image": "/taberdoku/murdoku/antxo/08-03.png",
           "position": {
@@ -904,7 +904,7 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
           "walkable": true
         },
         {
-          "name": "terraza",
+          "name": "Terraza",
           "icon": "",
           "image": "/taberdoku/murdoku/antxo/06-04.png",
           "position": {
@@ -934,7 +934,7 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
           "walkable": true
         },
         {
-          "name": "terraza",
+          "name": "Terraza",
           "icon": "",
           "image": "/taberdoku/murdoku/antxo/06-05.png",
           "position": {
@@ -944,7 +944,7 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
           "walkable": true
         },
         {
-          "name": "terraza",
+          "name": "Terraza",
           "icon": "",
           "image": "/taberdoku/murdoku/antxo/07-05.png",
           "position": {
@@ -954,7 +954,7 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
           "walkable": true
         },
         {
-          "name": "terraza",
+          "name": "Terraza",
           "icon": "",
           "image": "/taberdoku/murdoku/antxo/08-05.png",
           "position": {
@@ -1404,7 +1404,7 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
       {
         "characterId": "icequeen",
         "row": 2,
-        "col": 6
+        "col": 8
       },
       {
         "characterId": "lord-shadow",
@@ -1412,14 +1412,14 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
         "col": 5
       },
       {
-        "characterId": "postman",
+        "characterId": "luigi",
         "row": 4,
-        "col": 4
+        "col": 6
       },
       {
-        "characterId": "stylist",
+        "characterId": "postman",
         "row": 5,
-        "col": 1
+        "col": 4
       },
       {
         "characterId": "dna-noelia",
@@ -1427,9 +1427,9 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
         "col": 7
       },
       {
-        "characterId": "luigi",
+        "characterId": "stylist",
         "row": 7,
-        "col": 8
+        "col": 1
       },
       {
         "characterId": "tabletgirl",
@@ -1440,11 +1440,38 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
   },
   "clues": [
     {
+      "id": "clue-scene",
+      "text": {
+        "es": "El asesinato ocurrió en el Azoka, el mercado del pueblo: el asesino y su víctima estuvieron allí la misma tarde.",
+        "eu": "Errepiketa Azokan gertatu zen, herriko merkatuan: hiltzailea eta bere biktima bezala izan ziren arratsalde hartan.",
+        "en": "The murder took place in the Azoka, the town's market: the killer and his victim were both there that afternoon."
+      },
+      "type": "fact"
+    },
+    {
+      "id": "clue-station",
+      "text": {
+        "es": "Nadie estaba en la Estación vieja: aquel día seguía cerrada.",
+        "eu": "Inork ez zegoen Zaharren Estazioan: egun hartan itxita egon zen.",
+        "en": "Nobody was at the old station: it stayed closed that day."
+      },
+      "type": "fact"
+    },
+    {
+      "id": "clue-killer-victim",
+      "text": {
+        "es": "El asesino estaba al norte de su víctima, y una columna más al este.",
+        "eu": "Hiltzailea bere biktimaren iparraldean zegoen, eta zutabe bat ekialdean.",
+        "en": "The killer was north of his victim, and one column further east."
+      },
+      "type": "fact"
+    },
+    {
       "id": "clue-taber",
       "text": {
-        "es": "Taber estaba en Ibaiondo, justo a la izquierda del frontón cubierto.",
-        "eu": "Taber Ibaiondon zegoen, frontoi estaliaren ezkerrean.",
-        "en": "Taber was in Ibaiondo, right to the left of the covered frontón."
+        "es": "Taber esperaba en Ibaiondo, en la terraza de su fila más septentrional.",
+        "eu": "Taber Ibaiondon zegoen, bere errenkada iparraldeko terrazan.",
+        "en": "Taber was waiting in Ibaiondo, on the terrace in its northernmost row."
       },
       "type": "clue",
       "characterId": "taber"
@@ -1452,9 +1479,9 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
     {
       "id": "clue-cameraman",
       "text": {
-        "es": "El padre del rapero grababa en el Parque de los gatos, pegado al borde oeste del pueblo.",
-        "eu": "Raperoaren aita Katuen parkean grabatzen ari zen, herriaren mendebaldeko ertzean.",
-        "en": "The rapper's dad was filming in the Cats' park, on the town's western edge."
+        "es": "El padre del rapero grababa en el Parque de los gatos, en la terraza pegada al borde occidental del pueblo.",
+        "eu": "Raperoaren aita Katuen parkean grabatzen ari zen, herriaren mendebaldeko ertzean dagoen terrazan.",
+        "en": "The rapper's dad was filming in the Cats' park, on the terrace along the town's western edge."
       },
       "type": "clue",
       "characterId": "cameraman"
@@ -1462,9 +1489,9 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
     {
       "id": "clue-icequeen",
       "text": {
-        "es": "Ice Queen se daba un baño helado en la ría, a la altura de Ibaiondo.",
-        "eu": "Ice Queen rian bainu hotz bat hartzen ari zen, Ibaiondo parean.",
-        "en": "Ice Queen was taking an icy bath in the river, right by Ibaiondo."
+        "es": "Ice Queen se bañaba en la ría, en su extremo más oriental, justo al pie del skatepark.",
+        "eu": "Ice Queen rian bainatzen zen, bere ekialdeko muturrean, skateparkaren oinetan.",
+        "en": "Ice Queen was bathing in the river, at its easternmost end, right at the foot of the skatepark."
       },
       "type": "clue",
       "characterId": "icequeen"
@@ -1472,52 +1499,52 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
     {
       "id": "clue-lord-shadow",
       "text": {
-        "es": "Lord shadow acechaba en la Azoka, en su fila más al norte.",
-        "eu": "Lord shadow Azokan zelatan zegoen, iparraldeko errenkadan.",
-        "en": "Lord shadow lurked in the Azoka, in its northernmost row."
+        "es": "Lord shadow acechaba en el Azoka, en el parque de su fila más septentrional.",
+        "eu": "Lord shadow Azokan zelatan zegoen, iparraldeko errenkadako parkean.",
+        "en": "Lord shadow was lurking in the Azoka, in the park of its northernmost row."
       },
       "type": "clue",
       "characterId": "lord-shadow"
     },
     {
+      "id": "clue-luigi",
+      "text": {
+        "es": "Luigi corría por Axular, en la terraza de su fila central, la que toca al parque.",
+        "eu": "Luigi Axularren korrika zebilen, bere errenkada erdiko terrazan, parkeari dagokiona.",
+        "en": "Luigi was running around Axular, on the terrace of its middle row, the one next to the park."
+      },
+      "type": "clue",
+      "characterId": "luigi"
+    },
+    {
       "id": "clue-postman",
       "text": {
-        "es": "El Sr. Barquillero vendía barquillos en el centro exacto de la Azoka.",
-        "eu": "Barquillero jauna Azokaren erdi-erdian barquilloak saltzen ari zen.",
-        "en": "Mr. Barquillero was selling wafers in the exact centre of the Azoka."
+        "es": "El Sr. Barquillero vendía barquillos en el Azoka, en el camino de su fila más austral.",
+        "eu": "Barquillero jauna Azokan barquilloak saltzen ari zen, hegoaldeko errenkadako caminoan.",
+        "en": "Mr. Barquillero was selling wafers in the Azoka, on the path of its southernmost row."
       },
       "type": "clue",
       "characterId": "postman"
     },
     {
-      "id": "clue-stylist",
-      "text": {
-        "es": "Moon scissors cortaba el pelo en el Frontón viejo, justo encima del campo de fútbol.",
-        "eu": "Moon scissors Frontoi zaharrean ilea mozten ari zen, futbol zelaiaren gainean.",
-        "en": "Moon scissors was cutting hair in the old frontón, right above the football pitch."
-      },
-      "type": "clue",
-      "characterId": "stylist"
-    },
-    {
       "id": "clue-dna-noelia",
       "text": {
-        "es": "Doña Noelia esperaba en La campa, en la misma fila que el ambulatorio.",
-        "eu": "Noelia andrea La campan zain zegoen, anbulatorioaren errenkada berean.",
-        "en": "Doña Noelia was waiting in La campa, in the same row as the health centre."
+        "es": "Doña Noelia esperaba en La campa, en el parking de su fila más septentrional.",
+        "eu": "Noelia andrea La campan zain zegoen, iparraldeko errenkadako parkingean.",
+        "en": "Doña Noelia was waiting in La campa, in the parking of its northernmost row."
       },
       "type": "clue",
       "characterId": "dna-noelia"
     },
     {
-      "id": "clue-luigi",
+      "id": "clue-stylist",
       "text": {
-        "es": "Luigi corría por La campa, junto al borde este del pueblo.",
-        "eu": "Luigi La campan korrika zebilen, herriaren ekialdeko ertzean.",
-        "en": "Luigi was running in La campa, along the town's eastern edge."
+        "es": "Moon scissors cortaba el pelo en el Frontón viejo, en el parque, justo debajo del campo de fútbol.",
+        "eu": "Moon scissors Frontoi zaharrean ilea mozten ari zen, parkean, futbol zelaiaren azpian.",
+        "en": "Moon scissors was cutting hair in the old frontón, in the park, right below the football pitch."
       },
       "type": "clue",
-      "characterId": "luigi"
+      "characterId": "stylist"
     },
     {
       "id": "clue-tabletgirl",
@@ -1534,7 +1561,7 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
 
 export const SAMPLE_CASE: MurdokuCase = {
   id: "sample",
-  title: "Crimen en la Bahía: El Silencio del Barquillero",
+  title: "Las pintadas",
   creator_id: null,
   status: "approved",
   content: SAMPLE_CASE_CONTENT,

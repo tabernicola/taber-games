@@ -539,7 +539,7 @@ export function StarBattleBoard({
         )}
       </header>
 
-      <main className="taberdoku-play relative z-10 px-2 pb-32 pt-10">
+      <main className="taberdoku-play relative z-10 px-2 pb-32 pt-3">
         {solved && (
           <p className="mb-3 text-center text-lg font-bold text-primary">
             {t("starBattle.solvedIn", { time: formatTime(seconds) })}

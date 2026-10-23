@@ -34,11 +34,20 @@ export function MurdokuGame({
   const [showSolution, setShowSolution] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [showElementNames, setShowElementNames] = useState(false);
+  const [lives, setLives] = useState(3);
 
   const handleSelectCharacter = (charId: string) => {
     if (showSolution) return;
     playSound("click");
     setSelectedCharId(selectedCharId === charId ? null : charId);
+    if (selectedCharId === charId) {
+      // Deselecting character
+    }
+    // If selecting a new character, deselect the mode button if it was active? 
+    // User says: "cuando se selecciona un personaje que se deseleccione el botón si es que está seleccionado"
+    if (selectedCharId !== charId && mode !== null) {
+      setMode(null);
+    }
   };
 
   const handleCellAction = (pos: Position) => {
@@ -77,6 +86,11 @@ export function MurdokuGame({
       const nextCrosses = new Set(manualCrosses);
       nextCrosses.delete(pkey);
       setManualCrosses(nextCrosses);
+
+      // Check if all characters are placed
+      if (Object.keys(nextPlacements).length === content.characters.length) {
+        checkSolution(nextPlacements);
+      }
     } else if (mode === "notes") {
       const nextMarks = new Set(tentativeMarks);
       if (nextMarks.has(pkey)) nextMarks.delete(pkey);
@@ -90,6 +104,44 @@ export function MurdokuGame({
       else nextCrosses.add(pkey);
       setManualCrosses(nextCrosses);
       playSound("click");
+    } else if (mode === null) {
+      // When no mode selected, don't do anything on cell click
+      return;
+    }
+  };
+
+  const checkSolution = (currentPlacements: Record<string, Position>) => {
+    const solution = content.solution.placements;
+    let allCorrect = true;
+    const incorrectPlacements: string[] = [];
+
+    for (const [charId, pos] of Object.entries(currentPlacements)) {
+      const correctPlacement = solution.find((p) => p.characterId === charId);
+      if (!correctPlacement || correctPlacement.row !== pos.row || correctPlacement.col !== pos.col) {
+        allCorrect = false;
+        incorrectPlacements.push(charId);
+      }
+    }
+
+    if (allCorrect) {
+      // Win!
+      playSound("win");
+      setGuessResult({ correct: true, killer: true, victim: true });
+      setShowSolution(true);
+    } else {
+      // Remove incorrect placements
+      if (lives > 1) {
+        setLives(lives - 1);
+        playSound("error");
+        const nextPlacements = { ...currentPlacements };
+        incorrectPlacements.forEach((id) => delete nextPlacements[id]);
+        setPlacements(nextPlacements);
+      } else {
+        // Game over
+        playSound("error");
+        setGuessResult({ correct: false, killer: false, victim: false });
+        setShowSolution(true);
+      }
     }
   };
 
@@ -186,10 +238,15 @@ export function MurdokuGame({
   };
 
   const handleModeChange = (nextMode: GameMode) => {
-    if (nextMode !== mode) {
+    if (nextMode !== null && mode !== nextMode) {
+      playSound("click");
+    } else if (nextMode === null && mode !== null) {
       playSound("click");
     }
     setMode(nextMode);
+    if (nextMode !== null && selectedCharId !== null) {
+      setSelectedCharId(null);
+    }
   };
 
   const handleOpenAccusation = () => {
