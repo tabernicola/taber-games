@@ -5,8 +5,16 @@ export type Position = {
   col: number;
 };
 
+export type LocalizedText = Record<string, string>;
+
+/** Picks the text for the active language, falling back to the plain value. */
+export function localize(plain: string, i18n: LocalizedText | undefined, lang: string): string {
+  return i18n?.[lang] ?? plain;
+}
+
 export type RoomElement = {
   name: string;
+  nameI18n?: LocalizedText;
   icon: string;
   image?: string;
   position: Position;
@@ -16,6 +24,7 @@ export type RoomElement = {
 export type Room = {
   id: string;
   name: string;
+  nameI18n?: LocalizedText;
   emoji?: string;
   elements?: RoomElement[];
   cells: Position[];
@@ -65,6 +74,7 @@ export type CaseContent = {
 export type MurdokuCase = {
   id: string;
   title: string;
+  titleI18n?: LocalizedText;
   creator_id: string | null;
   status: CaseStatus;
   content: CaseContent;

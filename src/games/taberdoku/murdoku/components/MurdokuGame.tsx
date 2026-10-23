@@ -9,6 +9,7 @@ import { BottomNavigation } from "./BottomNavigation";
 import { MapView } from "./MapView";
 import { AccusationModal } from "./AccusationModal";
 import { useI18n } from "@/platform/i18n";
+import { localize } from "../logic/game";
 import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
 import "@/games/taberdoku/murdoku/light-theme.css";
 
@@ -19,7 +20,7 @@ export function MurdokuGame({
   case: MurdokuCase;
   onPlayAgain?: () => void;
 }) {
-  const { t, slug } = useI18n();
+  const { t, slug, lang } = useI18n();
   const { playSound } = useSoundEffects();
   const navigate = useNavigate();
   const { content } = activeCase;
@@ -309,7 +310,7 @@ export function MurdokuGame({
       <main className="pb-24">
         <div className="px-3 pt-1 pb-1">
           <h2 className="text-xl font-bold text-center text-foreground">
-            {activeCase.title}
+            {localize(activeCase.title, activeCase.titleI18n, lang)}
           </h2>
         </div>
         <MapView
@@ -459,6 +460,7 @@ function SolutionRow({
   content: CaseContent;
   t: (key: string, vars?: Record<string, string | number>) => string;
 }) {
+  const { lang } = useI18n();
   const killerPos = getPlacement(content.solution.placements, content.solution.killerId);
   const room = killerPos
     ? getRoomForCell(content.rooms, { row: killerPos.row, col: killerPos.col })
@@ -471,7 +473,7 @@ function SolutionRow({
       </div>
       {room && (
         <p className="text-xs text-muted-foreground">
-          {t("murdoku.murder")}: {room.name}
+          {t("murdoku.murder")}: {localize(room.name, room.nameI18n, lang)}
         </p>
       )}
     </div>

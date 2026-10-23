@@ -7,6 +7,7 @@ import { useI18n } from "@/platform/i18n";
 import { useAuth } from "@/platform/hooks/useAuth";
 import { SubGameTabs } from "@/games/taberdoku/components/SubGameTabs";
 import { fetchApprovedCases, type MurdokuCase } from "@/games/taberdoku/murdoku/logic/cases";
+import { localize } from "@/games/taberdoku/murdoku/logic/game";
 
 import "@/games/taberdoku/murdoku/light-theme.css";
 
@@ -119,13 +120,13 @@ export function LandingPage() {
 }
 
 function CaseCard({ caseData, slug }: { caseData: MurdokuCase; slug: string }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const clueCount = caseData.content.clues.length;
   const characterCount = caseData.content.characters.length;
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 transition-all hover:border-muted-foreground/40">
-      <h3 className="text-lg font-semibold text-foreground">{caseData.title}</h3>
+      <h3 className="text-lg font-semibold text-foreground">{localize(caseData.title, caseData.titleI18n, lang)}</h3>
       <p className="mt-1 text-xs text-muted-foreground">
         {t("murdoku.clues")}: {clueCount} · {t("murdoku.characters")}: {characterCount}
       </p>
