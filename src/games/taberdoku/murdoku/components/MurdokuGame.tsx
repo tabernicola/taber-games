@@ -20,7 +20,7 @@ export function MurdokuGame({
   case: MurdokuCase;
   onPlayAgain?: () => void;
 }) {
-  const { t, slug } = useI18n();
+  const { t, slug, lang } = useI18n();
   const { playSound } = useSoundEffects();
   const navigate = useNavigate();
   const { content } = activeCase;
