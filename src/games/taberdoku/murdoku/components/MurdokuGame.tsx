@@ -9,6 +9,7 @@ import { BottomNavigation } from "./BottomNavigation";
 import { MapView } from "./MapView";
 import { AccusationModal } from "./AccusationModal";
 import { useI18n } from "@/platform/i18n";
+import { localize } from "../logic/game";
 import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
 import "@/games/taberdoku/murdoku/light-theme.css";
 
@@ -309,7 +310,7 @@ export function MurdokuGame({
       <main className="pb-24">
         <div className="px-3 pt-1 pb-1">
           <h2 className="text-xl font-bold text-center text-foreground">
-            {activeCase.title}
+            {localize(activeCase.title, activeCase.titleI18n, lang)}
           </h2>
         </div>
         <MapView
@@ -471,7 +472,7 @@ function SolutionRow({
       </div>
       {room && (
         <p className="text-xs text-muted-foreground">
-          {t("murdoku.murder")}: {room.name}
+          {t("murdoku.murder")}: {localize(room.name, room.nameI18n, lang)}
         </p>
       )}
     </div>

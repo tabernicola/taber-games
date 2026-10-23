@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { CaseContent, Character, Clue, Position, Room, RoomElement } from "../data/gameSchema";
 import { useI18n } from "@/platform/i18n";
-import { getRoomForCell, posKey } from "../logic/game";
+import { getRoomForCell, localize, posKey } from "../logic/game";
 
 const ROOM_COLORS = [
   "bg-sky-100/75 hover:bg-sky-100",
@@ -168,7 +168,7 @@ export function MapView({
       if (pos.row === room.namePosition.row && pos.col === room.namePosition.col) {
         const isVertical = room.nameOrientation === "vertical";
         const alignment = room.nameAlignment || "top";
-        return { name: room.name, isVertical, alignment };
+        return { name: localize(room.name, room.nameI18n, lang), isVertical, alignment };
       }
       return null;
     }
@@ -187,7 +187,7 @@ export function MapView({
     const isVertical = allCols.size === 1;
     const alignment = room.nameAlignment || "top";
     
-    return { name: room.name, isVertical, alignment };
+    return { name: localize(room.name, room.nameI18n, lang), isVertical, alignment };
   };
 
   const getCharsAt = (pos: Position): Character[] => {
@@ -312,12 +312,12 @@ export function MapView({
                     return (
                       <span
                         className={`z-0 absolute inset-0 flex items-center justify-center text-3xl sm:text-4xl select-none`}
-                        title={el.walkable ? el.name : `${el.name} (no caminable)`}
+                        title={localize(el.name, el.nameI18n, lang)}
                       >
                         {el.image ? (
                           <img
                             src={el.image}
-                            alt={el.name}
+                            alt={localize(el.name, el.nameI18n, lang)}
                             className="h-full w-full object-cover"
                           />
                         ) : (
@@ -357,7 +357,7 @@ export function MapView({
                       <span 
                         className={`absolute ${alignmentClass} right-0.5 rounded bg-white/90 px-1 py-0.2 text-[8px] font-semibold text-slate-800 shadow-2xs backdrop-blur-xs z-10 whitespace-nowrap`}
                       >
-                        {cellEl.name}
+                        {localize(cellEl.name, cellEl.nameI18n, lang)}
                       </span>
                     );
                   })()}
