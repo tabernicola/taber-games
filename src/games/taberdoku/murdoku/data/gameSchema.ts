@@ -1559,9 +1559,50 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
   ]
 };
 
+// Translations (eu / en) of room and element names; Spanish is the base name.
+const NAME_I18N: Record<string, { eu: string; en: string }> = {
+  "Parque de los gatos": { eu: "Katuen parkea", en: "Cats' park" },
+  Ibaiondo: { eu: "Ibaiondo", en: "Ibaiondo" },
+  Skatepark: { eu: "Skatepark", en: "Skatepark" },
+  "Estación vieja": { eu: "Geltoki zaharra", en: "Old station" },
+  "Frontón viejo": { eu: "Frontoi zaharra", en: "Old frontón" },
+  Azoka: { eu: "Azoka", en: "Azoka" },
+  Axular: { eu: "Axular", en: "Axular" },
+  Alameda: { eu: "Zumardia", en: "Alameda" },
+  "La campa": { eu: "Zelaia", en: "The meadow" },
+  Ambulatorio: { eu: "Anbulatorioa", en: "Health centre" },
+  Camino: { eu: "Bidea", en: "Path" },
+  "Campo de fútbol": { eu: "Futbol zelaia", en: "Football field" },
+  Edificio: { eu: "Eraikina", en: "Building" },
+  "Estación": { eu: "Geltokia", en: "Station" },
+  "Frontón": { eu: "Frontoia", en: "Frontón" },
+  Fuente: { eu: "Iturria", en: "Fountain" },
+  Iglesia: { eu: "Eliza", en: "Church" },
+  Kantina: { eu: "Kantina", en: "Canteen" },
+  Lizeo: { eu: "Lizeoa", en: "Lyceum" },
+  Mesa: { eu: "Mahaia", en: "Table" },
+  Parking: { eu: "Aparkalekua", en: "Car park" },
+  Parque: { eu: "Parkea", en: "Park" },
+  "Ría": { eu: "Itsasadarra", en: "Estuary" },
+  "Skate park": { eu: "Skate parkea", en: "Skate park" },
+  Terraza: { eu: "Terraza", en: "Terrace" },
+  Viaducto: { eu: "Zubibidea", en: "Viaduct" },
+};
+
+function withI18n(name: string) {
+  const tr = NAME_I18N[name];
+  return tr ? { es: name, ...tr } : undefined;
+}
+
+for (const room of SAMPLE_CASE_CONTENT.rooms) {
+  room.nameI18n ??= withI18n(room.name);
+  for (const el of room.elements ?? []) el.nameI18n ??= withI18n(el.name);
+}
+
 export const SAMPLE_CASE: MurdokuCase = {
   id: "sample",
   title: "Las pintadas",
+  titleI18n: { es: "Las pintadas", eu: "Pintadak", en: "The graffiti" },
   creator_id: null,
   status: "approved",
   content: SAMPLE_CASE_CONTENT,
