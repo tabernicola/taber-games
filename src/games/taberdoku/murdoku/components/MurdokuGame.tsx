@@ -460,6 +460,7 @@ function SolutionRow({
   content: CaseContent;
   t: (key: string, vars?: Record<string, string | number>) => string;
 }) {
+  const { lang } = useI18n();
   const killerPos = getPlacement(content.solution.placements, content.solution.killerId);
   const room = killerPos
     ? getRoomForCell(content.rooms, { row: killerPos.row, col: killerPos.col })
