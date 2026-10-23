@@ -1560,16 +1560,11 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
 };
 
 // Translations (eu / en) of room and element names; Spanish is the base name.
+// Only zones whose name is translatable have entries here: the rest keep their
+// original name in every language.
 const NAME_I18N: Record<string, { eu: string; en: string }> = {
-  "Parque de los gatos": { eu: "Katuen parkea", en: "Cats' park" },
-  Ibaiondo: { eu: "Ibaiondo", en: "Ibaiondo" },
-  Skatepark: { eu: "Skatepark", en: "Skatepark" },
   "Estación vieja": { eu: "Geltoki zaharra", en: "Old station" },
   "Frontón viejo": { eu: "Frontoi zaharra", en: "Old frontón" },
-  Azoka: { eu: "Azoka", en: "Azoka" },
-  Axular: { eu: "Axular", en: "Axular" },
-  Alameda: { eu: "Zumardia", en: "Alameda" },
-  "La campa": { eu: "Zelaia", en: "The meadow" },
   Ambulatorio: { eu: "Anbulatorioa", en: "Health centre" },
   Camino: { eu: "Bidea", en: "Path" },
   "Campo de fútbol": { eu: "Futbol zelaia", en: "Football field" },
