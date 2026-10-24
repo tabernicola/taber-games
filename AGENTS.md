@@ -10,3 +10,7 @@
 > the editor, so keep the branch in a working state.
 
 <!-- LOVABLE:END -->
+
+- Murdoku stores reusable artwork in `murdoku_elements`, board geometry in `murdoku_boards`, and cell instances in `murdoku_board_elements`; case-specific clues/solutions stay in `murdoku_cases.content` and cast membership references `murdoku_characters` through `murdoku_case_characters`, so boards and artwork can be shared without duplicating them in cases.
+- Read Murdoku cases through the security-invoker `murdoku_playable_cases` view, which reconstructs the existing game contract under RLS and preserves legacy embedded cases without a board reference.
+- Reusable board/artwork catalogs are publicly readable and writable only through trusted database operations; cases expose only approved or caller-owned records, and player submissions cannot self-approve.

@@ -4,11 +4,17 @@ import type { CaseContent, MurdokuCase, CaseStatus } from "./game";
 
 export type { MurdokuCase };
 
-type Row = Tables<"murdoku_cases">;
+type Row = Tables<"murdoku_playable_cases">;
 
 function toCase(row: Row): MurdokuCase {
+  if (!row.id || !row.title || !row.content) {
+    throw new Error("Incomplete Murdoku case");
+  }
   return {
     ...row,
+    id: row.id,
+    title: row.title,
+    titleI18n: row.title_i18n as MurdokuCase["titleI18n"],
     status: (row.status ?? "draft") as CaseStatus,
     created_at: row.created_at ?? "",
     updated_at: row.updated_at ?? "",
@@ -18,7 +24,7 @@ function toCase(row: Row): MurdokuCase {
 
 export async function fetchApprovedCases(): Promise<MurdokuCase[]> {
   const { data, error } = await supabase
-    .from("murdoku_cases")
+    .from("murdoku_playable_cases")
     .select("*")
     .eq("status", "approved")
     .order("created_at", { ascending: false });
@@ -27,7 +33,7 @@ export async function fetchApprovedCases(): Promise<MurdokuCase[]> {
 }
 
 export async function fetchCase(id: string): Promise<MurdokuCase | null> {
-  const { data, error } = await supabase.from("murdoku_cases").select("*").eq("id", id).single();
+  const { data, error } = await supabase.from("murdoku_playable_cases").select("*").eq("id", id).single();
   if (error) {
     if ((error as { code?: string }).code === "PGRST116") return null;
     throw error;
@@ -37,7 +43,7 @@ export async function fetchCase(id: string): Promise<MurdokuCase | null> {
 
 export async function fetchPendingCases(): Promise<MurdokuCase[]> {
   const { data, error } = await supabase
-    .from("murdoku_cases")
+    .from("murdoku_playable_cases")
     .select("*")
     .eq("status", "pending_review")
     .order("created_at", { ascending: false });
