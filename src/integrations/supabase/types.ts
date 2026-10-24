@@ -41,8 +41,127 @@ export type Database = {
         }
         Relationships: []
       }
+      murdoku_board_elements: {
+        Row: {
+          board_id: string
+          col_index: number
+          element_id: string
+          instance_id: string | null
+          room_id: string
+          row_index: number
+          sort_order: number
+        }
+        Insert: {
+          board_id: string
+          col_index: number
+          element_id: string
+          instance_id?: string | null
+          room_id: string
+          row_index: number
+          sort_order?: number
+        }
+        Update: {
+          board_id?: string
+          col_index?: number
+          element_id?: string
+          instance_id?: string | null
+          room_id?: string
+          row_index?: number
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "murdoku_board_elements_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "murdoku_boards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "murdoku_board_elements_element_id_fkey"
+            columns: ["element_id"]
+            isOneToOne: false
+            referencedRelation: "murdoku_elements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      murdoku_boards: {
+        Row: {
+          created_at: string
+          grid_cols: number
+          grid_rows: number
+          id: string
+          name: string
+          name_i18n: Json
+          rooms: Json
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          grid_cols?: number
+          grid_rows?: number
+          id?: string
+          name: string
+          name_i18n?: Json
+          rooms?: Json
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          grid_cols?: number
+          grid_rows?: number
+          id?: string
+          name?: string
+          name_i18n?: Json
+          rooms?: Json
+          slug?: string
+        }
+        Relationships: []
+      }
+      murdoku_case_characters: {
+        Row: {
+          case_id: string
+          character_id: string
+          sort_order: number
+        }
+        Insert: {
+          case_id: string
+          character_id: string
+          sort_order?: number
+        }
+        Update: {
+          case_id?: string
+          character_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "murdoku_case_characters_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "murdoku_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "murdoku_case_characters_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "murdoku_playable_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "murdoku_case_characters_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "murdoku_characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       murdoku_cases: {
         Row: {
+          board_id: string | null
           content: Json
           created_at: string | null
           creator_id: string
@@ -50,9 +169,11 @@ export type Database = {
           rejection_note: string | null
           status: string | null
           title: string
+          title_i18n: Json
           updated_at: string | null
         }
         Insert: {
+          board_id?: string | null
           content?: Json
           created_at?: string | null
           creator_id: string
@@ -60,9 +181,11 @@ export type Database = {
           rejection_note?: string | null
           status?: string | null
           title: string
+          title_i18n?: Json
           updated_at?: string | null
         }
         Update: {
+          board_id?: string | null
           content?: Json
           created_at?: string | null
           creator_id?: string
@@ -70,9 +193,18 @@ export type Database = {
           rejection_note?: string | null
           status?: string | null
           title?: string
+          title_i18n?: Json
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "murdoku_cases_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "murdoku_boards"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       murdoku_characters: {
         Row: {
@@ -92,6 +224,36 @@ export type Database = {
           id?: string
           image?: string | null
           name?: string
+        }
+        Relationships: []
+      }
+      murdoku_elements: {
+        Row: {
+          created_at: string
+          icon: string
+          id: string
+          image: string | null
+          name: string
+          name_i18n: Json
+          walkable: boolean
+        }
+        Insert: {
+          created_at?: string
+          icon?: string
+          id: string
+          image?: string | null
+          name?: string
+          name_i18n?: Json
+          walkable?: boolean
+        }
+        Update: {
+          created_at?: string
+          icon?: string
+          id?: string
+          image?: string | null
+          name?: string
+          name_i18n?: Json
+          walkable?: boolean
         }
         Relationships: []
       }
@@ -301,7 +463,29 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      murdoku_playable_cases: {
+        Row: {
+          board_id: string | null
+          content: Json | null
+          created_at: string | null
+          creator_id: string | null
+          id: string | null
+          rejection_note: string | null
+          status: string | null
+          title: string | null
+          title_i18n: Json | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "murdoku_cases_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "murdoku_boards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never
