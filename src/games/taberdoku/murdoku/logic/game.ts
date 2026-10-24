@@ -13,6 +13,7 @@ export function localize(plain: string, i18n: LocalizedText | undefined, lang: s
 }
 
 export type RoomElement = {
+  id?: string;
   name: string;
   nameI18n?: LocalizedText;
   icon: string;
@@ -48,6 +49,8 @@ export type Clue = {
   i18nKey?: string;
   type: ClueType;
   characterId?: string;
+  roomId?: string;
+  elementId?: string;
 };
 
 export type Placement = {
@@ -58,7 +61,8 @@ export type Placement = {
 
 export type Solution = {
   killerId: string;
-  victimId: string;
+  victimId?: string;
+  witnessId?: string;
   placements: Placement[];
 };
 
@@ -200,11 +204,13 @@ export function validateSolution(content: CaseContent): ValidationResult {
   if (!charIds.has(solution.killerId)) {
     errors.push(`Killer "${solution.killerId}" does not exist in characters list`);
   }
-  if (!charIds.has(solution.victimId)) {
+  if (solution.victimId && !charIds.has(solution.victimId)) {
     errors.push(`Victim "${solution.victimId}" does not exist in characters list`);
   }
-  if (solution.killerId === solution.victimId) {
+  if (solution.victimId && solution.killerId === solution.victimId) {
     errors.push("Killer and victim must be different characters");
+  } else if (solution.witnessId && solution.killerId === solution.witnessId) {
+    errors.push("Killer and witness must be different characters");
   }
 
   const placedIds = new Set<string>();
@@ -232,13 +238,17 @@ export function validateSolution(content: CaseContent): ValidationResult {
   }
 
   const killerPos = getPlacement(solution.placements, solution.killerId);
-  const victimPos = getPlacement(solution.placements, solution.victimId);
-  if (killerPos && victimPos) {
+  const victimPos = solution.victimId ? getPlacement(solution.placements, solution.victimId) : undefined;
+  const witnessPos = solution.witnessId ? getPlacement(solution.placements, solution.witnessId) : undefined;
+  if (victimPos && killerPos) {
     const kr = getRoomForCell(content.rooms, killerPos);
     const vr = getRoomForCell(content.rooms, victimPos);
     if (!kr || kr.id !== vr?.id) {
       errors.push("Killer and victim must be in the same room (the murder scene)");
     }
+  }
+  if (witnessPos && killerPos) {
+    // witness can be different room - just validate they are placed
   }
 
   errors.push(...checkSudokuConstraints(content, solution.placements));

@@ -219,10 +219,14 @@ describe("sample case board", () => {
   it("places killer and victim in the same room (the murder scene)", () => {
     const { solution, rooms } = SAMPLE_CASE_CONTENT;
     const killer = getPlacement(solution.placements, solution.killerId);
-    const victim = getPlacement(solution.placements, solution.victimId);
+    const victim = solution.victimId ? getPlacement(solution.placements, solution.victimId) : undefined;
     expect(killer).toBeDefined();
-    expect(victim).toBeDefined();
-    expect(getRoomForCell(rooms, killer!)?.id).toBe(getRoomForCell(rooms, victim!)?.id);
+    if (solution.victimId) {
+      expect(victim).toBeDefined();
+      expect(getRoomForCell(rooms, killer!)?.id).toBe(getRoomForCell(rooms, victim!)?.id);
+    } else {
+      expect(victim).toBeUndefined();
+    }
   });
 });
 

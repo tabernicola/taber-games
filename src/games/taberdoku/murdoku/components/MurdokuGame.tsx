@@ -68,6 +68,12 @@ export function MurdokuGame({
         return;
       }
 
+      // Don't place character on a cell marked with X
+      if (manualCrosses.has(pkey) || autoCrosses.has(pkey)) {
+        playSound("error");
+        return;
+      }
+
       // Place character (remove existing character at this cell first)
       const nextPlacements = { ...placements };
       for (const id of Object.keys(nextPlacements)) {
@@ -139,6 +145,7 @@ export function MurdokuGame({
         setPlacements(nextPlacements);
       } else {
         // Game over
+        setLives(0);
         playSound("error");
         setGuessResult({ correct: false, killer: false, victim: false });
         setShowSolution(true);
@@ -212,7 +219,9 @@ export function MurdokuGame({
   const killerVictimCell: Position | null = useMemo(() => {
     if (!showSolution) return null;
     const killerPlacement = getPlacement(content.solution.placements, content.solution.killerId);
-    const victimPlacement = getPlacement(content.solution.placements, content.solution.victimId);
+    const victimPlacement = content.solution.victimId
+      ? getPlacement(content.solution.placements, content.solution.victimId)
+      : null;
     if (!killerPlacement || !victimPlacement) return null;
     if (killerPlacement.row !== victimPlacement.row || killerPlacement.col !== victimPlacement.col)
       return null;
@@ -235,6 +244,7 @@ export function MurdokuGame({
     setSelectedCharId(null);
     setGuessResult(null);
     setShowSolution(false);
+    setLives(3);
     onPlayAgain?.();
   };
 
@@ -309,9 +319,16 @@ export function MurdokuGame({
 
       <main className="pb-24">
         <div className="px-3 pt-1 pb-1">
-          <h2 className="text-xl font-bold text-center text-foreground">
-            {localize(activeCase.title, activeCase.titleI18n, lang)}
-          </h2>
+          <div className="flex items-center justify-center gap-2">
+            <h2 className="text-xl font-bold text-center text-foreground">
+              {localize(activeCase.title, activeCase.titleI18n, lang)}
+            </h2>
+            <div className="flex gap-0.5 text-base">
+              {[0, 1, 2].map((i) => (
+                <span key={i}>{i < lives ? "❤️" : "💔"}</span>
+              ))}
+            </div>
+          </div>
         </div>
         <MapView
           content={content}
@@ -392,6 +409,9 @@ function WinScreen({
 }) {
   const killer = content.characters.find((c) => c.id === content.solution.killerId);
   const victim = content.characters.find((c) => c.id === content.solution.victimId);
+  const witness = content.solution.witnessId
+    ? content.characters.find((c) => c.id === content.solution.witnessId)
+    : undefined;
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-4 text-center">
       <div
@@ -462,14 +482,22 @@ function SolutionRow({
 }) {
   const { lang } = useI18n();
   const killerPos = getPlacement(content.solution.placements, content.solution.killerId);
+  const witness = content.solution.witnessId
+    ? content.characters.find((c) => c.id === content.solution.witnessId)
+    : undefined;
   const room = killerPos
     ? getRoomForCell(content.rooms, { row: killerPos.row, col: killerPos.col })
     : null;
+  const showWitness = !!content.solution.witnessId && !content.solution.victimId;
   return (
     <div className="flex flex-col items-center justify-center gap-2 text-center">
       <div className="flex items-center justify-center gap-6">
         <SolutionItem label={t("murdoku.killer")} char={killer} />
-        <SolutionItem label={t("murdoku.victim")} char={victim} />
+        {showWitness ? (
+          <SolutionItem label={t("murdoku.witness") || "Testigo"} char={witness} />
+        ) : (
+          <SolutionItem label={t("murdoku.victim")} char={victim} />
+        )}
       </div>
       {room && (
         <p className="text-xs text-muted-foreground">

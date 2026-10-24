@@ -19,6 +19,7 @@ export const dict: Dict = {
   "murdoku.youWinDesc": "You correctly identified the killer and victim.",
   "murdoku.killer": "Killer",
   "murdoku.victim": "Victim",
+  "murdoku.witness": "Witness",
   "murdoku.murder": "Murder scene",
   "murdoku.room": "Room",
   "murdoku.rooms": "Rooms",
