@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import type { CaseContent, Character, Clue, Position, Room, RoomElement } from "../data/gameSchema";
 import { useI18n } from "@/platform/i18n";
 import { getRoomForCell, localize, posKey } from "../logic/game";
@@ -27,6 +27,42 @@ const ROOM_BORDER_COLORS = [
   "border-fuchsia-400",
 ];
 
+const ROOM_BORDER_COLORS_DARK = [
+  "border-sky-600",
+  "border-emerald-600",
+  "border-amber-600",
+  "border-rose-600",
+  "border-purple-600",
+  "border-teal-600",
+  "border-orange-600",
+  "border-indigo-600",
+  "border-fuchsia-600",
+];
+
+const ROOM_BORDER_HEX_COLORS = [
+  "#38bdf8", // sky-400
+  "#34d399", // emerald-400
+  "#fbbf24", // amber-400
+  "#fb7185", // rose-400
+  "#c084fc", // purple-400
+  "#2dd4bf", // teal-400
+  "#fb923c", // orange-400
+  "#818cf8", // indigo-400
+  "#e879f9", // fuchsia-400
+];
+
+const ROOM_BORDER_HEX_COLORS_DARK = [
+  "#0284c7", // sky-600
+  "#059669", // emerald-600
+  "#d97706", // amber-600
+  "#e11d48", // rose-600
+  "#9333ea", // purple-600
+  "#0d9488", // teal-600
+  "#ea580c", // orange-600
+  "#4f46e5", // indigo-600
+  "#c026d3", // fuchsia-600
+];
+
 export function MapView({
   content,
   placements,
@@ -41,6 +77,9 @@ export function MapView({
   killerVictimCell,
   violationMap,
   showElementNames,
+  selectedClueId,
+  onSelectClue,
+  solutionAnimation,
 }: {
   content: CaseContent;
   placements: Record<string, Position>;
@@ -55,6 +94,9 @@ export function MapView({
   killerVictimCell: Position | null;
   violationMap: Record<string, boolean>;
   showElementNames: boolean;
+  selectedClueId: string | null;
+  onSelectClue: (clueId: string) => void;
+  solutionAnimation: { type: 'correct' | 'incorrect', cellKey: string }[];
 }) {
   const { t, lang } = useI18n();
   const { gridRows, gridCols, characters, rooms, clues } = content;
@@ -143,7 +185,7 @@ export function MapView({
     const room = getRoomForCell(rooms, pos);
     const roomIdx = rooms.findIndex((r) => r.id === room?.id);
     const borderColor = ROOM_BORDER_COLORS[roomIdx % ROOM_BORDER_COLORS.length] || "border-slate-800";
-    
+
     const topBorder = !cellHasNeighborInSameRoom(pos, "top")
       ? `border-t-2 ${borderColor}`
       : "";
@@ -206,6 +248,42 @@ export function MapView({
     return pos.row === killerVictimCell.row && pos.col === killerVictimCell.col;
   };
 
+  // Get highlighted cells/rooms based on selected clue
+  const selectedClue = selectedClueId ? clues.find(c => c.id === selectedClueId) : null;
+  const highlightedRooms = useMemo(() => {
+    if (!selectedClue) return new Set<string>();
+
+    const roomIds = new Set<string>();
+
+    // Highlight room if clue has roomId
+    if (selectedClue.roomId) {
+      roomIds.add(selectedClue.roomId);
+    }
+
+    return roomIds;
+  }, [selectedClue]);
+
+  const highlightedCells = useMemo(() => {
+    if (!selectedClue) return new Set<string>();
+
+    const cells = new Set<string>();
+
+    // Highlight elements with matching name if clue has elementId (case-insensitive)
+    if (selectedClue.elementId) {
+      rooms.forEach(room => {
+        if (room.elements) {
+          room.elements.forEach(el => {
+            if (el.name.toLowerCase() === selectedClue.elementId.toLowerCase()) {
+              cells.add(posKey(el.position.row, el.position.col));
+            }
+          });
+        }
+      });
+    }
+
+    return cells;
+  }, [selectedClue, rooms]);
+
   return (
     <div className="pb-24 overflow-visible">
       <div className="mx-auto max-w-[480px]">
@@ -222,6 +300,7 @@ export function MapView({
               const key = posKey(row, col);
               const room = getRoomForCell(rooms, pos);
               const roomIdx = rooms.findIndex((r) => r.id === room?.id);
+              const roomHighlighted = room ? highlightedRooms.has(room.id) : false;
               const border = getCellBorder(pos);
               const isKvCell = isKillerVictimCell(pos);
               const hasViolation = violationMap[key];
@@ -233,6 +312,19 @@ export function MapView({
                 !showSolution &&
                 placements[selectedCharId]?.row === row &&
                 placements[selectedCharId]?.col === col;
+
+              const isHighlighted = highlightedCells.has(key);
+
+              // Calculate which sides of this cell are on the edge of a highlighted room
+              const roomEdgeSides = roomHighlighted ? {
+                top: !cellHasNeighborInSameRoom(pos, "top"),
+                bottom: !cellHasNeighborInSameRoom(pos, "bottom"),
+                left: !cellHasNeighborInSameRoom(pos, "left"),
+                right: !cellHasNeighborInSameRoom(pos, "right"),
+              } : null;
+
+              // Check if there's any room highlighted (not just this specific room)
+              const hasHighlightedRoom = highlightedRooms.size > 0;
 
               const cellEl = elementAt(pos);
               const cellHasNonWalkable = cellEl && !cellEl.walkable;
@@ -252,7 +344,11 @@ export function MapView({
               }
               onClick={handleCellClick}
               className={`relative flex aspect-square items-center justify-center text-xs font-medium transition-all overflow-visible ${
-                ROOM_COLORS[roomIdx % ROOM_COLORS.length]
+                isHighlighted
+                  ? "bg-amber-200/80"
+                  : hasHighlightedRoom && !roomHighlighted
+                    ? "bg-slate-500/70"
+                    : ROOM_COLORS[roomIdx % ROOM_COLORS.length]
               } ${border} ${
                 hasViolation
                   ? "ring-2 ring-destructive ring-offset-1 z-20"
@@ -301,6 +397,22 @@ export function MapView({
                           ) : (
                             <span className="text-xl sm:text-2xl drop-shadow-xs">{ch.name[0]}</span>
                           )}
+                          {/* Solution animation */}
+                          {(() => {
+                            const anim = solutionAnimation.find(a => a.cellKey === key);
+                            if (!anim) return null;
+                            if (anim.type === 'correct') {
+                              return (
+                                <div className="absolute inset-0 rounded-full ring-4 ring-green-500 z-30 animate-pulse" />
+                              );
+                            } else {
+                              return (
+                                <div className="absolute inset-0 flex items-center justify-center z-30">
+                                  <span className="text-4xl font-bold text-black">✕</span>
+                                </div>
+                              );
+                            }
+                          })()}
                         </span>
                       ))}
                     </span>
@@ -315,11 +427,19 @@ export function MapView({
                         title={localize(el.name, el.nameI18n, lang)}
                       >
                         {el.image ? (
-                          <img
-                            src={el.image}
-                            alt={localize(el.name, el.nameI18n, lang)}
-                            className="h-full w-full object-cover"
-                          />
+                          <>
+                            <img
+                              src={el.image}
+                              alt={localize(el.name, el.nameI18n, lang)}
+                              className="h-full w-full object-cover"
+                            />
+                            {hasHighlightedRoom && !roomHighlighted && (
+                              <div className="absolute inset-0 bg-slate-500/60 z-10" />
+                            )}
+                            {isHighlighted && (
+                              <div className="absolute inset-2 rounded-full ring-4 ring-blue-400 z-20" />
+                            )}
+                          </>
                         ) : (
                           el.icon
                         )}
@@ -337,15 +457,34 @@ export function MapView({
                     const roomColorClass = ROOM_COLORS[roomIdx % ROOM_COLORS.length] || "bg-slate-100";
                     // Convertir la clase de fondo a una clase con 60% de transparencia
                     const bgColorClass = roomColorClass;//roomColorClass.replace('/75', '/75');
+                    const isRoomHighlighted = room ? highlightedRooms.has(room.id) : false;
                     return (
-                      <span 
-                        className={`absolute ${alignmentClass} left-0 rounded ${bgColorClass} px-1 py-0.2 text-[10px] font-bold text-slate-700 shadow-2xs backdrop-blur-xs z-10 whitespace-nowrap`}
+                      <span
+                        className={`absolute ${alignmentClass} left-0 rounded ${bgColorClass} px-1 py-0.2 ${isRoomHighlighted ? 'text-sm' : 'text-xs'} font-bold text-slate-700 shadow-2xs backdrop-blur-xs z-10 whitespace-nowrap`}
                         style={isVertical ? { writingMode: 'vertical-rl' } : undefined}
                       >
                         {name}
                       </span>
                     );
                   })()}
+
+                  {/* Highlight borders for room edges */}
+                  {roomEdgeSides && (
+                    <>
+                      {roomEdgeSides.top && (
+                        <div className="absolute top-0 left-0 right-0 h-1 z-30" style={{ backgroundColor: ROOM_BORDER_HEX_COLORS_DARK[roomIdx % ROOM_BORDER_HEX_COLORS_DARK.length] || '#475569' }} />
+                      )}
+                      {roomEdgeSides.bottom && (
+                        <div className="absolute bottom-0 left-0 right-0 h-1 z-30" style={{ backgroundColor: ROOM_BORDER_HEX_COLORS_DARK[roomIdx % ROOM_BORDER_HEX_COLORS_DARK.length] || '#475569' }} />
+                      )}
+                      {roomEdgeSides.left && (
+                        <div className="absolute top-0 bottom-0 left-0 w-1 z-30" style={{ backgroundColor: ROOM_BORDER_HEX_COLORS_DARK[roomIdx % ROOM_BORDER_HEX_COLORS_DARK.length] || '#475569' }} />
+                      )}
+                      {roomEdgeSides.right && (
+                        <div className="absolute top-0 bottom-0 right-0 w-1 z-30" style={{ backgroundColor: ROOM_BORDER_HEX_COLORS_DARK[roomIdx % ROOM_BORDER_HEX_COLORS_DARK.length] || '#475569' }} />
+                      )}
+                    </>
+                  )}
 
                   {(() => {
                     if (!showElementNames) return null;
@@ -421,6 +560,7 @@ export function MapView({
           <div className="space-y-2 mx-auto max-w-[480px]">
             {clues.map((clue) => {
               const char = clue.characterId ? characters.find((c) => c.id === clue.characterId) : null;
+              const isClueSelected = selectedClueId === clue.id;
               return (
                 <div
                   key={clue.id}
@@ -430,11 +570,13 @@ export function MapView({
                     <button
                       type="button"
                       disabled={showSolution}
-                      onClick={() => onSelectCharacter(char.id)}
+                      onClick={() => onSelectClue(clue.id)}
                       className={`rounded-xl border p-1 transition-all shadow-2xs w-full text-left ${
-                        selectedCharId === char.id
+                        isClueSelected
                           ? "border-primary bg-primary/10"
-                          : "border-border bg-card hover:border-slate-300"
+                          : selectedCharId === char.id
+                            ? "border-secondary bg-secondary/10"
+                            : "border-border bg-card hover:border-slate-300"
                       }`}
                     >
                       <div className="flex items-center gap-2">
@@ -457,13 +599,22 @@ export function MapView({
                       </div>
                     </button>
                   ) : (
-                    <div className="rounded-xl border border-border bg-card p-3 shadow-2xs">
+                    <button
+                      type="button"
+                      disabled={showSolution}
+                      onClick={() => onSelectClue(clue.id)}
+                      className={`rounded-xl border p-3 transition-all shadow-2xs w-full text-left ${
+                        isClueSelected
+                          ? "border-primary bg-primary/10"
+                          : "border-border bg-card hover:border-slate-300"
+                      }`}
+                    >
                       <div className="rounded-lg bg-muted/70 p-2 text-[13px]">
                         <p className="text-foreground whitespace-pre-wrap">
                           {resolveClueText(clue)}
                         </p>
                       </div>
-                    </div>
+                    </button>
                   )}
                 </div>
               );

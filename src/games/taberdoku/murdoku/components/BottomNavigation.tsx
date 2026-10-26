@@ -35,8 +35,8 @@ export function BottomNavigation({
           onClick={() => handleModeClick("notes")}
         />
         <ModeButton
-          icon={<XCircle className="h-5 w-5" />}
-          label={t("murdoku.crosses")}
+          icon={<XCircle className="h-8 w-8" />}
+          label=""
           active={mode === "crosses"}
           onClick={() => handleModeClick("crosses")}
         />
@@ -74,14 +74,14 @@ function ModeButton({
       type="button"
       role="tab"
       onClick={onClick}
-      className={`flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold transition-all ${
+      className={`flex flex-1 flex-col items-center justify-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold transition-all ${
         active
           ? "border border-primary bg-primary/10 text-primary"
           : "text-muted-foreground hover:text-foreground hover:bg-muted"
-      }`}
+      } ${label ? "" : "py-2.5"}`}
     >
       {icon}
-      {label}
+      {label ? label : null}
     </button>
   );
 }

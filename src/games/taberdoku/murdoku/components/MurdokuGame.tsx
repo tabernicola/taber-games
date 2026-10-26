@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { ChevronLeft, HelpCircle } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import type { CaseContent, MurdokuCase, Position } from "../data/gameSchema";
@@ -30,24 +30,64 @@ export function MurdokuGame({
   const [tentativeMarks, setTentativeMarks] = useState<Set<string>>(new Set());
   const [manualCrosses, setManualCrosses] = useState<Set<string>>(new Set());
   const [selectedCharId, setSelectedCharId] = useState<string | null>(null);
+  const [selectedClueId, setSelectedClueId] = useState<string | null>(null);
   const [accusationOpen, setAccusationOpen] = useState(false);
   const [guessResult, setGuessResult] = useState<GuessResult | null>(null);
   const [showSolution, setShowSolution] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [showElementNames, setShowElementNames] = useState(false);
   const [lives, setLives] = useState(3);
+  const [solutionAnimation, setSolutionAnimation] = useState<{ type: 'correct' | 'incorrect', cellKey: string }[]>([]);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [showAnimationOnly, setShowAnimationOnly] = useState(false);
+  const placementsRef = useRef(placements);
+  const solutionRef = useRef(content.solution.placements);
+
+  // Update refs when values change
+  useEffect(() => {
+    placementsRef.current = placements;
+    solutionRef.current = content.solution.placements;
+  }, [placements, content.solution.placements]);
 
   const handleSelectCharacter = (charId: string) => {
     if (showSolution) return;
     playSound("click");
-    setSelectedCharId(selectedCharId === charId ? null : charId);
+
     if (selectedCharId === charId) {
-      // Deselecting character
+      // Deselecting character - also deselect clue
+      setSelectedCharId(null);
+      setSelectedClueId(null);
+    } else {
+      // Selecting new character - find associated clue
+      setSelectedCharId(charId);
+      const associatedClue = content.clues.find(c => c.characterId === charId);
+      setSelectedClueId(associatedClue?.id ?? null);
     }
-    // If selecting a new character, deselect the mode button if it was active? 
+
+    // If selecting a new character, deselect the mode button if it was active?
     // User says: "cuando se selecciona un personaje que se deseleccione el botón si es que está seleccionado"
     if (selectedCharId !== charId && mode !== null) {
       setMode(null);
+    }
+  };
+
+  const handleSelectClue = (clueId: string) => {
+    if (showSolution) return;
+    playSound("click");
+
+    if (selectedClueId === clueId) {
+      // Deselecting clue - also deselect character
+      setSelectedClueId(null);
+      setSelectedCharId(null);
+    } else {
+      // Selecting new clue - also select associated character if any
+      setSelectedClueId(clueId);
+      const clue = content.clues.find(c => c.id === clueId);
+      if (clue?.characterId) {
+        setSelectedCharId(clue.characterId);
+      } else {
+        setSelectedCharId(null);
+      }
     }
   };
 
@@ -143,6 +183,9 @@ export function MurdokuGame({
         const nextPlacements = { ...currentPlacements };
         incorrectPlacements.forEach((id) => delete nextPlacements[id]);
         setPlacements(nextPlacements);
+        // Show animation for incorrect placements before removing them
+        setShowAnimationOnly(true);
+        setShowSolution(true);
       } else {
         // Game over
         setLives(0);
@@ -216,6 +259,46 @@ export function MurdokuGame({
     return result;
   }, [showSolution, content.solution.placements]);
 
+  // Trigger solution animation when showSolution becomes true
+  useEffect(() => {
+    if (showSolution) {
+      // Reset animation state
+      setSolutionAnimation([]);
+      setShowResultModal(false);
+
+      // Calculate correct and incorrect placements
+      const animations: { type: 'correct' | 'incorrect', cellKey: string }[] = [];
+
+      for (const [charId, placement] of Object.entries(placementsRef.current)) {
+        const correctPlacement = solutionRef.current.find(p => p.characterId === charId);
+        const cellKey = posKey(placement.row, placement.col);
+
+        if (correctPlacement && correctPlacement.row === placement.row && correctPlacement.col === placement.col) {
+          animations.push({ type: 'correct', cellKey });
+        } else {
+          animations.push({ type: 'incorrect', cellKey });
+        }
+      }
+
+      // Sequential animation
+      animations.forEach((anim, index) => {
+        setTimeout(() => {
+          setSolutionAnimation(prev => [...prev, anim]);
+        }, index * 300); // 300ms delay between each
+      });
+
+      // Show result modal after animation completes
+      const totalAnimationTime = animations.length * 300 + 500; // Add 500ms buffer
+      setTimeout(() => {
+        setShowResultModal(true);
+      }, totalAnimationTime);
+    } else {
+      // Clear animation when solution is hidden
+      setSolutionAnimation([]);
+      setShowResultModal(false);
+    }
+  }, [showSolution]);
+
   const killerVictimCell: Position | null = useMemo(() => {
     if (!showSolution) return null;
     const killerPlacement = getPlacement(content.solution.placements, content.solution.killerId);
@@ -242,6 +325,7 @@ export function MurdokuGame({
     setTentativeMarks(new Set());
     setManualCrosses(new Set());
     setSelectedCharId(null);
+    setSelectedClueId(null);
     setGuessResult(null);
     setShowSolution(false);
     setLives(3);
@@ -265,7 +349,7 @@ export function MurdokuGame({
     setAccusationOpen(true);
   };
 
-  if (guessResult?.correct) {
+  if (guessResult?.correct && showResultModal) {
     return (
       <div className="murdoku-light min-h-screen">
         <WinScreen activeCase={activeCase} onPlayAgain={handlePlayAgain} content={content} t={t} />
@@ -273,7 +357,7 @@ export function MurdokuGame({
     );
   }
 
-  if (guessResult && !guessResult.correct) {
+  if (guessResult && !guessResult.correct && showResultModal) {
     return (
       <div className="murdoku-light min-h-screen">
         <LoseScreen
@@ -344,6 +428,9 @@ export function MurdokuGame({
           killerVictimCell={killerVictimCell}
           violationMap={violationMap}
           showElementNames={showElementNames}
+          selectedClueId={selectedClueId}
+          onSelectClue={handleSelectClue}
+          solutionAnimation={solutionAnimation}
         />
       </main>
 

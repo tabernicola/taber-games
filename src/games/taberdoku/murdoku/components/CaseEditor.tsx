@@ -267,7 +267,7 @@ export function CaseEditor() {
           />
         )}
 
-        {step === 2 && <Step3 clues={clues} setClues={setClues} characters={characters} />}
+        {step === 2 && <Step3 clues={clues} setClues={setClues} characters={characters} rooms={rooms} roomElements={roomElements} />}
 
         {submitError && <p className="mt-4 text-center text-sm text-destructive">{submitError}</p>}
 
@@ -753,13 +753,28 @@ function Step3({
   clues,
   setClues,
   characters,
+  rooms,
+  roomElements,
 }: {
   clues: Clue[];
   setClues: (v: Clue[]) => void;
   characters: Character[];
+  rooms: Room[];
+  roomElements: Record<string, RoomElement[]>;
 }) {
   const { t, lang } = useI18n();
   const clueTypes: ClueType[] = ["fact", "elimination"];
+
+  // Collect all unique element names across all rooms
+  const allElementNames = useMemo(() => {
+    const names = new Set<string>();
+    Object.values(roomElements).flat().forEach(el => {
+      if (el.name && el.name.trim()) {
+        names.add(el.name);
+      }
+    });
+    return Array.from(names).sort();
+  }, [roomElements]);
 
   const addClue = () => {
     setClues([
@@ -827,12 +842,42 @@ function Step3({
               }
               className="text-xs text-muted-foreground"
             >
-              <option value="">
-                {t("creator.minItems", { category: "character association" })}
-              </option>
+              <option value="">No character</option>
               {characters.map((char) => (
                 <option key={char.id} value={char.id}>
                   {char.name}
+                </option>
+              ))}
+            </select>
+            <select
+              value={clue.roomId ?? ""}
+              onChange={(e) =>
+                updateClue(clue.id, {
+                  roomId: e.target.value || undefined,
+                })
+              }
+              className="text-xs text-muted-foreground"
+            >
+              <option value="">No room</option>
+              {rooms.map((room) => (
+                <option key={room.id} value={room.id}>
+                  {room.name}
+                </option>
+              ))}
+            </select>
+            <select
+              value={clue.elementId ?? ""}
+              onChange={(e) =>
+                updateClue(clue.id, {
+                  elementId: e.target.value || undefined,
+                })
+              }
+              className="text-xs text-muted-foreground"
+            >
+              <option value="">No element</option>
+              {allElementNames.map((name) => (
+                <option key={name} value={name}>
+                  {name}
                 </option>
               ))}
             </select>

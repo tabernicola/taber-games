@@ -1474,7 +1474,8 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
         "en": "Taber was in Ibaiondo, on the terrace in the north row."
       },
       "type": "clue",
-      "characterId": "taber"
+      "characterId": "taber",
+      "roomId": "ibaiondo"
     },
     {
       "id": "clue-cameraman",
@@ -1534,7 +1535,8 @@ export const SAMPLE_CASE_CONTENT: CaseContent = {
         "en": "Moon scissors was cutting hair in the Azoka, on the path."
       },
       "type": "clue",
-      "characterId": "stylist"
+      "characterId": "stylist",
+      "elementId": "Camino"
     },
     {
       "id": "clue-tabletgirl",
