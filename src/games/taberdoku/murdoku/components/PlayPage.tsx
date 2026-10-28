@@ -7,7 +7,7 @@ import {
   fetchCase,
   type MurdokuCase,
 } from "@/games/taberdoku/murdoku/logic/cases";
-import { SAMPLE_CASE } from "@/games/taberdoku/murdoku/data/gameSchema";
+import { MOTO_ACUATICA_CASE } from "@/games/taberdoku/murdoku/data/gameSchema";
 import { MurdokuGame } from "@/games/taberdoku/murdoku/components/MurdokuGame";
 import "@/games/taberdoku/murdoku/light-theme.css";
 
@@ -22,10 +22,10 @@ export function PlayPage() {
 
 function CasePlay({ caseId }: { caseId?: string }) {
   const { t } = useI18n();
-  const isDemoCase = caseId === SAMPLE_CASE.id;
+  const isDemoCase = caseId === MOTO_ACUATICA_CASE.id;
 
   const [selectedCase, setSelectedCase] = useState<MurdokuCase | null>(
-    isDemoCase ? SAMPLE_CASE : null,
+    isDemoCase ? MOTO_ACUATICA_CASE : null,
   );
 
   const {
@@ -58,7 +58,7 @@ function CasePlay({ caseId }: { caseId?: string }) {
 
   useEffect(() => {
     if (!caseId && !casesLoading && approvedCases.length === 0 && !selectedCase) {
-      setSelectedCase(SAMPLE_CASE);
+      setSelectedCase(MOTO_ACUATICA_CASE);
     }
   }, [caseId, casesLoading, approvedCases, selectedCase]);
 
@@ -71,7 +71,7 @@ function CasePlay({ caseId }: { caseId?: string }) {
     } else if (fetchedCase) {
       setSelectedCase(fetchedCase);
     } else if (!caseId) {
-      setSelectedCase(SAMPLE_CASE);
+      setSelectedCase(MOTO_ACUATICA_CASE);
     } else {
       setSelectedCase(null);
     }

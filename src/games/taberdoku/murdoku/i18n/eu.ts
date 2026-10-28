@@ -53,6 +53,8 @@ export const dict: Dict = {
   "murdoku.excluded": "Urdangabea",
   "murdoku.chooseKiller": "Aukeratu sarracala",
   "murdoku.chooseVictim": "Aukeratu victimoa",
+  "murdoku.chooseWitness": "Aukeratu lekukoa",
+  "creator.killerWitnessSame": "Erruduna eta lekukoa ezin dira pertsona bera izan",
   "murdoku.submit": "Bidali",
   "murdoku.cancel": "Ezeztatu",
   "murdoku.noCases": "Ez dago kasu erantzungarririk.",

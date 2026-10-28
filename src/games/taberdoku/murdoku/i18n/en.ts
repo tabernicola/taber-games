@@ -53,6 +53,8 @@ export const dict: Dict = {
   "murdoku.excluded": "Excluded",
   "murdoku.chooseKiller": "Choose the killer",
   "murdoku.chooseVictim": "Choose the victim",
+  "murdoku.chooseWitness": "Choose the witness",
+  "creator.killerWitnessSame": "The culprit and the witness cannot be the same person",
   "murdoku.submit": "Submit",
   "murdoku.cancel": "Cancel",
   "murdoku.noCases": "No cases available yet.",

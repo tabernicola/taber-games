@@ -18,6 +18,7 @@ export function AccusationModal({
 }) {
   const { t } = useI18n();
   const { characters } = content;
+  const isWitness = !content.solution.victimId && !!content.solution.witnessId;
 
   const firstId = characters[0]?.id ?? "";
   const [killerId, setKillerId] = useState(firstId);
@@ -51,14 +52,16 @@ export function AccusationModal({
               options={characters.filter((c) => c.id !== victimId)}
             />
             <SelectField
-              label={t("murdoku.chooseVictim")}
+              label={isWitness ? (t("murdoku.chooseWitness") || t("murdoku.witness") || "Testigo") : t("murdoku.chooseVictim")}
               value={victimId}
               onChange={setVictimId}
               options={characters.filter((c) => c.id !== killerId)}
             />
           </div>
 
-          <p className="mt-2 text-[10px] text-muted-foreground">{t("creator.killerVictimSame")}</p>
+          <p className="mt-2 text-[10px] text-muted-foreground">
+            {isWitness ? (t("creator.killerWitnessSame") || "El culpable y el testigo no pueden ser la misma persona") : t("creator.killerVictimSame")}
+          </p>
 
           <div className="mt-6 flex gap-3">
             <button
