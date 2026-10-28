@@ -166,6 +166,7 @@ export type Database = {
           created_at: string | null
           creator_id: string
           id: string
+          image: string | null
           rejection_note: string | null
           status: string | null
           title: string
@@ -178,6 +179,7 @@ export type Database = {
           created_at?: string | null
           creator_id: string
           id?: string
+          image?: string | null
           rejection_note?: string | null
           status?: string | null
           title: string
@@ -190,6 +192,7 @@ export type Database = {
           created_at?: string | null
           creator_id?: string
           id?: string
+          image?: string | null
           rejection_note?: string | null
           status?: string | null
           title?: string
@@ -470,6 +473,7 @@ export type Database = {
           created_at: string | null
           creator_id: string | null
           id: string | null
+          image: string | null
           rejection_note: string | null
           status: string | null
           title: string | null

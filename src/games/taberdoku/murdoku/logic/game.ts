@@ -73,6 +73,7 @@ export type CaseContent = {
   characters: Character[];
   solution: Solution;
   clues: Clue[];
+  image?: string | null;
 };
 
 export type MurdokuCase = {
@@ -85,7 +86,10 @@ export type MurdokuCase = {
   rejection_note: string | null;
   created_at: string;
   updated_at: string;
+  board_id?: string | null;
+  image?: string | null;
 };
+
 
 export type Guess = {
   killerId: string;
