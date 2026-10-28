@@ -51,6 +51,7 @@ export type Clue = {
   characterId?: string;
   roomId?: string;
   elementId?: string;
+  translateFrom?: string;
 };
 
 export type Placement = {
@@ -89,7 +90,6 @@ export type MurdokuCase = {
   board_id?: string | null;
   image?: string | null;
 };
-
 
 export type Guess = {
   killerId: string;
@@ -242,8 +242,12 @@ export function validateSolution(content: CaseContent): ValidationResult {
   }
 
   const killerPos = getPlacement(solution.placements, solution.killerId);
-  const victimPos = solution.victimId ? getPlacement(solution.placements, solution.victimId) : undefined;
-  const witnessPos = solution.witnessId ? getPlacement(solution.placements, solution.witnessId) : undefined;
+  const victimPos = solution.victimId
+    ? getPlacement(solution.placements, solution.victimId)
+    : undefined;
+  const witnessPos = solution.witnessId
+    ? getPlacement(solution.placements, solution.witnessId)
+    : undefined;
   if (victimPos && killerPos) {
     const kr = getRoomForCell(content.rooms, killerPos);
     const vr = getRoomForCell(content.rooms, victimPos);
@@ -268,7 +272,6 @@ export function checkSudokuConstraints(content: CaseContent, placements: Placeme
   const byRoom = new Map<string, Placement[]>();
 
   for (const placement of placements) {
-
     const rowKey = `row:${placement.row}`;
     const colKey = `col:${placement.col}`;
     const room = getRoomForCell(content.rooms, {
@@ -293,9 +296,7 @@ export function checkSudokuConstraints(content: CaseContent, placements: Placeme
       if (group.length > 1) {
         {
           const names = group.map((p) => p.characterId).join(", ");
-          errors.push(
-            `${label} ${key} has ${group.length} characters: ${names} (max 1 allowed)`,
-          );
+          errors.push(`${label} ${key} has ${group.length} characters: ${names} (max 1 allowed)`);
         }
       }
     }

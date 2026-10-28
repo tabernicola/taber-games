@@ -2,13 +2,22 @@ import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useI18n } from "@/platform/i18n";
 import { useAuth } from "@/platform/hooks/useAuth";
-import { submitCase } from "@/games/taberdoku/murdoku/logic/cases";
+import {
+  submitCase,
+  fetchBoards,
+  fetchBoardElements,
+  attachElementsToRooms,
+  type Board,
+  type BoardElement,
+} from "@/games/taberdoku/murdoku/logic/cases";
+import { translateText } from "@/games/taberdoku/murdoku/logic/translate";
+import { fetchCharacters as fetchPlatformCharacters } from "@/platform/characters/characters";
 import {
   validateSolution,
   isCaseSolvable,
-  createDefaultRooms,
   getRoomForCell,
   posKey,
+  localize,
 } from "@/games/taberdoku/murdoku/logic/game";
 import type {
   CaseContent,
@@ -19,23 +28,15 @@ import type {
   Room,
   RoomElement,
 } from "@/games/taberdoku/murdoku/data/gameSchema";
+import { useMurdokuTheme } from "@/games/taberdoku/murdoku/hooks/useMurdokuTheme";
 
-function slugify(str: string): string {
-  return str
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-function genCharId(name: string, idx: number): string {
-  const base = slugify(name) || "char";
-  return `${base}-${idx}`;
-}
+import "@/games/taberdoku/murdoku/light-theme.css";
 
 export function CaseEditor() {
   const { t, slug, lang } = useI18n();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  useMurdokuTheme();
 
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -43,45 +44,77 @@ export function CaseEditor() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const [title, setTitle] = useState("");
-  const [gridRows, setGridRows] = useState(6);
-  const [gridCols, setGridCols] = useState(6);
-  const [roomRows, setRoomRows] = useState(3);
-  const [roomCols, setRoomCols] = useState(2);
-  const [characters, setCharacters] = useState<Character[]>([
-    { id: "char-0", name: "Butler" },
-    { id: "char-1", name: "Maid" },
-    { id: "char-2", name: "Gardener" },
-    { id: "char-3", name: "Chef" },
-    { id: "char-4", name: "Librarian" },
-    { id: "col-5", name: "Colonel" },
-  ]);
+  const [boards, setBoards] = useState<Board[]>([]);
+  const [boardsLoading, setBoardsLoading] = useState(true);
+  const [allCharacters, setAllCharacters] = useState<Character[]>([]);
+  const [charactersLoading, setCharactersLoading] = useState(true);
+  const [selectedBoard, setSelectedBoard] = useState<Board | null>(null);
+  const [selectedBoardElements, setSelectedBoardElements] = useState<BoardElement[]>([]);
+  const [boardElementsLoading, setBoardElementsLoading] = useState(false);
+
   const [placements, setPlacements] = useState<Record<string, Position>>({});
   const [selectedCharId, setSelectedCharId] = useState<string | null>(null);
   const [killerId, setKillerId] = useState("");
   const [victimId, setVictimId] = useState("");
   const [clues, setClues] = useState<Clue[]>([
-    { id: "clue-0", text: { es: "", en: "", eu: "" }, type: "fact" },
-    { id: "clue-1", text: { es: "", en: "", eu: "" }, type: "elimination" },
+    { id: "clue-0", text: { es: "", en: "", eu: "" }, type: "fact", translateFrom: "es" },
+    { id: "clue-1", text: { es: "", en: "", eu: "" }, type: "elimination", translateFrom: "es" },
   ]);
+  const [translating, setTranslating] = useState<Record<string, boolean>>({});
   const [roomElements, setRoomElements] = useState<Record<string, RoomElement[]>>({});
 
+  const gridRows = selectedBoard?.gridRows ?? 0;
+  const gridCols = selectedBoard?.gridCols ?? 0;
+
   const rooms: Room[] = useMemo(() => {
-    const defaultRooms = createDefaultRooms(gridRows, gridCols, roomRows, roomCols);
-    return defaultRooms.map((room) => ({
-      ...room,
-      elements: roomElements[room.id] ?? [],
-    }));
-  }, [gridRows, gridCols, roomRows, roomCols, roomElements]);
+    if (!selectedBoard) return [];
+    return attachElementsToRooms(selectedBoard.rooms, selectedBoardElements);
+  }, [selectedBoard, selectedBoardElements]);
+
+  const characters: Character[] = useMemo(
+    () => allCharacters.slice(0, gridRows),
+    [allCharacters, gridRows],
+  );
 
   const step1Valid = useMemo(() => {
     if (!title.trim()) return false;
+    if (!selectedBoard) return false;
     if (characters.length < 3) return false;
-    for (const c of characters) {
-      if (!c.name.trim()) return false;
-    }
-    if (gridRows < 1 || gridCols < 1 || roomRows < 1 || roomCols < 1) return false;
     return true;
-  }, [title, characters, gridRows, gridCols, roomRows, roomCols]);
+  }, [title, selectedBoard, characters]);
+
+  useEffect(() => {
+    let mounted = true;
+    Promise.all([
+      fetchBoards().then((b) => {
+        if (mounted) {
+          setBoards(b);
+          setBoardsLoading(false);
+        }
+      }),
+      fetchPlatformCharacters().then((c) => {
+        if (mounted) {
+          setAllCharacters(c);
+          setCharactersLoading(false);
+        }
+      }),
+    ]);
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!selectedBoard) {
+      setSelectedBoardElements([]);
+      return;
+    }
+    setBoardElementsLoading(true);
+    fetchBoardElements(selectedBoard.id).then((els) => {
+      setSelectedBoardElements(els);
+      setBoardElementsLoading(false);
+    });
+  }, [selectedBoard]);
 
   const step2Valid = useMemo(() => {
     if (characters.length === 0) return false;
@@ -171,7 +204,7 @@ export function CaseEditor() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="murdoku-light flex min-h-screen items-center justify-center">
         <span className="text-muted-foreground">{t("common.loading")}</span>
       </div>
     );
@@ -179,7 +212,7 @@ export function CaseEditor() {
 
   if (!user) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-4">
+      <div className="murdoku-light flex min-h-screen flex-col items-center justify-center gap-4 p-4">
         <h1 className="text-2xl font-bold">{t("creator.title")}</h1>
         <p className="text-sm text-muted-foreground">{t("creator.needsAuth")}</p>
         <Link
@@ -195,7 +228,7 @@ export function CaseEditor() {
 
   if (submitSuccess) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4 text-center">
+      <div className="murdoku-light flex min-h-screen items-center justify-center p-4 text-center">
         <div className="rounded-xl border border-secondary/20 bg-secondary/5 p-8">
           <h2 className="text-xl font-bold text-secondary">{t("creator.savedDraft")}</h2>
           <p className="mt-2 text-sm text-muted-foreground">{t("murdoku.createDesc")}</p>
@@ -205,7 +238,7 @@ export function CaseEditor() {
   }
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="murdoku-light min-h-screen pb-20">
       <header className="sticky top-0 z-30 border-b border-border bg-background/80 px-4 py-3 backdrop-blur">
         <h1 className="text-lg font-bold tracking-widest text-primary">{t("creator.title")}</h1>
       </header>
@@ -235,16 +268,11 @@ export function CaseEditor() {
           <Step1
             title={title}
             setTitle={setTitle}
-            gridRows={gridRows}
-            setGridRows={setGridRows}
-            gridCols={gridCols}
-            setGridCols={setGridCols}
-            roomRows={roomRows}
-            setRoomRows={setRoomRows}
-            roomCols={roomCols}
-            setRoomCols={setRoomCols}
+            boards={boards}
+            boardsLoading={boardsLoading}
+            selectedBoard={selectedBoard}
+            setSelectedBoard={setSelectedBoard}
             characters={characters}
-            setCharacters={setCharacters}
           />
         )}
 
@@ -267,7 +295,18 @@ export function CaseEditor() {
           />
         )}
 
-        {step === 2 && <Step3 clues={clues} setClues={setClues} characters={characters} rooms={rooms} roomElements={roomElements} />}
+        {step === 2 && (
+          <Step3
+            clues={clues}
+            setClues={setClues}
+            translating={translating}
+            setTranslating={setTranslating}
+            onTranslateError={setSubmitError}
+            characters={characters}
+            rooms={rooms}
+            roomElements={roomElements}
+          />
+        )}
 
         {submitError && <p className="mt-4 text-center text-sm text-destructive">{submitError}</p>}
 
@@ -309,65 +348,24 @@ export function CaseEditor() {
 function Step1({
   title,
   setTitle,
-  gridRows,
-  setGridRows,
-  gridCols,
-  setGridCols,
-  roomRows,
-  setRoomRows,
-  roomCols,
-  setRoomCols,
+  boards,
+  boardsLoading,
+  selectedBoard,
+  setSelectedBoard,
   characters,
-  setCharacters,
 }: {
   title: string;
   setTitle: (v: string) => void;
-  gridRows: number;
-  setGridRows: (v: number) => void;
-  gridCols: number;
-  setGridCols: (v: number) => void;
-  roomRows: number;
-  setRoomRows: (v: number) => void;
-  roomCols: number;
-  setRoomCols: (v: number) => void;
+  boards: Board[];
+  boardsLoading: boolean;
+  selectedBoard: Board | null;
+  setSelectedBoard: (b: Board | null) => void;
   characters: Character[];
-  setCharacters: (v: Character[]) => void;
 }) {
   const { t, lang } = useI18n();
 
-  const addCharacter = () => {
-    const idx = characters.length;
-    setCharacters([...characters, { id: `char-${idx}`, name: "" }]);
-  };
-
-  const removeCharacter = (id: string) => {
-    if (characters.length <= 3) return;
-    setCharacters(characters.filter((c) => c.id !== id));
-  };
-
-  const updateName = (id: string, name: string) => {
-    setCharacters(
-      characters.map((c) =>
-        c.id === id
-          ? {
-              ...c,
-              id: genCharId(
-                name,
-                characters.findIndex((x) => x.id === id),
-              ),
-              name,
-            }
-          : c,
-      ),
-    );
-  };
-
-  const updateImage = (id: string, image: string) => {
-    setCharacters(characters.map((c) => (c.id === id ? { ...c, image: image || undefined } : c)));
-  };
-
-  const updateDescription = (id: string, description: Record<string, string>) => {
-    setCharacters(characters.map((c) => (c.id === id ? { ...c, description } : c)));
+  const handleBoardChange = (id: string) => {
+    setSelectedBoard(boards.find((b) => b.id === id) ?? null);
   };
 
   return (
@@ -379,90 +377,75 @@ function Step1({
         onChange={setTitle}
       />
 
-      <div className="grid grid-cols-2 gap-4">
-        <NumberField
-          label={t("creator.gridRows")}
-          value={gridRows}
-          onChange={setGridRows}
-          min={1}
-        />
-        <NumberField
-          label={t("creator.gridCols")}
-          value={gridCols}
-          onChange={setGridCols}
-          min={1}
-        />
-        <NumberField
-          label={t("creator.roomRows")}
-          value={roomRows}
-          onChange={setRoomRows}
-          min={1}
-        />
-        <NumberField
-          label={t("creator.roomCols")}
-          value={roomCols}
-          onChange={setRoomCols}
-          min={1}
-        />
-      </div>
-
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-foreground">{t("creator.characters")}</h3>
-          <button
-            type="button"
-            onClick={addCharacter}
-            className="text-xs text-secondary hover:text-primary"
-          >
-            + {t("creator.addCharacter")}
-          </button>
+          <h3 className="text-sm font-semibold text-foreground">{t("creator.board")}</h3>
         </div>
 
-        <div className="space-y-2">
-          {characters.map((char, idx) => (
-            <div key={char.id} className="flex flex-col gap-2">
-              <div className="flex items-end gap-2">
-                <input
-                  type="text"
-                  value={char.name}
-                  onChange={(e) => updateName(char.id, e.target.value)}
-                  placeholder={char.name || `Character ${idx + 1}`}
-                  className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
-                />
-                {characters.length > 3 && (
-                  <button
-                    type="button"
-                    onClick={() => removeCharacter(char.id)}
-                    className="rounded-lg border border-destructive/30 bg-destructive/10 px-2 py-1 text-xs text-destructive hover:bg-destructive/20"
-                  >
-                    ✕
-                  </button>
-                )}
+        {boardsLoading ? (
+          <p className="text-sm text-muted-foreground">{t("murdoku.loading")}</p>
+        ) : boards.length === 0 ? (
+          <p className="text-sm text-destructive">{t("creator.noBoards")}</p>
+        ) : (
+          <>
+            <select
+              value={selectedBoard?.id ?? ""}
+              onChange={(e) => handleBoardChange(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+            >
+              <option value="">{t("creator.selectBoard")}</option>
+              {boards.map((board) => (
+                <option key={board.id} value={board.id}>
+                  {localize(board.name, board.nameI18n, lang)} ({board.gridRows} × {board.gridCols})
+                </option>
+              ))}
+            </select>
+
+            {selectedBoard && (
+              <div className="mt-3 p-3 rounded-lg border border-border bg-secondary/5 space-y-2">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>{t("murdoku.grid")}:</span>
+                  <span>
+                    {selectedBoard.gridRows} × {selectedBoard.gridCols}
+                  </span>
+                  <span>
+                    {t("murdoku.rooms")}: {selectedBoard.rooms.length}
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase">
+                    {t("creator.characters")}
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    {t("creator.charactersFromDb", { count: characters.length })}
+                  </p>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    {characters.map((char) => (
+                      <div
+                        key={char.id}
+                        className="flex items-center gap-2 text-xs rounded-lg border border-border bg-card px-2 py-1"
+                      >
+                        {char.image ? (
+                          <img
+                            src={char.image}
+                            alt={char.name}
+                            className="h-5 w-5 rounded-full object-cover"
+                          />
+                        ) : (
+                          <span className="w-5 h-5 rounded-full bg-muted shrink-0 flex items-center justify-center">
+                            {char.name[0]}
+                          </span>
+                        )}
+                        <span>{char.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <input
-                  type="text"
-                  value={char.image ?? ""}
-                  onChange={(e) => updateImage(char.id, e.target.value)}
-                  placeholder={t("creator.imageUrl")}
-                  className="rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground outline-none focus:border-primary"
-                />
-                <textarea
-                  value={char.description?.[lang] ?? ""}
-                  onChange={(e) =>
-                    updateDescription(char.id, {
-                      ...(char.description ?? {}),
-                      [lang]: e.target.value,
-                    })
-                  }
-                  placeholder={t("creator.description")}
-                  rows={2}
-                  className="rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground outline-none focus:border-primary resize-y-none"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
@@ -752,12 +735,18 @@ const ROOM_COLORS = [
 function Step3({
   clues,
   setClues,
+  translating,
+  setTranslating,
+  onTranslateError,
   characters,
   rooms,
   roomElements,
 }: {
   clues: Clue[];
   setClues: (v: Clue[]) => void;
+  translating: Record<string, boolean>;
+  setTranslating: (v: Record<string, boolean>) => void;
+  onTranslateError: (msg: string) => void;
   characters: Character[];
   rooms: Room[];
   roomElements: Record<string, RoomElement[]>;
@@ -768,18 +757,25 @@ function Step3({
   // Collect all unique element names across all rooms
   const allElementNames = useMemo(() => {
     const names = new Set<string>();
-    Object.values(roomElements).flat().forEach(el => {
-      if (el.name && el.name.trim()) {
-        names.add(el.name);
-      }
-    });
+    Object.values(roomElements)
+      .flat()
+      .forEach((el) => {
+        if (el.name && el.name.trim()) {
+          names.add(el.name);
+        }
+      });
     return Array.from(names).sort();
   }, [roomElements]);
 
   const addClue = () => {
     setClues([
       ...clues,
-      { id: `clue-${clues.length}`, text: { es: "", en: "", eu: "" }, type: "fact" },
+      {
+        id: `clue-${clues.length}`,
+        text: { es: "", en: "", eu: "" },
+        type: "fact",
+        translateFrom: "es",
+      },
     ]);
   };
 
@@ -790,6 +786,28 @@ function Step3({
 
   const updateClue = (id: string, patch: Partial<Clue>) => {
     setClues(clues.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+  };
+
+  const translateClue = async (id: string) => {
+    const clue = clues.find((c) => c.id === id);
+    if (!clue) return;
+    const src = clue.translateFrom ?? "es";
+    const sourceText = clue.text[src] ?? "";
+    if (!sourceText.trim()) return;
+    setTranslating({ ...translating, [id]: true });
+    try {
+      const langs = ["es", "eu", "en"];
+      const next = { ...clue.text };
+      for (const l of langs) {
+        if (l === src) continue;
+        next[l] = await translateText(sourceText, src, l);
+      }
+      updateClue(id, { text: next });
+    } catch (err) {
+      onTranslateError(err instanceof Error ? err.message : "Error al traducir.");
+    } finally {
+      setTranslating({ ...translating, [id]: false });
+    }
   };
 
   return (
@@ -819,20 +837,6 @@ function Step3({
                 </option>
               ))}
             </select>
-            <textarea
-              value={clue.text[lang] ?? ""}
-              onChange={(e) =>
-                updateClue(clue.id, {
-                  text: {
-                    ...clue.text,
-                    [lang]: e.target.value,
-                  },
-                })
-              }
-              placeholder={`${t("creator.clueText")} ${idx + 1}`}
-              rows={2}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
-            />
             <select
               value={clue.characterId ?? ""}
               onChange={(e) =>
@@ -881,7 +885,54 @@ function Step3({
                 </option>
               ))}
             </select>
-            <div className="flex justify-end">
+            <div className="flex items-center gap-2 pt-2">
+              <label className="text-xs font-semibold text-muted-foreground">
+                {t("creator.translateFrom")}
+              </label>
+              <select
+                value={clue.translateFrom ?? "es"}
+                onChange={(e) => updateClue(clue.id, { translateFrom: e.target.value })}
+                className="text-xs text-muted-foreground border border-border rounded-lg bg-background px-2 py-1 outline-none focus:border-primary"
+              >
+                {["es", "eu", "en"].map((l) => (
+                  <option key={l} value={l}>
+                    {l.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => void translateClue(clue.id)}
+                disabled={translating[clue.id] || !clue.text[clue.translateFrom ?? "es"]?.trim()}
+                className="flex-1 rounded-lg border border-primary bg-primary/10 px-3 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary/20 disabled:opacity-50 disabled:hover:bg-primary/10"
+              >
+                {translating[clue.id] ? "Traducir…" : t("creator.translateToOthers")}
+              </button>
+            </div>
+            <div className="grid grid-cols-3 gap-3 pt-2">
+              {["es", "eu", "en"].map((l) => (
+                <div key={l} className="space-y-1">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase">
+                    {l.toUpperCase()}
+                  </label>
+                  <textarea
+                    value={clue.text[l] ?? ""}
+                    onChange={(e) =>
+                      updateClue(clue.id, {
+                        text: {
+                          ...clue.text,
+                          [l]: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder={t("creator.clueText")}
+                    rows={2}
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-end pt-2">
               <button
                 type="button"
                 onClick={() => removeClue(clue.id)}
@@ -916,31 +967,6 @@ function TextFieldSimple({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
-      />
-    </div>
-  );
-}
-
-function NumberField({
-  label,
-  value,
-  onChange,
-  min,
-}: {
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-  min: number;
-}) {
-  return (
-    <div className="space-y-1">
-      <label className="block text-xs font-semibold text-muted-foreground">{label}</label>
-      <input
-        type="number"
-        min={min}
-        value={value}
-        onChange={(e) => onChange(parseInt(e.target.value, 10) || min)}
         className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
       />
     </div>

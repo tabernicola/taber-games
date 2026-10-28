@@ -31,3 +31,9 @@
 
   background-color: #f8fafc;
 }
+
+html.murdoku-light,
+body.murdoku-light {
+  background: #f8fafc !important;
+  color: #0f172a;
+}
