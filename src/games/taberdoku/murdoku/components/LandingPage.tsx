@@ -91,7 +91,7 @@ export function LandingPage() {
             )}
 
             {cases && cases.length > 0 && (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                 {cases.map((c) => (
                   <CaseCard key={c.id} caseData={c} slug={slug} />
                 ))}
@@ -121,23 +121,36 @@ export function LandingPage() {
 
 function CaseCard({ caseData, slug }: { caseData: MurdokuCase; slug: string }) {
   const { t, lang } = useI18n();
-  const clueCount = caseData.content.clues.length;
-  const characterCount = caseData.content.characters.length;
+  const clueCount = Array.isArray(caseData.content?.clues) ? caseData.content.clues.length : 0;
+  const characterCount = Array.isArray(caseData.content?.characters) ? caseData.content.characters.length : 0;
+  const image = caseData.image || caseData.content?.image;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 transition-all hover:border-muted-foreground/40">
-      <h3 className="text-lg font-semibold text-foreground">{localize(caseData.title, caseData.titleI18n, lang)}</h3>
-      <p className="mt-1 text-xs text-muted-foreground">
-        {t("murdoku.clues")}: {clueCount} · {t("murdoku.characters")}: {characterCount}
-      </p>
-      <Link
-        to="/$lang/taberdoku/murdoku/play"
-        params={{ lang: slug }}
-        search={{ caseId: caseData.id }}
-        className="mt-3 inline-block w-full text-center text-sm font-semibold text-secondary hover:underline"
-      >
-        {t("murdoku.solve")}
-      </Link>
-    </div>
+    <Link
+      to="/$lang/taberdoku/murdoku/play"
+      params={{ lang: slug }}
+      search={{ caseId: caseData.id }}
+      className="group block w-full max-w-[220px] mx-auto"
+    >
+      <div className="relative aspect-square overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary hover:shadow-md">
+        {image ? (
+          <img
+            src={image}
+            alt={localize(caseData.title, caseData.titleI18n, lang)}
+            className="h-full w-full object-cover transition-transform group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-muted text-center text-xs text-muted-foreground px-2">
+            {localize(caseData.title, caseData.titleI18n, lang)}
+          </div>
+        )}
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-2.5 pt-6">
+          <h3 className="text-sm font-semibold text-white line-clamp-2">{localize(caseData.title, caseData.titleI18n, lang)}</h3>
+          <p className="mt-0.5 text-[10px] text-white/90">
+            {t("murdoku.clues")}: {clueCount} · {t("murdoku.characters")}: {characterCount}
+          </p>
+        </div>
+      </div>
+    </Link>
   );
 }

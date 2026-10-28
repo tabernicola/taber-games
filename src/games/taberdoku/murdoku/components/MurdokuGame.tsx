@@ -23,7 +23,15 @@ export function MurdokuGame({
   const { t, slug, lang } = useI18n();
   const { playSound } = useSoundEffects();
   const navigate = useNavigate();
-  const { content } = activeCase;
+  const { content } = activeCase || {};
+  
+  if (!content) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <p className="text-muted-foreground">Error loading case</p>
+      </div>
+    );
+  }
 
   const [mode, setMode] = useState<GameMode>("notes");
   const [placements, setPlacements] = useState<Record<string, Position>>({});
@@ -40,6 +48,7 @@ export function MurdokuGame({
   const [solutionAnimation, setSolutionAnimation] = useState<{ type: 'correct' | 'incorrect', cellKey: string }[]>([]);
   const [showResultModal, setShowResultModal] = useState(false);
   const [showAnimationOnly, setShowAnimationOnly] = useState(false);
+  const [incorrectPlacementsToRemove, setIncorrectPlacementsToRemove] = useState<string[]>([]);
   const placementsRef = useRef(placements);
   const solutionRef = useRef(content.solution.placements);
 
@@ -135,7 +144,7 @@ export function MurdokuGame({
       setManualCrosses(nextCrosses);
 
       // Check if all characters are placed
-      if (Object.keys(nextPlacements).length === content.characters.length) {
+      if (Array.isArray(content.characters) && Object.keys(nextPlacements).length === content.characters.length) {
         checkSolution(nextPlacements);
       }
     } else if (mode === "notes") {
@@ -180,10 +189,9 @@ export function MurdokuGame({
       if (lives > 1) {
         setLives(lives - 1);
         playSound("error");
-        const nextPlacements = { ...currentPlacements };
-        incorrectPlacements.forEach((id) => delete nextPlacements[id]);
-        setPlacements(nextPlacements);
-        // Show animation for incorrect placements before removing them
+        // Store incorrect placements to remove after animation
+        setIncorrectPlacementsToRemove(incorrectPlacements);
+        // Show animation for incorrect placements BEFORE removing them
         setShowAnimationOnly(true);
         setShowSolution(true);
       } else {
@@ -280,24 +288,40 @@ export function MurdokuGame({
         }
       }
 
-      // Sequential animation
+      // Sequential animation with sound
       animations.forEach((anim, index) => {
         setTimeout(() => {
           setSolutionAnimation(prev => [...prev, anim]);
-        }, index * 300); // 300ms delay between each
+          setTimeout(() => {
+            playSound(anim.type === 'correct' ? 'success' : 'error');
+          }, 100); // Play sound 100ms after animation appears
+        }, index * 500); // 500ms delay between each animation
       });
 
-      // Show result modal after animation completes
-      const totalAnimationTime = animations.length * 300 + 500; // Add 500ms buffer
-      setTimeout(() => {
-        setShowResultModal(true);
-      }, totalAnimationTime);
+      // Show result modal after animation completes (only for win/lose, not for life loss)
+      if (!showAnimationOnly) {
+        const totalAnimationTime = animations.length * 500 + 700; // Add 700ms buffer
+        console.log('Will show win/lose modal in', totalAnimationTime, 'ms');
+        setTimeout(() => {
+          console.log('Showing win/lose modal now');
+          setShowResultModal(true);
+        }, totalAnimationTime);
+      } else {
+        // For life loss, show modal after animation completes
+        const totalAnimationTime = animations.length * 500 + 700;
+        console.log('Will show life loss modal in', totalAnimationTime, 'ms');
+        setTimeout(() => {
+          console.log('Showing life loss modal now');
+          setShowResultModal(true);
+        }, totalAnimationTime);
+      }
     } else {
       // Clear animation when solution is hidden
       setSolutionAnimation([]);
       setShowResultModal(false);
+      setShowAnimationOnly(false);
     }
-  }, [showSolution]);
+  }, [showSolution, showAnimationOnly]);
 
   const killerVictimCell: Position | null = useMemo(() => {
     if (!showSolution) return null;
@@ -329,6 +353,9 @@ export function MurdokuGame({
     setGuessResult(null);
     setShowSolution(false);
     setLives(3);
+    setSolutionAnimation([]);
+    setShowResultModal(false);
+    setShowAnimationOnly(false);
     onPlayAgain?.();
   };
 
@@ -349,27 +376,7 @@ export function MurdokuGame({
     setAccusationOpen(true);
   };
 
-  if (guessResult?.correct && showResultModal) {
-    return (
-      <div className="murdoku-light min-h-screen">
-        <WinScreen activeCase={activeCase} onPlayAgain={handlePlayAgain} content={content} t={t} />
-      </div>
-    );
-  }
 
-  if (guessResult && !guessResult.correct && showResultModal) {
-    return (
-      <div className="murdoku-light min-h-screen">
-        <LoseScreen
-          activeCase={activeCase}
-          result={guessResult}
-          onPlayAgain={handlePlayAgain}
-          content={content}
-          t={t}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="murdoku-light min-h-screen">
@@ -479,6 +486,114 @@ export function MurdokuGame({
           </div>
         </div>
       )}
+
+      {showAnimationOnly && solutionAnimation.length > 0 && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur"
+          onClick={() => {
+            playSound("click");
+            // Remove incorrect placements
+            const nextPlacements = { ...placements };
+            incorrectPlacementsToRemove.forEach((id) => delete nextPlacements[id]);
+            setPlacements(nextPlacements);
+            setIncorrectPlacementsToRemove([]);
+            setShowSolution(false);
+            setShowAnimationOnly(false);
+            setSolutionAnimation([]);
+          }}
+        >
+          <div
+            className="relative mx-4 max-w-sm rounded-xl border border-border bg-card/95 p-6 text-center shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="mb-3 text-lg font-bold tracking-widest text-secondary">
+              {t("murdoku.incorrectPlacements")}
+            </h3>
+            <p className="mb-4 text-xs text-muted-foreground">
+              {t("murdoku.incorrectPlacementsDesc")}
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                playSound("click");
+                // Remove incorrect placements
+                const nextPlacements = { ...placements };
+                incorrectPlacementsToRemove.forEach((id) => delete nextPlacements[id]);
+                setPlacements(nextPlacements);
+                setIncorrectPlacementsToRemove([]);
+                setShowSolution(false);
+                setShowAnimationOnly(false);
+                setSolutionAnimation([]);
+              }}
+              className="rounded-lg border border-secondary bg-secondary/10 px-4 py-2 text-xs font-semibold text-secondary hover:bg-secondary/20"
+            >
+              {t("murdoku.continue")}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {guessResult?.correct && showResultModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur"
+          onClick={() => {
+            playSound("click");
+            handlePlayAgain();
+          }}
+        >
+          <div
+            className="relative mx-4 max-w-sm rounded-xl border border-border bg-card/95 p-6 text-center shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="mb-3 text-lg font-bold tracking-widest text-primary">
+              {t("murdoku.youWin")}
+            </h3>
+            <p className="mb-4 text-sm text-muted-foreground">{t("murdoku.youWinDesc")}</p>
+            <SolutionRow killer={Array.isArray(content.characters) ? content.characters.find((c) => c.id === content.solution.killerId) : undefined} victim={Array.isArray(content.characters) ? content.characters.find((c) => c.id === content.solution.victimId) : undefined} content={content} t={t} />
+              <button
+              type="button"
+              onClick={() => {
+                playSound("click");
+                handlePlayAgain();
+              }}
+              className="rounded-lg border border-destructive bg-destructive/10 px-6 py-3 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/20"
+            >
+              {t("murdoku.playAgain")}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {guessResult && !guessResult.correct && showResultModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur"
+          onClick={() => {
+            playSound("click");
+            handlePlayAgain();
+          }}
+        >
+          <div
+            className="relative mx-4 max-w-sm rounded-xl border border-border bg-card/95 p-6 text-center shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="mb-3 text-lg font-bold tracking-widest text-destructive">
+              {t("murdoku.youLose")}
+            </h3>
+            <p className="mb-4 text-sm text-muted-foreground">{t("murdoku.youLoseDesc")}</p>
+            <SolutionRow killer={content.characters?.find((c) => c.id === content.solution.killerId)} victim={content.characters?.find((c) => c.id === content.solution.victimId)} content={content} t={t} />
+            <button
+              type="button"
+              onClick={() => {
+                playSound("click");
+                handlePlayAgain();
+              }}
+              className="rounded-lg border border-destructive bg-destructive/10 px-6 py-3 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/20"
+            >
+              {t("murdoku.playAgain")}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -494,9 +609,9 @@ function WinScreen({
   content: CaseContent;
   t: (key: string, vars?: Record<string, string | number>) => string;
 }) {
-  const killer = content.characters.find((c) => c.id === content.solution.killerId);
-  const victim = content.characters.find((c) => c.id === content.solution.victimId);
-  const witness = content.solution.witnessId
+  const killer = Array.isArray(content.characters) ? content.characters.find((c) => c.id === content.solution.killerId) : undefined;
+  const victim = Array.isArray(content.characters) ? content.characters.find((c) => c.id === content.solution.victimId) : undefined;
+  const witness = content.solution.witnessId && Array.isArray(content.characters)
     ? content.characters.find((c) => c.id === content.solution.witnessId)
     : undefined;
   return (
@@ -533,8 +648,8 @@ function LoseScreen({
   content: CaseContent;
   t: (key: string, vars?: Record<string, string | number>) => string;
 }) {
-  const killer = content.characters.find((c) => c.id === content.solution.killerId);
-  const victim = content.characters.find((c) => c.id === content.solution.victimId);
+  const killer = Array.isArray(content.characters) ? content.characters.find((c) => c.id === content.solution.killerId) : undefined;
+  const victim = Array.isArray(content.characters) ? content.characters.find((c) => c.id === content.solution.victimId) : undefined;
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-4 text-center">
       <div
@@ -569,7 +684,7 @@ function SolutionRow({
 }) {
   const { lang } = useI18n();
   const killerPos = getPlacement(content.solution.placements, content.solution.killerId);
-  const witness = content.solution.witnessId
+  const witness = content.solution.witnessId && Array.isArray(content.characters)
     ? content.characters.find((c) => c.id === content.solution.witnessId)
     : undefined;
   const room = killerPos

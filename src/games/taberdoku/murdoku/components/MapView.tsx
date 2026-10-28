@@ -99,7 +99,7 @@ export function MapView({
   solutionAnimation: { type: 'correct' | 'incorrect', cellKey: string }[];
 }) {
   const { t, lang } = useI18n();
-  const { gridRows, gridCols, characters, rooms, clues } = content;
+  const { gridRows = 9, gridCols = 9, characters = [], rooms = [], clues = [] } = content || {};
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const displayPlacements = showSolution && solutionPositions ? solutionPositions : placements;
@@ -291,10 +291,10 @@ export function MapView({
         <div
           className="relative grid gap-px rounded-2xl border-2 border-slate-300 bg-slate-200/80 p-1 shadow-sm overflow-visible"
           style={{
-            gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
+            gridTemplateColumns: `repeat(${gridCols || 9}, 1fr)`,
           }}
         >
-          {Array.from({ length: gridRows }).map((_, row) =>
+          {Array.from({ length: gridRows || 9 }).map((_, row) =>
             Array.from({ length: gridCols }).map((_, col) => {
               const pos: Position = { row, col };
               const key = posKey(row, col);
@@ -512,11 +512,11 @@ export function MapView({
         <div
           className="grid gap-px pb-2 mx-auto"
           style={{
-            gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
+            gridTemplateColumns: `repeat(${gridCols || 9}, 1fr)`,
             maxWidth: '480px',
           }}
         >
-          {characters.map((char) => {
+          {(characters || [])?.map((char) => {
             const placed = placements[char.id];
             return (
               <button
@@ -544,7 +544,7 @@ export function MapView({
                     className="text-2xl font-bold"
                     title={char.name}
                   >
-                    {char.name[0]}
+                    {char.name?.[0]}
                   </span>
                 )}
               </button>
@@ -558,8 +558,8 @@ export function MapView({
           className="h-48 overflow-y-auto overflow-x-hidden"
         >
           <div className="space-y-2 mx-auto max-w-[480px]">
-            {clues.map((clue) => {
-              const char = clue.characterId ? characters.find((c) => c.id === clue.characterId) : null;
+            {Array.isArray(clues) && clues?.map((clue) => {
+              const char = clue.characterId && Array.isArray(characters) ? characters?.find((c) => c.id === clue.characterId) : null;
               const isClueSelected = selectedClueId === clue.id;
               return (
                 <div

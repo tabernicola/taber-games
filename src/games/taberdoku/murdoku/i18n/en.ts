@@ -42,6 +42,9 @@ export const dict: Dict = {
   "murdoku.tutorial.rules":
     "Murdoku combines Sudoku with deduction. Place characters on the grid following these rules:\n\n1. One character per row.\n2. One character per column.\n3. One character per room.\n4. The killer and victim share the same cell.\n\nUse the mode buttons below to mark suspects (notes), eliminate cells (crosses), or erase marks. When ready, click 'Accuse' to guess the killer and victim.",
   "murdoku.tutorial.close": "Got it",
+  "murdoku.incorrectPlacements": "Incorrect placements",
+  "murdoku.incorrectPlacementsDesc": "Some characters are in the wrong position. Look at the marks to see which ones.",
+  "murdoku.continue": "Continue",
   "murdoku.helpTokens": "Help tokens: {n}",
   "murdoku.useHelp": "Reveal position",
   "murdoku.noHelpTokens": "No help tokens left",

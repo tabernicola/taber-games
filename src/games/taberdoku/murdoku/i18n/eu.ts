@@ -42,6 +42,9 @@ export const dict: Dict = {
   "murdoku.tutorial.rules":
     "Murdoku Sudoku-a dedukzioakin konbinatzen du. Kokatu pertsonaiak saretan hurrengo arregloak jarraian:\n\n1. Pertsonaia bat lerroko batetik.\n2. Pertsonaia bat zutabe batean.\n3. Pertsonaia bat sala batean.\n4. Sarracala eta victimoa gelaxka berekin partekatzen dute.\n\nErabili azpian dagoen modu-botoiak sospetsuak markatzeko (oharrak), gelaxkak kendu zerikusia izateko (kroak) edo markak ezabatzeko. Prest egon zarenean, sakatu 'Akusatu' sarracala eta victimoa aholkulartzea.",
   "murdoku.tutorial.close": "Ulertuta",
+  "murdoku.incorrectPlacements": "Posizio okerrak",
+  "murdoku.incorrectPlacementsDesc": "Pertsonaia batzuk posizio okerrean daude. Ikusi markak zeintzuk diren ikusteko.",
+  "murdoku.continue": "Jarraitu",
   "murdoku.helpTokens": "Laguntza-fitxak: {n}",
   "murdoku.useHelp": "Apurtu posizioa",
   "murdoku.noHelpTokens": "Ez dago laguntza-fitxarik",

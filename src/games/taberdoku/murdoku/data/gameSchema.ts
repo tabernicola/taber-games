@@ -49,6 +49,7 @@ export {
 } from "../logic/game";
 
 export const SAMPLE_CASE_CONTENT: CaseContent = {
+  "image": "/taberdoku/murdoku/cases/pintada.png",
   "gridRows": 9,
   "gridCols": 9,
   "rooms": [
@@ -1607,6 +1608,7 @@ export const SAMPLE_CASE: MurdokuCase = {
   creator_id: null,
   status: "approved",
   content: SAMPLE_CASE_CONTENT,
+  image: "/taberdoku/murdoku/cases/pintada.png",
   rejection_note: null,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),

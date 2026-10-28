@@ -7,18 +7,34 @@ export type { MurdokuCase };
 type Row = Tables<"murdoku_playable_cases">;
 
 function toCase(row: Row): MurdokuCase {
-  if (!row.id || !row.title || !row.content) {
+  if (!row?.id || !row?.title) {
     throw new Error("Incomplete Murdoku case");
   }
+  const raw = row.content as unknown;
+  if (!raw || typeof raw !== "object") {
+    throw new Error("Incomplete Murdoku case");
+  }
+  const content = { ...(raw as any) };
+  if (!Array.isArray(content.rooms)) content.rooms = [];
+  if (!Array.isArray(content.characters)) content.characters = [];
+  if (!Array.isArray(content.clues)) content.clues = [];
+  if (!content.solution) content.solution = { killerId: "", placements: [] };
+  if (typeof content.gridRows !== "number") content.gridRows = 0;
+  if (typeof content.gridCols !== "number") content.gridCols = 0;
+  const image = (row as any).image ?? content.image ?? null;
+  content.image = image;
   return {
-    ...row,
     id: row.id,
     title: row.title,
-    titleI18n: row.title_i18n as MurdokuCase["titleI18n"],
-    status: (row.status ?? "draft") as CaseStatus,
-    created_at: row.created_at ?? "",
-    updated_at: row.updated_at ?? "",
-    content: row.content as unknown as CaseContent,
+    titleI18n: row.title_i18n as MurdokuCase["titleI18n"] | undefined,
+    creator_id: (row as any).creator_id ?? null,
+    status: ((row as any).status ?? "draft") as CaseStatus,
+    content: content as CaseContent,
+    rejection_note: (row as any).rejection_note ?? null,
+    created_at: (row as any).created_at ?? "",
+    updated_at: (row as any).updated_at ?? "",
+    board_id: (row as any).board_id ?? null,
+    image,
   };
 }
 

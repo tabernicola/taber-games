@@ -49,4 +49,21 @@ describe("stored reusable Murdoku cases", () => {
     result.error = { code: "PGRST116" };
     expect(await fetchCase(saved.id)).toBeNull();
   });
+
+  it("safely handles cases with missing characters or rooms and maps image", async () => {
+    result.data = {
+      id: "test-case-id",
+      title: "Test Case",
+      image: "/taberdoku/murdoku/cases/pintada.png",
+      content: {
+        clues: [],
+        solution: { killerId: "killer1", placements: [] },
+      },
+    };
+    const loaded = await fetchCase("test-case-id");
+    expect(loaded).not.toBeNull();
+    expect(loaded?.image).toBe("/taberdoku/murdoku/cases/pintada.png");
+    expect(loaded?.content.characters).toEqual([]);
+    expect(loaded?.content.rooms).toEqual([]);
+  });
 });
