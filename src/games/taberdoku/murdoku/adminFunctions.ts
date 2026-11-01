@@ -1,76 +1,55 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-type Claims = Record<string, unknown>;
+type Ctx = { supabase: any; userId: string };
 
-async function verifyAdmin(): Promise<void> {
-  const { getRequest } = await import("@tanstack/react-start/server");
-  const request = getRequest();
-  const authHeader = request?.headers?.get("authorization") ?? "";
-  if (!authHeader.startsWith("Bearer ")) {
-    throw new Error("Unauthorized: No authorization header");
-  }
-  const token = authHeader.replace("Bearer ", "");
+async function verifyAdmin(ctx: Ctx): Promise<void> {
+  const { data, error } = await ctx.supabase.rpc("has_role", {
+    _user_id: ctx.userId,
+    _role: "admin",
+  });
+  if (error) throw error;
+  if (!data) throw new Error("Unauthorized: admin role required");
+}
 
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const res = await supabaseAdmin.auth.getClaims(token);
-  if (res.error || !res.data?.claims) {
-    throw new Error("Unauthorized: Invalid token");
-  }
-
-  const claims = res.data.claims as Claims;
-  const appMetadata = (claims.app_metadata ?? claims.app_meta) as
-    | Record<string, unknown>
-    | undefined;
-  const userMetadata = claims.user_metadata as Record<string, unknown> | undefined;
-  const roles = appMetadata?.roles as unknown[] | undefined;
-
-  const isAdmin =
-    appMetadata?.role === "admin" ||
-    userMetadata?.role === "admin" ||
-    (roles?.includes("admin") ?? false);
-
-  if (!isAdmin) {
-    throw new Error("Unauthorized: admin role required");
-  }
+async function updateRow(ctx: Ctx, caseId: string, values: Record<string, unknown>) {
+  const { data, error } = await ctx.supabase
+    .from("murdoku_cases")
+    .update(values)
+    .eq("id", caseId)
+    .select("id");
+  if (error) throw error;
+  if (!data?.length) throw new Error("Case not found or not allowed");
+  return { success: true };
 }
 
 export const approveCase = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      caseId: z.string().uuid(),
-    }),
-  )
-  .handler(async ({ data }) => {
-    await verifyAdmin();
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
-      .from("murdoku_cases")
-      .update({ status: "approved", rejection_note: null })
-      .eq("id", data.caseId);
-    if (error) throw error;
-    return { success: true };
+  .middleware([requireSupabaseAuth])
+  .validator(z.object({ caseId: z.string().uuid() }))
+  .handler(async ({ data, context }) => {
+    await verifyAdmin(context as Ctx);
+    return updateRow(context as Ctx, data.caseId, { status: "approved", rejection_note: null });
   });
 
 export const rejectCase = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(
     z.object({
       caseId: z.string().uuid(),
       note: z.string().min(1, "Rejection note is required"),
     }),
   )
-  .handler(async ({ data }) => {
-    await verifyAdmin();
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
-      .from("murdoku_cases")
-      .update({ status: "rejected", rejection_note: data.note })
-      .eq("id", data.caseId);
-    if (error) throw error;
-    return { success: true };
+  .handler(async ({ data, context }) => {
+    await verifyAdmin(context as Ctx);
+    return updateRow(context as Ctx, data.caseId, {
+      status: "rejected",
+      rejection_note: data.note,
+    });
   });
 
 export const updateCase = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(
     z.object({
       caseId: z.string().uuid(),
@@ -79,19 +58,13 @@ export const updateCase = createServerFn({ method: "POST" })
       content: z.any(),
     }),
   )
-  .handler(async ({ data }) => {
-    await verifyAdmin();
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
-      .from("murdoku_cases")
-      .update({
-        title: data.title,
-        image: data.image,
-        content: data.content,
-        status: "pending_review",
-        rejection_note: null,
-      })
-      .eq("id", data.caseId);
-    if (error) throw error;
-    return { success: true };
+  .handler(async ({ data, context }) => {
+    await verifyAdmin(context as Ctx);
+    return updateRow(context as Ctx, data.caseId, {
+      title: data.title,
+      image: data.image,
+      content: data.content,
+      status: "pending_review",
+      rejection_note: null,
+    });
   });
