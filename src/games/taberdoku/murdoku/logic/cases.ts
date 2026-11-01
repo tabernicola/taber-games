@@ -170,6 +170,15 @@ export async function fetchPendingCases(): Promise<MurdokuCase[]> {
   return (data ?? []).map(toCase);
 }
 
+export async function fetchAllCases(): Promise<MurdokuCase[]> {
+  const { data, error } = await supabase
+    .from("murdoku_playable_cases")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map(toCase);
+}
+
 export async function submitCase(params: {
   title: string;
   creatorId: string;

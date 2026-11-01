@@ -3,36 +3,43 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useI18n } from "@/platform/i18n";
 import { useAuth } from "@/platform/hooks/useAuth";
-import { approveCase, rejectCase } from "@/games/taberdoku/murdoku/adminFunctions";
-import { fetchPendingCases } from "@/games/taberdoku/murdoku/logic/cases";
+import { approveCase, rejectCase, updateCase } from "@/games/taberdoku/murdoku/adminFunctions";
+import { fetchAllCases, fetchCase, type MurdokuCase } from "@/games/taberdoku/murdoku/logic/cases";
 import { MurdokuGame } from "./MurdokuGame";
-import type { MurdokuCase } from "@/games/taberdoku/murdoku/data/gameSchema";
+import { CaseEditor } from "./CaseEditor";
 import { useMurdokuTheme } from "@/games/taberdoku/murdoku/hooks/useMurdokuTheme";
 
 import "@/games/taberdoku/murdoku/light-theme.css";
+
+type View = "list" | "test" | "edit";
 
 export function AdminPanel() {
   const { t, slug } = useI18n();
   const { user, loading } = useAuth();
   const queryClient = useQueryClient();
-  const [testCase, setTestCase] = useState<MurdokuCase | null>(null);
+  const [view, setView] = useState<View>("list");
+  const [selectedCase, setSelectedCase] = useState<MurdokuCase | null>(null);
+  const [approveMode, setApproveMode] = useState(false);
   const [rejectModal, setRejectModal] = useState<MurdokuCase | null>(null);
 
   useMurdokuTheme();
 
   const {
-    data: pendingCases = [],
+    data: cases = [],
     isPending,
     isError,
   } = useQuery({
-    queryKey: ["murdoku-pending"],
-    queryFn: fetchPendingCases,
+    queryKey: ["murdoku-all-cases"],
+    queryFn: fetchAllCases,
   });
 
   const approveMutation = useMutation({
     mutationFn: (caseId: string) => approveCase({ data: { caseId } }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["murdoku-pending"] });
+      queryClient.invalidateQueries({ queryKey: ["murdoku-all-cases"] });
+      setView("list");
+      setSelectedCase(null);
+      setApproveMode(false);
     },
   });
 
@@ -40,7 +47,10 @@ export function AdminPanel() {
     mutationFn: ({ caseId, note }: { caseId: string; note: string }) =>
       rejectCase({ data: { caseId, note } }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["murdoku-pending"] });
+      queryClient.invalidateQueries({ queryKey: ["murdoku-all-cases"] });
+      setView("list");
+      setSelectedCase(null);
+      setApproveMode(false);
       setRejectModal(null);
     },
   });
@@ -59,7 +69,7 @@ export function AdminPanel() {
         <header className="sticky top-0 z-30 border-b border-border bg-background/80 px-4 py-3 backdrop-blur">
           <h1 className="text-lg font-bold tracking-widest text-primary">{t("admin.title")}</h1>
         </header>
-        <main className="mx-auto max-w-2xl px-4 py-12 text-center">
+        <main className="mx-auto px-4 py-12 text-center">
           <p className="mt-4 text-sm text-muted-foreground">
             {t("admin.needsAuth")}{" "}
             <Link to="/$lang/auth" params={{ lang: slug }} className="text-primary hover:underline">
@@ -71,19 +81,70 @@ export function AdminPanel() {
     );
   }
 
-  if (testCase) {
+  if (view === "edit" && selectedCase) {
     return (
       <div className="murdoku-light min-h-screen pb-20">
         <header className="sticky top-0 z-30 border-b border-border bg-background/80 px-4 py-3 backdrop-blur">
           <button
             type="button"
-            onClick={() => setTestCase(null)}
+            onClick={() => {
+              setView("list");
+              setSelectedCase(null);
+            }}
             className="text-sm text-muted-foreground hover:text-foreground"
           >
-            ← {t("admin.testCase")} ← {t("common.back")}
+            ← {t("admin.backToList")}
           </button>
+          <h1 className="text-lg font-bold tracking-widest text-primary">{t("admin.editCase")}</h1>
         </header>
-        <MurdokuGame case={testCase} onPlayAgain={() => {}} />
+        <main className="mx-auto px-4 py-6">
+          <CaseEditor initialCase={selectedCase} />
+        </main>
+      </div>
+    );
+  }
+
+  if (view === "test" && selectedCase) {
+    return (
+      <div className="murdoku-light min-h-screen pb-20">
+        <header className="sticky top-0 z-30 border-b border-border bg-background/80 px-4 py-3 backdrop-blur">
+          <button
+            type="button"
+            onClick={() => {
+              setView("list");
+              setSelectedCase(null);
+              setApproveMode(false);
+            }}
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
+            ← {t("admin.backToList")}
+          </button>
+          <h1 className="text-lg font-bold tracking-widest text-primary">
+            {approveMode ? t("admin.testBeforeApprove") : t("admin.testCase")}
+          </h1>
+        </header>
+        <main className="mx-auto px-4 py-6">
+          <MurdokuGame case={selectedCase} onPlayAgain={() => {}} />
+          {approveMode && (
+            <div className="mt-6 flex gap-2 justify-center">
+              <button
+                type="button"
+                onClick={() => void approveMutation.mutate(selectedCase.id)}
+                disabled={approveMutation.isPending}
+                className="rounded border border-primary bg-primary/15 px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/25 disabled:opacity-50"
+              >
+                {approveMutation.isPending ? t("admin.approving") : t("admin.approveCase")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setRejectModal(selectedCase)}
+                className="rounded border border-destructive bg-destructive/10 px-4 py-2 text-xs font-semibold text-destructive hover:bg-destructive/20"
+              >
+                {t("admin.rejectCase")}
+              </button>
+            </div>
+          )}
+        </main>
       </div>
     );
   }
@@ -100,26 +161,38 @@ export function AdminPanel() {
           ← {t("common.back")}
         </Link>
       </header>
-      <main className="mx-auto max-w-3xl px-4 py-6">
+      <main className="mx-auto px-4 py-6">
         {isPending && (
           <p className="text-center text-sm text-muted-foreground">{t("common.loading")}</p>
         )}
 
         {isError && <p className="text-center text-sm text-destructive">{t("admin.error")}</p>}
 
-        {pendingCases.length === 0 && !isPending && (
-          <p className="text-center text-sm text-muted-foreground">{t("admin.noPending")}</p>
+        {cases.length === 0 && !isPending && (
+          <p className="text-center text-sm text-muted-foreground">{t("admin.noCases")}</p>
         )}
 
         <div className="mt-6 space-y-4">
-          {pendingCases.map((c) => (
+          {cases.map((c) => (
             <CaseRow
               key={c.id}
               caseData={c}
-              onTest={() => setTestCase(c)}
-              onApprove={() => void approveMutation.mutate(c.id)}
-              onReject={() => setRejectModal(c)}
-              approveLoading={approveMutation.isPending}
+              onTest={() => {
+                setSelectedCase(c);
+                setView("test");
+                setApproveMode(false);
+              }}
+              onApprove={() => {
+                setSelectedCase(c);
+                setView("test");
+                setApproveMode(true);
+              }}
+              onEdit={() => {
+                setSelectedCase(c);
+                setView("edit");
+              }}
+              approveLoading={approveMutation.isPending && approveMode}
+              rejecting={rejectMutation.isPending}
             />
           ))}
         </div>
@@ -144,14 +217,16 @@ function CaseRow({
   caseData,
   onTest,
   onApprove,
-  onReject,
+  onEdit,
   approveLoading,
+  rejecting,
 }: {
   caseData: MurdokuCase;
   onTest: () => void;
   onApprove: () => void;
-  onReject: () => void;
+  onEdit: () => void;
   approveLoading: boolean;
+  rejecting: boolean;
 }) {
   const { t } = useI18n();
   return (
@@ -163,6 +238,8 @@ function CaseRow({
             {t("admin.byCreator", { creator: caseData.creator_id ?? "anon" })}
             {" · "}
             {new Date(caseData.created_at).toLocaleDateString()}
+            {" · "}
+            {caseData.status}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
             {caseData.content.clues.length} {t("murdoku.clues")}
@@ -180,16 +257,17 @@ function CaseRow({
             type="button"
             onClick={onApprove}
             disabled={approveLoading}
-            className="rounded border border-primary bg-primary/15 px-2 py-1 text-xs font-semibold text-primary hover:bg-primary/25"
+            className="rounded border border-primary bg-primary/15 px-2 py-1 text-xs font-semibold text-primary hover:bg-primary/25 disabled:opacity-50"
           >
             {t("admin.approve")}
           </button>
           <button
             type="button"
-            onClick={onReject}
-            className="rounded border border-destructive bg-destructive/10 px-2 py-1 text-xs font-semibold text-destructive hover:bg-destructive/20"
+            onClick={onEdit}
+            disabled={rejecting}
+            className="rounded border border-secondary bg-secondary/10 px-2 py-1 text-xs font-semibold text-secondary hover:bg-secondary/20 disabled:opacity-50"
           >
-            {t("admin.reject")}
+            {t("admin.edit")}
           </button>
         </div>
       </div>

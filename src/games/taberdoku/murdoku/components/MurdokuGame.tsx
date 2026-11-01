@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { ChevronLeft, HelpCircle } from "lucide-react";
+import { ChevronLeft, HelpCircle, Info } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import type { CaseContent, MurdokuCase, Position } from "../data/gameSchema";
 import type { GuessResult } from "../logic/game";
@@ -16,15 +16,17 @@ import "@/games/taberdoku/murdoku/light-theme.css";
 export function MurdokuGame({
   case: activeCase,
   onPlayAgain,
+  onInfo,
 }: {
   case: MurdokuCase;
   onPlayAgain?: () => void;
+  onInfo?: () => void;
 }) {
   const { t, slug, lang } = useI18n();
   const { playSound } = useSoundEffects();
   const navigate = useNavigate();
   const { content } = activeCase || {};
-  
+
   if (!content) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
@@ -43,9 +45,10 @@ export function MurdokuGame({
   const [guessResult, setGuessResult] = useState<GuessResult | null>(null);
   const [showSolution, setShowSolution] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
-  const [showElementNames, setShowElementNames] = useState(false);
   const [lives, setLives] = useState(3);
-  const [solutionAnimation, setSolutionAnimation] = useState<{ type: 'correct' | 'incorrect', cellKey: string }[]>([]);
+  const [solutionAnimation, setSolutionAnimation] = useState<
+    { type: "correct" | "incorrect"; cellKey: string }[]
+  >([]);
   const [showResultModal, setShowResultModal] = useState(false);
   const [showAnimationOnly, setShowAnimationOnly] = useState(false);
   const [incorrectPlacementsToRemove, setIncorrectPlacementsToRemove] = useState<string[]>([]);
@@ -69,7 +72,7 @@ export function MurdokuGame({
     } else {
       // Selecting new character - find associated clue
       setSelectedCharId(charId);
-      const associatedClue = content.clues.find(c => c.characterId === charId);
+      const associatedClue = content.clues.find((c) => c.characterId === charId);
       setSelectedClueId(associatedClue?.id ?? null);
     }
 
@@ -91,7 +94,7 @@ export function MurdokuGame({
     } else {
       // Selecting new clue - also select associated character if any
       setSelectedClueId(clueId);
-      const clue = content.clues.find(c => c.id === clueId);
+      const clue = content.clues.find((c) => c.id === clueId);
       if (clue?.characterId) {
         setSelectedCharId(clue.characterId);
       } else {
@@ -144,7 +147,10 @@ export function MurdokuGame({
       setManualCrosses(nextCrosses);
 
       // Check if all characters are placed
-      if (Array.isArray(content.characters) && Object.keys(nextPlacements).length === content.characters.length) {
+      if (
+        Array.isArray(content.characters) &&
+        Object.keys(nextPlacements).length === content.characters.length
+      ) {
         checkSolution(nextPlacements);
       }
     } else if (mode === "notes") {
@@ -173,7 +179,11 @@ export function MurdokuGame({
 
     for (const [charId, pos] of Object.entries(currentPlacements)) {
       const correctPlacement = solution.find((p) => p.characterId === charId);
-      if (!correctPlacement || correctPlacement.row !== pos.row || correctPlacement.col !== pos.col) {
+      if (
+        !correctPlacement ||
+        correctPlacement.row !== pos.row ||
+        correctPlacement.col !== pos.col
+      ) {
         allCorrect = false;
         incorrectPlacements.push(charId);
       }
@@ -275,25 +285,29 @@ export function MurdokuGame({
       setShowResultModal(false);
 
       // Calculate correct and incorrect placements
-      const animations: { type: 'correct' | 'incorrect', cellKey: string }[] = [];
+      const animations: { type: "correct" | "incorrect"; cellKey: string }[] = [];
 
       for (const [charId, placement] of Object.entries(placementsRef.current)) {
-        const correctPlacement = solutionRef.current.find(p => p.characterId === charId);
+        const correctPlacement = solutionRef.current.find((p) => p.characterId === charId);
         const cellKey = posKey(placement.row, placement.col);
 
-        if (correctPlacement && correctPlacement.row === placement.row && correctPlacement.col === placement.col) {
-          animations.push({ type: 'correct', cellKey });
+        if (
+          correctPlacement &&
+          correctPlacement.row === placement.row &&
+          correctPlacement.col === placement.col
+        ) {
+          animations.push({ type: "correct", cellKey });
         } else {
-          animations.push({ type: 'incorrect', cellKey });
+          animations.push({ type: "incorrect", cellKey });
         }
       }
 
       // Sequential animation with sound
       animations.forEach((anim, index) => {
         setTimeout(() => {
-          setSolutionAnimation(prev => [...prev, anim]);
+          setSolutionAnimation((prev) => [...prev, anim]);
           setTimeout(() => {
-            playSound(anim.type === 'correct' ? 'success' : 'error');
+            playSound(anim.type === "correct" ? "success" : "error");
           }, 100); // Play sound 100ms after animation appears
         }, index * 500); // 500ms delay between each animation
       });
@@ -301,17 +315,17 @@ export function MurdokuGame({
       // Show result modal after animation completes (only for win/lose, not for life loss)
       if (!showAnimationOnly) {
         const totalAnimationTime = animations.length * 500 + 700; // Add 700ms buffer
-        console.log('Will show win/lose modal in', totalAnimationTime, 'ms');
+        console.log("Will show win/lose modal in", totalAnimationTime, "ms");
         setTimeout(() => {
-          console.log('Showing win/lose modal now');
+          console.log("Showing win/lose modal now");
           setShowResultModal(true);
         }, totalAnimationTime);
       } else {
         // For life loss, show modal after animation completes
         const totalAnimationTime = animations.length * 500 + 700;
-        console.log('Will show life loss modal in', totalAnimationTime, 'ms');
+        console.log("Will show life loss modal in", totalAnimationTime, "ms");
         setTimeout(() => {
-          console.log('Showing life loss modal now');
+          console.log("Showing life loss modal now");
           setShowResultModal(true);
         }, totalAnimationTime);
       }
@@ -376,8 +390,6 @@ export function MurdokuGame({
     setAccusationOpen(true);
   };
 
-
-
   return (
     <div className="murdoku-light min-h-screen">
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/80 px-3 py-1 backdrop-blur">
@@ -392,9 +404,7 @@ export function MurdokuGame({
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-lg font-bold tracking-widest text-primary">
-          {t("murdoku.title")}
-        </h1>
+        <h1 className="text-lg font-bold tracking-widest text-primary">{t("murdoku.title")}</h1>
         <button
           type="button"
           onClick={() => {
@@ -434,7 +444,7 @@ export function MurdokuGame({
           solutionPositions={solutionPlacements}
           killerVictimCell={killerVictimCell}
           violationMap={violationMap}
-          showElementNames={showElementNames}
+          showElementNames={false}
           selectedClueId={selectedClueId}
           onSelectClue={handleSelectClue}
           solutionAnimation={solutionAnimation}
@@ -444,8 +454,7 @@ export function MurdokuGame({
       <BottomNavigation
         mode={mode}
         onChangeMode={handleModeChange}
-        showElementNames={showElementNames}
-        onToggleElementNames={() => setShowElementNames(!showElementNames)}
+        onInfo={onInfo ?? (() => setTutorialOpen(true))}
       />
 
       <AccusationModal
@@ -549,8 +558,21 @@ export function MurdokuGame({
               {t("murdoku.youWin")}
             </h3>
             <p className="mb-4 text-sm text-muted-foreground">{t("murdoku.youWinDesc")}</p>
-            <SolutionRow killer={Array.isArray(content.characters) ? content.characters.find((c) => c.id === content.solution.killerId) : undefined} victim={Array.isArray(content.characters) ? content.characters.find((c) => c.id === content.solution.victimId) : undefined} content={content} t={t} />
-              <button
+            <SolutionRow
+              killer={
+                Array.isArray(content.characters)
+                  ? content.characters.find((c) => c.id === content.solution.killerId)
+                  : undefined
+              }
+              victim={
+                Array.isArray(content.characters)
+                  ? content.characters.find((c) => c.id === content.solution.victimId)
+                  : undefined
+              }
+              content={content}
+              t={t}
+            />
+            <button
               type="button"
               onClick={() => {
                 playSound("click");
@@ -580,7 +602,12 @@ export function MurdokuGame({
               {t("murdoku.youLose")}
             </h3>
             <p className="mb-4 text-sm text-muted-foreground">{t("murdoku.youLoseDesc")}</p>
-            <SolutionRow killer={content.characters?.find((c) => c.id === content.solution.killerId)} victim={content.characters?.find((c) => c.id === content.solution.victimId)} content={content} t={t} />
+            <SolutionRow
+              killer={content.characters?.find((c) => c.id === content.solution.killerId)}
+              victim={content.characters?.find((c) => c.id === content.solution.victimId)}
+              content={content}
+              t={t}
+            />
             <button
               type="button"
               onClick={() => {
@@ -609,11 +636,16 @@ function WinScreen({
   content: CaseContent;
   t: (key: string, vars?: Record<string, string | number>) => string;
 }) {
-  const killer = Array.isArray(content.characters) ? content.characters.find((c) => c.id === content.solution.killerId) : undefined;
-  const victim = Array.isArray(content.characters) ? content.characters.find((c) => c.id === content.solution.victimId) : undefined;
-  const witness = content.solution.witnessId && Array.isArray(content.characters)
-    ? content.characters.find((c) => c.id === content.solution.witnessId)
+  const killer = Array.isArray(content.characters)
+    ? content.characters.find((c) => c.id === content.solution.killerId)
     : undefined;
+  const victim = Array.isArray(content.characters)
+    ? content.characters.find((c) => c.id === content.solution.victimId)
+    : undefined;
+  const witness =
+    content.solution.witnessId && Array.isArray(content.characters)
+      ? content.characters.find((c) => c.id === content.solution.witnessId)
+      : undefined;
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-4 text-center">
       <div
@@ -648,8 +680,12 @@ function LoseScreen({
   content: CaseContent;
   t: (key: string, vars?: Record<string, string | number>) => string;
 }) {
-  const killer = Array.isArray(content.characters) ? content.characters.find((c) => c.id === content.solution.killerId) : undefined;
-  const victim = Array.isArray(content.characters) ? content.characters.find((c) => c.id === content.solution.victimId) : undefined;
+  const killer = Array.isArray(content.characters)
+    ? content.characters.find((c) => c.id === content.solution.killerId)
+    : undefined;
+  const victim = Array.isArray(content.characters)
+    ? content.characters.find((c) => c.id === content.solution.victimId)
+    : undefined;
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-4 text-center">
       <div
@@ -684,9 +720,10 @@ function SolutionRow({
 }) {
   const { lang } = useI18n();
   const killerPos = getPlacement(content.solution.placements, content.solution.killerId);
-  const witness = content.solution.witnessId && Array.isArray(content.characters)
-    ? content.characters.find((c) => c.id === content.solution.witnessId)
-    : undefined;
+  const witness =
+    content.solution.witnessId && Array.isArray(content.characters)
+      ? content.characters.find((c) => c.id === content.solution.witnessId)
+      : undefined;
   const room = killerPos
     ? getRoomForCell(content.rooms, { row: killerPos.row, col: killerPos.col })
     : null;

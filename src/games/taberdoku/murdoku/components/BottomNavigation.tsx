@@ -1,4 +1,4 @@
-import { Edit, XCircle, Eye, EyeOff } from "lucide-react";
+import { Edit, XCircle, Info } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
 
 export type GameMode = "notes" | "crosses" | null;
@@ -6,13 +6,11 @@ export type GameMode = "notes" | "crosses" | null;
 export function BottomNavigation({
   mode,
   onChangeMode,
-  showElementNames,
-  onToggleElementNames,
+  onInfo,
 }: {
   mode: GameMode;
   onChangeMode: (mode: GameMode) => void;
-  showElementNames: boolean;
-  onToggleElementNames: () => void;
+  onInfo: () => void;
 }) {
   const { t } = useI18n();
   const handleModeClick = (target: "notes" | "crosses") => {
@@ -42,16 +40,11 @@ export function BottomNavigation({
         />
         <button
           type="button"
-          onClick={onToggleElementNames}
-          className={`flex flex-1 flex-col items-center gap-1 rounded-lg border px-2 py-1.5 text-[10px] font-semibold transition-all ${
-            showElementNames
-              ? "border-primary bg-primary/10 text-primary"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted"
-          }`}
-          aria-label={showElementNames ? "Ocultar nombres" : "Mostrar nombres"}
+          onClick={onInfo}
+          className="flex flex-1 flex-col items-center gap-1 rounded-lg border px-2 py-1.5 text-[10px] font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+          aria-label={t("murdoku.help")}
         >
-          {showElementNames ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-          {showElementNames ? "Ocultar" : "Nombres"}
+          <Info className="h-5 w-5" />
         </button>
       </div>
     </nav>

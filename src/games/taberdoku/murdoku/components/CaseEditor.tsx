@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useI18n } from "@/platform/i18n";
 import { useAuth } from "@/platform/hooks/useAuth";
@@ -12,6 +12,7 @@ import {
 } from "@/games/taberdoku/murdoku/logic/cases";
 import { translateText } from "@/games/taberdoku/murdoku/logic/translate";
 import { fetchCharacters as fetchPlatformCharacters } from "@/platform/characters/characters";
+import { updateCase } from "@/games/taberdoku/murdoku/adminFunctions";
 import {
   validateSolution,
   isCaseSolvable,
@@ -24,15 +25,19 @@ import type {
   Character,
   Clue,
   ClueType,
+  MurdokuCase,
   Position,
   Room,
-  RoomElement,
 } from "@/games/taberdoku/murdoku/data/gameSchema";
 import { useMurdokuTheme } from "@/games/taberdoku/murdoku/hooks/useMurdokuTheme";
 
 import "@/games/taberdoku/murdoku/light-theme.css";
 
-export function CaseEditor() {
+export function CaseEditor({
+  initialCase,
+}: {
+  initialCase?: MurdokuCase;
+} = {}) {
   const { t, slug, lang } = useI18n();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -42,8 +47,10 @@ export function CaseEditor() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [editingCaseId, setEditingCaseId] = useState<string | null>(initialCase?.id ?? null);
 
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState(initialCase?.title ?? "");
+  const [imageUrl, setImageUrl] = useState(initialCase?.image ?? "");
   const [boards, setBoards] = useState<Board[]>([]);
   const [boardsLoading, setBoardsLoading] = useState(true);
   const [allCharacters, setAllCharacters] = useState<Character[]>([]);
@@ -52,24 +59,50 @@ export function CaseEditor() {
   const [selectedBoardElements, setSelectedBoardElements] = useState<BoardElement[]>([]);
   const [boardElementsLoading, setBoardElementsLoading] = useState(false);
 
-  const [placements, setPlacements] = useState<Record<string, Position>>({});
+  const [placements, setPlacements] = useState<Record<string, Position>>(
+    initialCase
+      ? Object.fromEntries(
+          initialCase.content.solution.placements.map((p) => [
+            p.characterId,
+            { row: p.row, col: p.col },
+          ]),
+        )
+      : {},
+  );
   const [selectedCharId, setSelectedCharId] = useState<string | null>(null);
-  const [killerId, setKillerId] = useState("");
-  const [victimId, setVictimId] = useState("");
-  const [clues, setClues] = useState<Clue[]>([
-    { id: "clue-0", text: { es: "", en: "", eu: "" }, type: "fact", translateFrom: "es" },
-    { id: "clue-1", text: { es: "", en: "", eu: "" }, type: "elimination", translateFrom: "es" },
-  ]);
-  const [translating, setTranslating] = useState<Record<string, boolean>>({});
-  const [roomElements, setRoomElements] = useState<Record<string, RoomElement[]>>({});
+  const [killerId, setKillerId] = useState(initialCase?.content.solution.killerId ?? "");
+  const [victimId, setVictimId] = useState(initialCase?.content.solution.victimId ?? "");
+  const [witnessId, setWitnessId] = useState(initialCase?.content.solution.witnessId ?? "");
+  const [clues, setClues] = useState<Clue[]>(
+    initialCase?.content.clues?.length
+      ? initialCase.content.clues.map((c) => ({
+          id: c.id,
+          text: typeof c.text === "string" ? { es: c.text, en: c.text, eu: c.text } : c.text,
+          type: c.type ?? "elimination",
+          translateFrom: "es",
+          ...((c.type ?? "elimination") === "fact"
+            ? {}
+            : { characterId: c.characterId, roomId: c.roomId, elementId: c.elementId }),
+        }))
+      : [
+          { id: "clue-0", text: { es: "", en: "", eu: "" }, type: "fact", translateFrom: "es" },
+          {
+            id: "clue-1",
+            text: { es: "", en: "", eu: "" },
+            type: "elimination",
+            translateFrom: "es",
+          },
+        ],
+  );
+  const [translating, setTranslating] = useState<Record<string, Record<string, boolean>>>({});
 
-  const gridRows = selectedBoard?.gridRows ?? 0;
-  const gridCols = selectedBoard?.gridCols ?? 0;
+  const gridRows = selectedBoard?.gridRows ?? initialCase?.content.gridRows ?? 0;
+  const gridCols = selectedBoard?.gridCols ?? initialCase?.content.gridCols ?? 0;
 
   const rooms: Room[] = useMemo(() => {
-    if (!selectedBoard) return [];
+    if (!selectedBoard) return initialCase?.content.rooms ?? [];
     return attachElementsToRooms(selectedBoard.rooms, selectedBoardElements);
-  }, [selectedBoard, selectedBoardElements]);
+  }, [selectedBoard, selectedBoardElements, initialCase]);
 
   const characters: Character[] = useMemo(
     () => allCharacters.slice(0, gridRows),
@@ -78,11 +111,10 @@ export function CaseEditor() {
 
   const step1Valid = useMemo(() => {
     if (!title.trim()) return false;
-    if (!selectedBoard) return false;
+    if (!editingCaseId && !selectedBoard) return false;
     if (characters.length < 3) return false;
     return true;
-  }, [title, selectedBoard, characters]);
-
+  }, [title, selectedBoard, characters, editingCaseId]);
   useEffect(() => {
     let mounted = true;
     Promise.all([
@@ -116,15 +148,25 @@ export function CaseEditor() {
     });
   }, [selectedBoard]);
 
+  useEffect(() => {
+    if (!initialCase?.board_id || !boards.length) return;
+    const board = boards.find((b) => b.id === initialCase.board_id);
+    if (board && !selectedBoard) {
+      setSelectedBoard(board);
+    }
+  }, [initialCase?.board_id, boards, selectedBoard]);
+
   const step2Valid = useMemo(() => {
     if (characters.length === 0) return false;
     for (const c of characters) {
       if (!placements[c.id]) return false;
     }
-    if (!killerId || !victimId || killerId === victimId) return false;
+    if (!killerId) return false;
+    if (!victimId && !witnessId) return false;
+    if (victimId && killerId === victimId) return false;
+    if (witnessId && killerId === witnessId) return false;
     return true;
-  }, [characters, placements, killerId, victimId]);
-
+  }, [characters, placements, killerId, victimId, witnessId]);
   const handleNext = () => {
     if (step === 0 && !step1Valid) return;
     if (step === 1 && !step2Valid) return;
@@ -155,9 +197,11 @@ export function CaseEditor() {
       gridCols,
       rooms,
       characters,
+      image: imageUrl || undefined,
       solution: {
         killerId,
         victimId,
+        witnessId,
         placements: Object.entries(placements).map(([charId, pos]) => ({
           characterId: charId,
           row: pos.row,
@@ -186,11 +230,22 @@ export function CaseEditor() {
 
     setSubmitting(true);
     try {
-      await submitCase({
-        title,
-        creatorId: user.id,
-        content,
-      });
+      if (editingCaseId) {
+        await updateCase({
+          data: {
+            caseId: editingCaseId,
+            title,
+            image: imageUrl || null,
+            content,
+          },
+        });
+      } else {
+        await submitCase({
+          title,
+          creatorId: user.id,
+          content,
+        });
+      }
       setSubmitSuccess(true);
       setTimeout(() => {
         void navigate({ to: "/$lang/taberdoku/murdoku", params: { lang: slug } });
@@ -243,7 +298,7 @@ export function CaseEditor() {
         <h1 className="text-lg font-bold tracking-widest text-primary">{t("creator.title")}</h1>
       </header>
 
-      <main className="mx-auto max-w-2xl px-4 py-6">
+      <main className="mx-auto px-4 py-6">
         <div className="mb-6 flex gap-2">
           {[t("creator.step1"), t("creator.step2"), t("creator.step3")].map((label, i) => (
             <button
@@ -268,6 +323,8 @@ export function CaseEditor() {
           <Step1
             title={title}
             setTitle={setTitle}
+            imageUrl={imageUrl}
+            setImageUrl={setImageUrl}
             boards={boards}
             boardsLoading={boardsLoading}
             selectedBoard={selectedBoard}
@@ -290,8 +347,8 @@ export function CaseEditor() {
             setKillerId={setKillerId}
             victimId={victimId}
             setVictimId={setVictimId}
-            roomElements={roomElements}
-            setRoomElements={setRoomElements}
+            witnessId={witnessId}
+            setWitnessId={setWitnessId}
           />
         )}
 
@@ -304,7 +361,9 @@ export function CaseEditor() {
             onTranslateError={setSubmitError}
             characters={characters}
             rooms={rooms}
-            roomElements={roomElements}
+            gridRows={gridRows}
+            gridCols={gridCols}
+            placements={placements}
           />
         )}
 
@@ -348,6 +407,8 @@ export function CaseEditor() {
 function Step1({
   title,
   setTitle,
+  imageUrl,
+  setImageUrl,
   boards,
   boardsLoading,
   selectedBoard,
@@ -356,6 +417,8 @@ function Step1({
 }: {
   title: string;
   setTitle: (v: string) => void;
+  imageUrl: string;
+  setImageUrl: (v: string) => void;
   boards: Board[];
   boardsLoading: boolean;
   selectedBoard: Board | null;
@@ -375,6 +438,13 @@ function Step1({
         placeholder="Case title"
         value={title}
         onChange={setTitle}
+      />
+
+      <TextFieldSimple
+        label={t("creator.image")}
+        placeholder="https://ejemplo.com/imagen.jpg"
+        value={imageUrl}
+        onChange={setImageUrl}
       />
 
       <div className="space-y-3">
@@ -464,8 +534,8 @@ function Step2({
   setKillerId,
   victimId,
   setVictimId,
-  roomElements,
-  setRoomElements,
+  witnessId,
+  setWitnessId,
 }: {
   gridRows: number;
   gridCols: number;
@@ -479,242 +549,276 @@ function Step2({
   setKillerId: (v: string) => void;
   victimId: string;
   setVictimId: (v: string) => void;
-  roomElements: Record<string, RoomElement[]>;
-  setRoomElements: (v: Record<string, RoomElement[]>) => void;
+  witnessId: string;
+  setWitnessId: (v: string) => void;
 }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
 
-  const elementAt = (roomId: string, pos: Position): RoomElement | undefined => {
-    return roomElements[roomId]?.find(
+  const ROOM_COLORS = [
+    "bg-sky-100/75 hover:bg-sky-100",
+    "bg-emerald-100/75 hover:bg-emerald-100",
+    "bg-amber-100/75 hover:bg-amber-100",
+    "bg-rose-100/75 hover:bg-rose-100",
+    "bg-purple-100/75 hover:bg-purple-100",
+    "bg-teal-100/75 hover:bg-teal-100",
+    "bg-orange-100/75 hover:bg-orange-100",
+    "bg-indigo-100/75 hover:bg-indigo-100",
+    "bg-fuchsia-100/75 hover:bg-fuchsia-100",
+  ];
+
+  const ROOM_BORDER_COLORS = [
+    "border-sky-400",
+    "border-emerald-400",
+    "border-amber-400",
+    "border-rose-400",
+    "border-purple-400",
+    "border-teal-400",
+    "border-orange-400",
+    "border-indigo-400",
+    "border-fuchsia-400",
+  ];
+
+  const cellHasNeighborInSameRoom = (
+    pos: Position,
+    direction: "right" | "bottom" | "top" | "left",
+  ): boolean => {
+    const room = getRoomForCell(rooms, pos);
+    if (!room) return false;
+    const neighbor =
+      direction === "right"
+        ? { row: pos.row, col: pos.col + 1 }
+        : direction === "bottom"
+          ? { row: pos.row + 1, col: pos.col }
+          : direction === "top"
+            ? { row: pos.row - 1, col: pos.col }
+            : { row: pos.row, col: pos.col - 1 };
+    const neighborRoom = getRoomForCell(rooms, neighbor);
+    return neighborRoom?.id === room.id;
+  };
+
+  const getCellBorder = (pos: Position): string => {
+    const room = getRoomForCell(rooms, pos);
+    const roomIdx = rooms.findIndex((r) => r.id === room?.id);
+    const borderColor =
+      ROOM_BORDER_COLORS[roomIdx % ROOM_BORDER_COLORS.length] || "border-slate-800";
+
+    const topBorder = !cellHasNeighborInSameRoom(pos, "top") ? `border-t-2 ${borderColor}` : "";
+    const bottomBorder = !cellHasNeighborInSameRoom(pos, "bottom")
+      ? `border-b-2 ${borderColor}`
+      : "";
+    const leftBorder = !cellHasNeighborInSameRoom(pos, "left") ? `border-l-2 ${borderColor}` : "";
+    const rightBorder = !cellHasNeighborInSameRoom(pos, "right") ? `border-r-2 ${borderColor}` : "";
+    return `${topBorder} ${bottomBorder} ${leftBorder} ${rightBorder}`;
+  };
+
+  const elementAt = (pos: Position) => {
+    const room = getRoomForCell(rooms, pos);
+    if (!room) return undefined;
+    return (room.elements ?? []).find(
       (e) => e.position.row === pos.row && e.position.col === pos.col,
     );
   };
 
-  const updateRoomElements = (roomId: string, elements: RoomElement[]) => {
-    setRoomElements({ ...roomElements, [roomId]: elements });
-  };
-
-  const addElement = (roomId: string) => {
-    const room = rooms.find((r) => r.id === roomId);
-    if (!room) return;
-    const newElement: RoomElement = {
-      name: "elemento",
-      icon: "📍",
-      position: room.cells[0],
-      walkable: true,
-    };
-    updateRoomElements(roomId, [...(roomElements[roomId] ?? []), newElement]);
-  };
-
-  const removeElement = (roomId: string, elementIdx: number) => {
-    updateRoomElements(
-      roomId,
-      roomElements[roomId].filter((_, i) => i !== elementIdx),
-    );
-  };
-
-  const updateElement = (
-    roomId: string,
-    elementIdx: number,
-    field: keyof RoomElement,
-    value: string | Position | boolean,
-  ) => {
-    const elements = [...(roomElements[roomId] ?? [])];
-    elements[elementIdx] = { ...elements[elementIdx], [field]: value };
-    updateRoomElements(roomId, elements);
+  const getCharsAt = (pos: Position): Character[] => {
+    const result: Character[] = [];
+    for (const [charId, placement] of Object.entries(placements)) {
+      if (placement.row === pos.row && placement.col === pos.col) {
+        const ch = characters.find((c) => c.id === charId);
+        if (ch) result.push(ch);
+      }
+    }
+    return result;
   };
 
   const placedIds = new Set(Object.keys(placements));
   const unplaced = characters.filter((c) => !placedIds.has(c.id));
 
-  const killerOptions = characters.filter((c) => placements[c.id] && c.id !== victimId);
-  const victimOptions = characters.filter((c) => placements[c.id] && c.id !== killerId);
+  const killerOptions = characters.filter(
+    (c) => placements[c.id] && c.id !== victimId && c.id !== witnessId,
+  );
+  const victimOptions = characters.filter(
+    (c) => placements[c.id] && c.id !== killerId && c.id !== witnessId,
+  );
+  const witnessOptions = characters.filter(
+    (c) => placements[c.id] && c.id !== killerId && c.id !== victimId,
+  );
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="mb-2 text-xs text-muted-foreground">{t("creator.clickCell")}</p>
-        <div className="mb-3 flex flex-wrap gap-2">
-          {characters.map((char) => {
-            const placed = placements[char.id];
-            return (
-              <button
-                key={char.id}
-                type="button"
-                onClick={() => setSelectedCharId(selectedCharId === char.id ? null : char.id)}
-                className={`flex items-center gap-1 rounded-lg border-2 px-2 py-1 text-xs font-medium transition-all ${
-                  selectedCharId === char.id
-                    ? "border-primary bg-primary/10 text-primary"
-                    : placed
-                      ? "border-secondary bg-secondary/10 text-secondary"
-                      : "border-border bg-card text-foreground hover:border-muted-foreground/50"
-                }`}
-              >
-                <span>{char.name[0]}</span>
-                <span>{char.name}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,480px)_minmax(0,1fr)] gap-6">
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-foreground">{t("creator.board")}</h3>
+          </div>
 
-      <div className="mx-auto max-w-[320px]">
-        <div
-          className="grid gap-0.5 rounded-lg border border-secondary/20 bg-secondary/5 p-0.5"
-          style={{ gridTemplateColumns: `repeat(${gridCols}, 1fr)` }}
-        >
-          {Array.from({ length: gridRows }).map((_, row) =>
-            Array.from({ length: gridCols }).map((_, col) => {
-              const pos: Position = { row, col };
-              const key = posKey(row, col);
-              const room = getRoomForCell(rooms, pos);
-              const roomIdx = rooms.findIndex((r) => r.id === room?.id);
-              const charsHere = characters.filter(
-                (c) => placements[c.id]?.row === row && placements[c.id]?.col === col,
-              );
-              const elHere = room ? elementAt(room.id, pos) : undefined;
-              const cellHasNonWalkable = elHere && !elHere.walkable;
-              const isClicked =
-                selectedCharId !== null &&
-                placements[selectedCharId]?.row === row &&
-                placements[selectedCharId]?.col === col;
+          <div
+            className="relative grid gap-px rounded-2xl border-2 border-slate-300 bg-slate-200/80 p-1 shadow-sm overflow-visible mx-auto max-w-[480px]"
+            style={{ gridTemplateColumns: `repeat(${gridCols}, 1fr)` }}
+          >
+            {Array.from({ length: gridRows }).map((_, row) =>
+              Array.from({ length: gridCols }).map((_, col) => {
+                const pos: Position = { row, col };
+                const key = posKey(row, col);
+                const room = getRoomForCell(rooms, pos);
+                const roomIdx = rooms.findIndex((r) => r.id === room?.id);
+                const cellEl = elementAt(pos);
+                const cellHasNonWalkable = cellEl && !cellEl.walkable;
+                const charsHere = getCharsAt(pos);
+                const border = getCellBorder(pos);
+                const isClicked =
+                  selectedCharId !== null &&
+                  placements[selectedCharId]?.row === row &&
+                  placements[selectedCharId]?.col === col;
 
-              const handleCellClick = (pos: Position) => {
-                if (selectedCharId && cellHasNonWalkable) return;
-                onCellClick(pos);
-              };
+                const handleCellClick = () => {
+                  if (selectedCharId && cellHasNonWalkable) return;
+                  onCellClick(pos);
+                };
 
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => handleCellClick(pos)}
-                  className={`relative flex aspect-square items-center justify-center text-xs transition-all ${
-                    ROOM_COLORS[roomIdx % ROOM_COLORS.length]
-                  } ${cellHasNonWalkable ? "opacity-50" : ""} ${isClicked ? "ring-2 ring-primary" : ""}`}
-                  title={cellHasNonWalkable ? "No se puede colocar aquí" : undefined}
-                >
-                  {charsHere.length > 0 && (
-                    <span className="z-10 flex flex-col items-center">
-                      {charsHere.map((c) =>
-                        c.image ? (
-                          <img
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    disabled={selectedCharId !== null && cellHasNonWalkable}
+                    onClick={handleCellClick}
+                    className={`relative flex aspect-square items-center justify-center text-xs font-medium transition-all overflow-visible ${
+                      ROOM_COLORS[roomIdx % ROOM_COLORS.length]
+                    } ${border} ${isClicked ? "ring-2 ring-primary ring-offset-1 z-20" : ""}`}
+                    title={cellHasNonWalkable ? "No se puede colocar aquí" : undefined}
+                  >
+                    {charsHere.length > 0 && (
+                      <span className="z-10 flex flex-col items-center">
+                        {charsHere.map((c) => (
+                          <span
                             key={c.id}
-                            src={c.image}
-                            alt={c.name}
-                            className="h-6 w-6 rounded-full object-top object-cover"
-                          />
-                        ) : (
-                          <span key={c.id} className="text-center text-lg font-bold text-primary">
-                            {c.name[0]}
+                            className="text-center text-sm font-bold text-foreground"
+                            title={c.name}
+                          >
+                            {c.image ? (
+                              <img
+                                src={c.image}
+                                alt={c.name}
+                                className="h-7 w-7 rounded-full object-top object-cover ring-2 ring-white shadow-xs"
+                              />
+                            ) : (
+                              <span className="text-xl drop-shadow-xs">{c.name[0]}</span>
+                            )}
                           </span>
-                        ),
-                      )}
-                    </span>
-                  )}
-                  {elHere && (
-                    <span className="z-0 absolute bottom-0 right-0 text-base select-none">
-                      {elHere.icon}
-                    </span>
-                  )}
-                  {room &&
-                    (() => {
-                      const bottomRow = Math.max(...room.cells.map((c) => c.row));
-                      if (pos.row !== bottomRow) return null;
-                      const bottomCells = room.cells.filter((c) => c.row === bottomRow);
-                      const minCol = Math.min(...bottomCells.map((c) => c.col));
-                      const maxCol = Math.max(...bottomCells.map((c) => c.col));
-                      const centerCol = Math.floor((minCol + maxCol) / 2);
-                      if (pos.col !== centerCol) return null;
+                        ))}
+                      </span>
+                    )}
+
+                    {(() => {
+                      const el = elementAt(pos);
+                      if (!el) return null;
                       return (
-                        <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 max-w-[80%] truncate text-[7px] text-muted-foreground/60">
-                          {room.name}
+                        <span
+                          className="z-0 absolute inset-0 flex items-center justify-center text-3xl sm:text-4xl select-none"
+                          title={localize(el.name, el.nameI18n, lang)}
+                        >
+                          {el.image ? (
+                            <img
+                              src={el.image}
+                              alt={localize(el.name, el.nameI18n, lang)}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            el.icon
+                          )}
                         </span>
                       );
                     })()}
-                </button>
-              );
-            }),
-          )}
-        </div>
-      </div>
 
-      <div className="space-y-2">
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {t("murdoku.rooms")}
-        </h4>
-        {rooms.map((room) => (
-          <div key={room.id} className="rounded-lg border border-border bg-card p-3 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold">{room.name}</span>
-              <button
-                type="button"
-                onClick={() => addElement(room.id)}
-                className="text-xs text-secondary hover:text-primary"
-              >
-                + {t("creator.addElement")}
-              </button>
-            </div>
-            {(roomElements[room.id] ?? []).map((el, idx) => (
-              <div key={idx} className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={el.name}
-                  onChange={(e) => updateElement(room.id, idx, "name", e.target.value)}
-                  placeholder={t("creator.name")}
-                  className="flex-1 rounded border border-border px-2 py-1 text-xs"
-                />
-                <input
-                  type="text"
-                  value={el.icon}
-                  onChange={(e) => updateElement(room.id, idx, "icon", e.target.value)}
-                  placeholder="Icono"
-                  className="w-12 rounded border border-border px-2 py-1 text-center text-sm"
-                />
-                <span className="text-xs text-muted-foreground">
-                  {el.position.row},{el.position.col}
-                </span>
-                <label className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={el.walkable}
-                    onChange={(e) => updateElement(room.id, idx, "walkable", e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                  {t("murdoku.walkable")}
-                </label>
-                <button
-                  type="button"
-                  onClick={() => removeElement(room.id, idx)}
-                  className="text-xs text-destructive hover:text-destructive/80"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
+                    {room &&
+                      (() => {
+                        const bottomRow = Math.max(...room.cells.map((c) => c.row));
+                        if (pos.row !== bottomRow) return null;
+                        const bottomCells = room.cells.filter((c) => c.row === bottomRow);
+                        const minCol = Math.min(...bottomCells.map((c) => c.col));
+                        const maxCol = Math.max(...bottomCells.map((c) => c.col));
+                        const centerCol = Math.floor((minCol + maxCol) / 2);
+                        if (pos.col !== centerCol) return null;
+                        return (
+                          <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 max-w-[80%] truncate text-[7px] text-muted-foreground/60">
+                            {room.name}
+                          </span>
+                        );
+                      })()}
+                  </button>
+                );
+              }),
+            )}
           </div>
-        ))}
-      </div>
+        </section>
 
-      {unplaced.length > 0 && (
-        <p className="text-xs text-muted-foreground">
-          {unplaced.length} {t("creator.notPlaced")}
-        </p>
-      )}
+        <section className="space-y-3">
+          <div className="space-y-3">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {t("creator.characters")}
+            </h4>
+            <div
+              className="grid gap-px pb-2"
+              style={{ gridTemplateColumns: `repeat(${gridCols}, 1fr)` }}
+            >
+              {characters.map((char) => {
+                const placed = placements[char.id];
+                return (
+                  <button
+                    key={char.id}
+                    type="button"
+                    onClick={() => setSelectedCharId(selectedCharId === char.id ? null : char.id)}
+                    className={`aspect-square rounded-lg border transition-all shadow-2xs ${
+                      selectedCharId === char.id
+                        ? "border-primary bg-primary/10 ring-2 ring-primary/30"
+                        : placed
+                          ? "border-secondary/40 bg-secondary/10"
+                          : "border-border bg-card hover:border-slate-300 hover:shadow-xs"
+                    }`}
+                  >
+                    {char.image ? (
+                      <img
+                        src={char.image}
+                        alt={char.name}
+                        className="h-full w-full rounded-lg object-top object-cover"
+                        title={char.name}
+                      />
+                    ) : (
+                      <span className="text-2xl font-bold" title={char.name}>
+                        {char.name?.[0]}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            {unplaced.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {unplaced.length} {t("creator.notPlaced")}
+              </p>
+            )}
+          </div>
 
-      <div className="space-y-3 pt-4 border-t border-border">
-        <SelectField
-          label={t("creator.selectKiller")}
-          value={killerId}
-          onChange={setKillerId}
-          options={killerOptions}
-        />
-        <SelectField
-          label={t("creator.selectVictim")}
-          value={victimId}
-          onChange={setVictimId}
-          options={victimOptions}
-        />
+          <div className="space-y-3 pt-4 border-t border-border">
+            <SelectField
+              label={t("creator.selectKiller")}
+              value={killerId}
+              onChange={setKillerId}
+              options={killerOptions}
+            />
+            <SelectField
+              label={t("creator.selectVictim")}
+              value={victimId}
+              onChange={setVictimId}
+              options={victimOptions}
+            />
+            <SelectField
+              label={t("creator.selectWitness")}
+              value={witnessId}
+              onChange={setWitnessId}
+              options={witnessOptions}
+            />
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -740,34 +844,37 @@ function Step3({
   onTranslateError,
   characters,
   rooms,
-  roomElements,
+  gridRows,
+  gridCols,
+  placements,
 }: {
   clues: Clue[];
   setClues: (v: Clue[]) => void;
-  translating: Record<string, boolean>;
-  setTranslating: (v: Record<string, boolean>) => void;
+  translating: Record<string, Record<string, boolean>>;
+  setTranslating: (v: Record<string, Record<string, boolean>>) => void;
   onTranslateError: (msg: string) => void;
   characters: Character[];
   rooms: Room[];
-  roomElements: Record<string, RoomElement[]>;
+  gridRows: number;
+  gridCols: number;
+  placements: Record<string, Position>;
 }) {
   const { t, lang } = useI18n();
-  const clueTypes: ClueType[] = ["fact", "elimination"];
 
   // Collect all unique element names across all rooms
   const allElementNames = useMemo(() => {
     const names = new Set<string>();
-    Object.values(roomElements)
-      .flat()
-      .forEach((el) => {
+    rooms.forEach((room) => {
+      (room.elements ?? []).forEach((el) => {
         if (el.name && el.name.trim()) {
           names.add(el.name);
         }
       });
+    });
     return Array.from(names).sort();
-  }, [roomElements]);
+  }, [rooms]);
 
-  const addClue = () => {
+  const addFact = () => {
     setClues([
       ...clues,
       {
@@ -779,6 +886,33 @@ function Step3({
     ]);
   };
 
+  const addElimination = () => {
+    setClues([
+      ...clues,
+      {
+        id: `clue-${clues.length}`,
+        text: { es: "", en: "", eu: "" },
+        type: "elimination",
+        translateFrom: "es",
+      },
+    ]);
+  };
+
+  const addDeclarationFromSelection = () => {
+    if (!infoCharId || !selectedElementInfo) return;
+    const declaration: Clue = {
+      id: `clue-${clues.length}`,
+      text: { es: "", en: "", eu: "" },
+      type: "clue",
+      characterId: infoCharId,
+      roomId: selectedElementInfo.room?.id ?? undefined,
+      elementId: selectedElementInfo.centerEl?.id ?? undefined,
+      translateFrom: "es",
+    };
+    setClues([declaration, ...clues]);
+    setInfoCharId(null);
+  };
+
   const removeClue = (id: string) => {
     if (clues.length <= 1) return;
     setClues(clues.filter((c) => c.id !== id));
@@ -788,162 +922,316 @@ function Step3({
     setClues(clues.map((c) => (c.id === id ? { ...c, ...patch } : c)));
   };
 
-  const translateClue = async (id: string) => {
+  const translateClue = async (id: string, srcLang: string) => {
     const clue = clues.find((c) => c.id === id);
     if (!clue) return;
-    const src = clue.translateFrom ?? "es";
-    const sourceText = clue.text[src] ?? "";
+    const sourceText = clue.text[srcLang] ?? "";
     if (!sourceText.trim()) return;
-    setTranslating({ ...translating, [id]: true });
+    setTranslating({ ...translating, [id]: { ...(translating[id] ?? {}), [srcLang]: true } });
     try {
       const langs = ["es", "eu", "en"];
       const next = { ...clue.text };
       for (const l of langs) {
-        if (l === src) continue;
-        next[l] = await translateText(sourceText, src, l);
+        if (l === srcLang) continue;
+        next[l] = await translateText(sourceText, srcLang, l);
       }
       updateClue(id, { text: next });
     } catch (err) {
       onTranslateError(err instanceof Error ? err.message : "Error al traducir.");
     } finally {
-      setTranslating({ ...translating, [id]: false });
+      setTranslating({ ...translating, [id]: { ...(translating[id] ?? {}), [srcLang]: false } });
     }
   };
 
+  const facts = clues.filter((c) => c.type === "fact");
+  const declarations = clues.filter((c) => c.type !== "fact");
+  const [activeTab, setActiveTab] = useState<"facts" | "declarations">("facts");
+  const [infoCharId, setInfoCharId] = useState<string | null>(null);
+
+  const getCharsAt = (pos: Position): Character[] => {
+    const result: Character[] = [];
+    for (const [charId, placement] of Object.entries(placements)) {
+      if (placement.row === pos.row && placement.col === pos.col) {
+        const ch = characters.find((c) => c.id === charId);
+        if (ch) result.push(ch);
+      }
+    }
+    return result;
+  };
+
+  const elementAt = useCallback(
+    (pos: Position) => {
+      const room = getRoomForCell(rooms, pos);
+      if (!room) return undefined;
+      return (room.elements ?? []).find(
+        (e) => e.position.row === pos.row && e.position.col === pos.col,
+      );
+    },
+    [rooms],
+  );
+
+  const selectedElementInfo = useMemo(() => {
+    const pos = infoCharId ? placements[infoCharId] : null;
+    if (!pos) return null;
+    const room = getRoomForCell(rooms, pos);
+    const centerEl = elementAt(pos);
+    const neighbors = [
+      { dir: "north" as const, pos: { row: pos.row - 1, col: pos.col } },
+      { dir: "south" as const, pos: { row: pos.row + 1, col: pos.col } },
+      { dir: "west" as const, pos: { row: pos.row, col: pos.col - 1 } },
+    ]
+      .filter(({ pos: p }) => p.row >= 0 && p.row < gridRows && p.col >= 0 && p.col < gridCols)
+      .map(({ dir, pos: p }) => ({ dir, el: elementAt(p) }));
+    return { room, centerEl, neighbors };
+  }, [elementAt, infoCharId, placements, gridRows, gridCols, rooms]);
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">{t("creator.clues")}</h3>
+    <div className="space-y-6">
+      <div className="flex gap-4 border-b border-border pb-2">
         <button
           type="button"
-          onClick={addClue}
-          className="text-xs text-secondary hover:text-primary"
+          onClick={() => setActiveTab("facts")}
+          className={`-mb-2 border-b-2 px-3 py-1 text-xs font-semibold transition-colors ${
+            activeTab === "facts"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-primary"
+          }`}
         >
-          + {t("creator.addClue")}
+          {t("creator.facts")}
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("declarations")}
+          className={`-mb-2 border-b-2 px-3 py-1 text-xs font-semibold transition-colors ${
+            activeTab === "declarations"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-primary"
+          }`}
+        >
+          {t("creator.declarations")}
         </button>
       </div>
 
-      <div className="space-y-3">
-        {clues.map((clue, idx) => (
-          <div key={clue.id} className="rounded-lg border border-border bg-card p-3 space-y-2">
-            <select
-              value={clue.type}
-              onChange={(e) => updateClue(clue.id, { type: e.target.value as ClueType })}
-              className="text-xs uppercase tracking-wider text-muted-foreground"
+      {activeTab === "facts" ? (
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-foreground">{t("creator.facts")}</h3>
+            <button
+              type="button"
+              onClick={addFact}
+              className="text-xs text-secondary hover:text-primary"
             >
-              {clueTypes.map((ct) => (
-                <option key={ct} value={ct}>
-                  {t(`murdoku.clueType.${ct}`)}
-                </option>
-              ))}
-            </select>
-            <select
-              value={clue.characterId ?? ""}
-              onChange={(e) =>
-                updateClue(clue.id, {
-                  characterId: e.target.value || undefined,
-                })
-              }
-              className="text-xs text-muted-foreground"
-            >
-              <option value="">No character</option>
-              {characters.map((char) => (
-                <option key={char.id} value={char.id}>
-                  {char.name}
-                </option>
-              ))}
-            </select>
-            <select
-              value={clue.roomId ?? ""}
-              onChange={(e) =>
-                updateClue(clue.id, {
-                  roomId: e.target.value || undefined,
-                })
-              }
-              className="text-xs text-muted-foreground"
-            >
-              <option value="">No room</option>
-              {rooms.map((room) => (
-                <option key={room.id} value={room.id}>
-                  {room.name}
-                </option>
-              ))}
-            </select>
-            <select
-              value={clue.elementId ?? ""}
-              onChange={(e) =>
-                updateClue(clue.id, {
-                  elementId: e.target.value || undefined,
-                })
-              }
-              className="text-xs text-muted-foreground"
-            >
-              <option value="">No element</option>
-              {allElementNames.map((name) => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
-            <div className="flex items-center gap-2 pt-2">
-              <label className="text-xs font-semibold text-muted-foreground">
-                {t("creator.translateFrom")}
-              </label>
-              <select
-                value={clue.translateFrom ?? "es"}
-                onChange={(e) => updateClue(clue.id, { translateFrom: e.target.value })}
-                className="text-xs text-muted-foreground border border-border rounded-lg bg-background px-2 py-1 outline-none focus:border-primary"
-              >
-                {["es", "eu", "en"].map((l) => (
-                  <option key={l} value={l}>
-                    {l.toUpperCase()}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={() => void translateClue(clue.id)}
-                disabled={translating[clue.id] || !clue.text[clue.translateFrom ?? "es"]?.trim()}
-                className="flex-1 rounded-lg border border-primary bg-primary/10 px-3 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary/20 disabled:opacity-50 disabled:hover:bg-primary/10"
-              >
-                {translating[clue.id] ? "Traducir…" : t("creator.translateToOthers")}
-              </button>
-            </div>
-            <div className="grid grid-cols-3 gap-3 pt-2">
-              {["es", "eu", "en"].map((l) => (
-                <div key={l} className="space-y-1">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase">
-                    {l.toUpperCase()}
-                  </label>
-                  <textarea
-                    value={clue.text[l] ?? ""}
-                    onChange={(e) =>
-                      updateClue(clue.id, {
-                        text: {
-                          ...clue.text,
-                          [l]: e.target.value,
-                        },
-                      })
-                    }
-                    placeholder={t("creator.clueText")}
-                    rows={2}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-end pt-2">
-              <button
-                type="button"
-                onClick={() => removeClue(clue.id)}
-                className="text-xs text-destructive hover:text-destructive/80"
-              >
-                {t("creator.removeClue")}
-              </button>
-            </div>
+              + {t("creator.addFact")}
+            </button>
           </div>
-        ))}
-      </div>
+
+          <div className="space-y-3">
+            {facts.map((clue) => (
+              <FactCard
+                key={clue.id}
+                clue={clue}
+                onUpdate={(patch) => updateClue(clue.id, patch)}
+                onRemove={() => removeClue(clue.id)}
+                translating={translating[clue.id] ?? {}}
+                onTranslate={(lang) => void translateClue(clue.id, lang)}
+                translateLabel={t("creator.translateToOthers")}
+              />
+            ))}
+          </div>
+        </section>
+      ) : (
+        <section className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,480px)_minmax(0,1fr)] gap-6">
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-foreground">{t("creator.board")}</h3>
+                <p className="text-xs text-muted-foreground">{t("creator.selectCharOnBoard")}</p>
+              </div>
+
+              <div
+                className="relative grid gap-px rounded-2xl border-2 border-slate-300 bg-slate-200/80 p-1 shadow-sm overflow-visible mx-auto max-w-[480px]"
+                style={{ gridTemplateColumns: `repeat(${gridCols}, 1fr)` }}
+              >
+                {Array.from({ length: gridRows }).map((_, row) =>
+                  Array.from({ length: gridCols }).map((_, col) => {
+                    const pos: Position = { row, col };
+                    const key = posKey(row, col);
+                    const room = getRoomForCell(rooms, pos);
+                    const roomIdx = rooms.findIndex((r) => r.id === room?.id);
+                    const cellEl = elementAt(pos);
+                    const charsHere = getCharsAt(pos);
+                    const isSelected =
+                      infoCharId !== null &&
+                      placements[infoCharId]?.row === row &&
+                      placements[infoCharId]?.col === col;
+
+                    const handleCellClick = () => {
+                      const charHere = charsHere[0];
+                      if (charHere) {
+                        setInfoCharId(infoCharId === charHere.id ? null : charHere.id);
+                      }
+                    };
+
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={handleCellClick}
+                        className={`relative flex aspect-square items-center justify-center text-xs font-medium transition-all overflow-visible ${
+                          ROOM_COLORS[roomIdx % ROOM_COLORS.length]
+                        } ${isSelected ? "ring-2 ring-primary ring-offset-1 z-20" : ""}`}
+                      >
+                        {charsHere.length > 0 && (
+                          <span className="z-10 flex flex-col items-center">
+                            {charsHere.map((c) => (
+                              <span
+                                key={c.id}
+                                className="text-center text-sm font-bold text-foreground"
+                                title={c.name}
+                              >
+                                {c.image ? (
+                                  <img
+                                    src={c.image}
+                                    alt={c.name}
+                                    className="h-7 w-7 rounded-full object-top object-cover ring-2 ring-white shadow-xs"
+                                  />
+                                ) : (
+                                  <span className="text-xl drop-shadow-xs">{c.name[0]}</span>
+                                )}
+                              </span>
+                            ))}
+                          </span>
+                        )}
+
+                        {(() => {
+                          const el = elementAt(pos);
+                          if (!el) return null;
+                          return (
+                            <span
+                              className="z-0 absolute inset-0 flex items-center justify-center text-3xl sm:text-4xl select-none opacity-50"
+                              title={localize(el.name, el.nameI18n, lang)}
+                            >
+                              {el.image ? (
+                                <img
+                                  src={el.image}
+                                  alt={localize(el.name, el.nameI18n, lang)}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                el.icon
+                              )}
+                            </span>
+                          );
+                        })()}
+                      </button>
+                    );
+                  }),
+                )}
+              </div>
+
+              {selectedElementInfo && (
+                <div className="rounded-lg border border-border bg-card p-3 space-y-2 mt-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-muted-foreground uppercase">
+                      {t("creator.selectedChar")}
+                    </span>
+                    <span className="text-sm font-bold text-foreground">
+                      {characters.find((c) => c.id === infoCharId)?.name ?? ""}
+                    </span>
+                  </div>
+                  {selectedElementInfo.room && (
+                    <div className="flex items-center gap-2 p-1.5 rounded bg-secondary/5 text-foreground text-xs">
+                      <span className="font-semibold text-muted-foreground">
+                        {t("murdoku.room")}:
+                      </span>
+                      <span>
+                        {localize(
+                          selectedElementInfo.room.name,
+                          selectedElementInfo.room.nameI18n,
+                          lang,
+                        )}
+                      </span>
+                    </div>
+                  )}
+                  <div className="space-y-1 text-xs">
+                    {selectedElementInfo.centerEl && (
+                      <div className="flex items-center gap-1 p-1.5 rounded bg-primary/5 text-primary">
+                        <span className="font-semibold">{t("creator.elementOn")}:</span>
+                        <span>
+                          {localize(
+                            selectedElementInfo.centerEl.name,
+                            selectedElementInfo.centerEl.nameI18n,
+                            lang,
+                          )}
+                        </span>
+                      </div>
+                    )}
+                    {selectedElementInfo.neighbors.map(({ dir, el }) => {
+                      const label =
+                        dir === "north"
+                          ? t("creator.north")
+                          : dir === "south"
+                            ? t("creator.south")
+                            : t("creator.west");
+                      return (
+                        el && (
+                          <div
+                            key={`${dir}-${el.position.row}-${el.position.col}`}
+                            className="flex items-center gap-1 p-1.5 rounded bg-secondary/5 text-foreground"
+                          >
+                            <span className="font-semibold text-muted-foreground">{label}:</span>
+                            <span>{localize(el.name, el.nameI18n, lang)}</span>
+                          </div>
+                        )
+                      );
+                    })}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addDeclarationFromSelection}
+                    disabled={!infoCharId}
+                    className="w-full rounded-lg border border-primary bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/20 disabled:opacity-50 disabled:hover:bg-primary/10"
+                  >
+                    {t("creator.addDeclarationFromBoard")}
+                  </button>
+                </div>
+              )}
+            </section>
+
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-foreground">
+                  {t("creator.declarations")}
+                </h3>
+                <button
+                  type="button"
+                  onClick={addElimination}
+                  className="text-xs text-secondary hover:text-primary"
+                >
+                  + {t("creator.addDeclaration")}
+                </button>
+              </div>
+
+              <div className="space-y-3 max-h-[780px] overflow-y-auto">
+                {declarations.map((clue) => (
+                  <EliminationCard
+                    key={clue.id}
+                    clue={clue}
+                    characters={characters}
+                    rooms={rooms}
+                    allElementNames={allElementNames}
+                    translating={translating[clue.id] ?? {}}
+                    onUpdate={(patch) => updateClue(clue.id, patch)}
+                    onRemove={() => removeClue(clue.id)}
+                    onTranslate={(lang) => void translateClue(clue.id, lang)}
+                    translateLabel={t("creator.translateToOthers")}
+                  />
+                ))}
+              </div>
+            </section>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
@@ -969,6 +1257,206 @@ function TextFieldSimple({
         onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
       />
+    </div>
+  );
+}
+
+function FactCard({
+  clue,
+  onUpdate,
+  onRemove,
+  translating,
+  onTranslate,
+  translateLabel,
+}: {
+  clue: Clue;
+  onUpdate: (patch: Partial<Clue>) => void;
+  onRemove: () => void;
+  translating: Record<string, boolean>;
+  onTranslate: (lang: string) => void;
+  translateLabel: string;
+}) {
+  const { t } = useI18n();
+  const [langTab, setLangTab] = useState<"es" | "eu" | "en">("es");
+  const isTranslating = translating[langTab] ?? false;
+
+  return (
+    <div className="rounded-lg border border-border bg-card p-3 space-y-2">
+      <div className="flex gap-2 border-b border-border pb-1 mb-2">
+        {["es", "eu", "en"].map((l) => (
+          <button
+            key={l}
+            type="button"
+            onClick={() => setLangTab(l as "es" | "eu" | "en")}
+            className={`-mb-1 border-b-2 px-2 py-0.5 text-xs font-semibold transition-colors ${
+              langTab === l
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-primary"
+            }`}
+          >
+            {l.toUpperCase()}
+          </button>
+        ))}
+      </div>
+
+      <textarea
+        value={clue.text[langTab] ?? ""}
+        onChange={(e) =>
+          onUpdate({
+            text: { ...clue.text, [langTab]: e.target.value },
+          })
+        }
+        placeholder={t("creator.clueText")}
+        rows={3}
+        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+      />
+
+      <div className="flex items-center gap-2 pt-2">
+        <button
+          type="button"
+          onClick={() => onTranslate(langTab)}
+          disabled={isTranslating || !clue.text[langTab]?.trim()}
+          className="flex-3 rounded-lg border border-primary bg-primary/10 px-3 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary/20 disabled:opacity-50 disabled:hover:bg-primary/10"
+        >
+          {isTranslating ? "Traducir…" : translateLabel}
+        </button>
+      </div>
+      <div className="flex justify-end pt-2">
+        <button
+          type="button"
+          onClick={onRemove}
+          className="text-xs text-destructive hover:text-destructive/80"
+        >
+          {t("creator.removeClue")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function EliminationCard({
+  clue,
+  characters,
+  rooms,
+  allElementNames,
+  translating,
+  onUpdate,
+  onRemove,
+  onTranslate,
+  translateLabel,
+}: {
+  clue: Clue;
+  characters: Character[];
+  rooms: Room[];
+  allElementNames: string[];
+  translating: Record<string, boolean>;
+  onUpdate: (patch: Partial<Clue>) => void;
+  onRemove: () => void;
+  onTranslate: (lang: string) => void;
+  translateLabel: string;
+}) {
+  const { t } = useI18n();
+  const [langTab, setLangTab] = useState<"es" | "eu" | "en">("es");
+  const isTranslating = translating[langTab] ?? false;
+
+  return (
+    <div className="rounded-lg border border-border bg-card p-3 space-y-2">
+      <select
+        value={clue.characterId ?? ""}
+        onChange={(e) =>
+          onUpdate({
+            characterId: e.target.value || undefined,
+          })
+        }
+        className="text-xs text-muted-foreground"
+      >
+        <option value="">No character</option>
+        {characters.map((char) => (
+          <option key={char.id} value={char.id}>
+            {char.name}
+          </option>
+        ))}
+      </select>
+      <select
+        value={clue.roomId ?? ""}
+        onChange={(e) =>
+          onUpdate({
+            roomId: e.target.value || undefined,
+          })
+        }
+        className="text-xs text-muted-foreground"
+      >
+        <option value="">No room</option>
+        {rooms.map((room) => (
+          <option key={room.id} value={room.id}>
+            {room.name}
+          </option>
+        ))}
+      </select>
+      <select
+        value={clue.elementId ?? ""}
+        onChange={(e) =>
+          onUpdate({
+            elementId: e.target.value || undefined,
+          })
+        }
+        className="text-xs text-muted-foreground"
+      >
+        <option value="">No element</option>
+        {allElementNames.map((name) => (
+          <option key={name} value={name}>
+            {name}
+          </option>
+        ))}
+      </select>
+      <div className="flex gap-2 border-b border-border pb-1 mb-2">
+        {["es", "eu", "en"].map((l) => (
+          <button
+            key={l}
+            type="button"
+            onClick={() => setLangTab(l as "es" | "eu" | "en")}
+            className={`-mb-1 border-b-2 px-2 py-0.5 text-xs font-semibold transition-colors ${
+              langTab === l
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-primary"
+            }`}
+          >
+            {l.toUpperCase()}
+          </button>
+        ))}
+      </div>
+
+      <textarea
+        value={clue.text[langTab] ?? ""}
+        onChange={(e) =>
+          onUpdate({
+            text: { ...clue.text, [langTab]: e.target.value },
+          })
+        }
+        placeholder={t("creator.clueText")}
+        rows={3}
+        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+      />
+
+      <div className="flex items-center gap-2 pt-2">
+        <button
+          type="button"
+          onClick={() => onTranslate(langTab)}
+          disabled={isTranslating || !clue.text[langTab]?.trim()}
+          className="flex-3 rounded-lg border border-primary bg-primary/10 px-3 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary/20 disabled:opacity-50 disabled:hover:bg-primary/10"
+        >
+          {isTranslating ? "Traducir…" : translateLabel}
+        </button>
+      </div>
+      <div className="flex justify-end pt-2">
+        <button
+          type="button"
+          onClick={onRemove}
+          className="text-xs text-destructive hover:text-destructive/80"
+        >
+          {t("creator.removeClue")}
+        </button>
+      </div>
     </div>
   );
 }

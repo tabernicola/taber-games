@@ -69,3 +69,29 @@ export const rejectCase = createServerFn({ method: "POST" })
     if (error) throw error;
     return { success: true };
   });
+
+export const updateCase = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      caseId: z.string().uuid(),
+      title: z.string().min(1),
+      image: z.string().nullable(),
+      content: z.any(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    await verifyAdmin();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("murdoku_cases")
+      .update({
+        title: data.title,
+        image: data.image,
+        content: data.content,
+        status: "pending_review",
+        rejection_note: null,
+      })
+      .eq("id", data.caseId);
+    if (error) throw error;
+    return { success: true };
+  });
