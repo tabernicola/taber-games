@@ -273,7 +273,7 @@ export function MapView({
       rooms.forEach(room => {
         if (room.elements) {
           room.elements.forEach(el => {
-            if (el.name.toLowerCase() === selectedClue.elementId.toLowerCase()) {
+            if (el.name.toLowerCase() === selectedClue.elementId!.toLowerCase()) {
               cells.add(posKey(el.position.row, el.position.col));
             }
           });
