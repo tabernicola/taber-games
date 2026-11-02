@@ -2,11 +2,13 @@ import { Link } from "@tanstack/react-router";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useI18n } from "@/platform/i18n";
 import { useAuth } from "@/platform/hooks/useAuth";
+import { useIsAdmin } from "@/platform/hooks/useIsAdmin";
 import { supabase } from "@/integrations/supabase/client";
 
 export function SiteHeader() {
   const { t, slug } = useI18n();
   const { user } = useAuth();
+  const { isAdmin } = useIsAdmin();
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -20,6 +22,15 @@ export function SiteHeader() {
           <img src="/logo-large.png" alt="The Taber Games" className="h-36 w-36 object-contain" />
         </Link>
         <div className="flex items-center gap-3">
+          {isAdmin && (
+            <Link
+              to="/$lang/admin"
+              params={{ lang: slug }}
+              className="text-xs text-muted-foreground transition-colors hover:text-neon-pink"
+            >
+              Admin
+            </Link>
+          )}
           {user ? (
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
