@@ -284,9 +284,28 @@ export function MapView({
     return cells;
   }, [selectedClue, rooms]);
 
+  const facts = Array.isArray(clues) ? clues.filter((c) => c.type === "fact") : [];
+  const declarationClues = Array.isArray(clues) ? clues.filter((c) => c.type !== "fact") : [];
+
   return (
     <div className="pb-24 overflow-visible">
       <div className="mx-auto max-w-[480px]">
+        {/* Hechos encima del tablero */}
+        {facts.length > 0 && (
+          <div className="mb-2 space-y-1">
+            {facts.map((clue) => {
+              const clueText = resolveClueText(clue);
+              return (
+                <div
+                  key={clue.id}
+                  className="rounded-lg border border-border bg-muted/40 p-2 text-[12px] text-foreground"
+                >
+                  <p className="whitespace-pre-wrap">{clueText}</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         <div
           className="relative grid gap-px rounded-2xl border-2 border-slate-300 bg-slate-200/80 p-1 shadow-sm overflow-visible"
@@ -558,7 +577,7 @@ export function MapView({
           className="h-48 overflow-y-auto overflow-x-hidden"
         >
           <div className="space-y-2 mx-auto max-w-[480px]">
-            {Array.isArray(clues) && clues?.map((clue) => {
+            {Array.isArray(declarationClues) && declarationClues?.map((clue) => {
               const char = clue.characterId && Array.isArray(characters) ? characters?.find((c) => c.id === clue.characterId) : null;
               const isClueSelected = selectedClueId === clue.id;
               return (

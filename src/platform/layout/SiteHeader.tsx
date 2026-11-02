@@ -21,12 +21,20 @@ export function SiteHeader() {
         </Link>
         <div className="flex items-center gap-3">
           {user ? (
-            <button
-              onClick={() => void signOut()}
-              className="text-xs text-muted-foreground transition-colors hover:text-neon-pink"
-            >
-              {t("auth.signOut")}
-            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
+                Hola{" "}
+                {user.user_metadata?.full_name ||
+                  user.user_metadata?.name ||
+                  user.email?.split("@")[0]}
+              </span>
+              <button
+                onClick={() => void signOut()}
+                className="text-xs text-muted-foreground transition-colors hover:text-neon-pink"
+              >
+                {t("auth.signOut")}
+              </button>
+            </div>
           ) : (
             <Link
               to="/$lang/auth"

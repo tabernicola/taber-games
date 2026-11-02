@@ -153,13 +153,7 @@ export function MurdokuGame({
       ) {
         checkSolution(nextPlacements);
       }
-    } else if (mode === "notes") {
-      const nextMarks = new Set(tentativeMarks);
-      if (nextMarks.has(pkey)) nextMarks.delete(pkey);
-      else if (!hasChar) nextMarks.add(pkey);
-      setTentativeMarks(nextMarks);
-      playSound("click");
-    } else if (mode === "crosses") {
+    } else  if (mode === "crosses") {
       if (hasChar) return;
       const nextCrosses = new Set(manualCrosses);
       if (nextCrosses.has(pkey)) nextCrosses.delete(pkey);
@@ -404,7 +398,7 @@ export function MurdokuGame({
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-lg font-bold tracking-widest text-primary">{t("murdoku.title")}</h1>
+        <h1 className="text-lg font-bold tracking-widest text-primary">{localize(activeCase.title, activeCase.titleI18n, lang)}</h1>
         <button
           type="button"
           onClick={() => {
@@ -421,9 +415,7 @@ export function MurdokuGame({
       <main className="pb-24">
         <div className="px-3 pt-1 pb-1">
           <div className="flex items-center justify-center gap-2">
-            <h2 className="text-xl font-bold text-center text-foreground">
-              {localize(activeCase.title, activeCase.titleI18n, lang)}
-            </h2>
+
             <div className="flex gap-0.5 text-base">
               {[0, 1, 2].map((i) => (
                 <span key={i}>{i < lives ? "❤️" : "💔"}</span>

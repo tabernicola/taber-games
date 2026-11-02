@@ -1,7 +1,7 @@
-import { Edit, XCircle, Info } from "lucide-react";
+import { XCircle, Info } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
 
-export type GameMode = "notes" | "crosses" | null;
+export type GameMode = "crosses" | null;
 
 export function BottomNavigation({
   mode,
@@ -13,7 +13,7 @@ export function BottomNavigation({
   onInfo: () => void;
 }) {
   const { t } = useI18n();
-  const handleModeClick = (target: "notes" | "crosses") => {
+  const handleModeClick = (target: "crosses") => {
     if (mode === target) {
       onChangeMode(null);
     } else {
@@ -26,12 +26,6 @@ export function BottomNavigation({
       role="tablist"
     >
       <div className="mx-auto flex max-w-md items-stretch justify-around gap-1 px-2 py-2">
-        <ModeButton
-          icon={<Edit className="h-5 w-5" />}
-          label={t("murdoku.notes")}
-          active={mode === "notes"}
-          onClick={() => handleModeClick("notes")}
-        />
         <ModeButton
           icon={<XCircle className="h-8 w-8" />}
           label=""
