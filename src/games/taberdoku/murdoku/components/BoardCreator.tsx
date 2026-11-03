@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
-import { useIsAdmin } from "@/platform/hooks/useIsAdmin";
+import { useAuth } from "@/platform/hooks/useAuth";
 import { createMurdokuBoard } from "@/games/taberdoku/murdoku/boardFunctions";
 import { fetchMurdokuElements, type MurdokuElement } from "@/games/taberdoku/murdoku/logic/cases";
 import { localize, type Position, type Room } from "@/games/taberdoku/murdoku/logic/game";
@@ -33,7 +33,7 @@ export function BoardCreator({
   onCreated?: (boardId: string) => void | Promise<void>;
 }) {
   const { t, slug, lang } = useI18n();
-  const { user, isAdmin, loading } = useIsAdmin();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   useMurdokuTheme();
   const [step, setStep] = useState(0);
@@ -73,7 +73,7 @@ export function BoardCreator({
   const loadCatalogElements = async () => {
     if (elementsLoaded) return;
     try {
-      const elements = await fetchMurdokuElements(isAdmin);
+      const elements = await fetchMurdokuElements();
       setCatalogElements(elements);
       setElementsLoaded(true);
     } catch (loadError) {
@@ -383,11 +383,6 @@ export function BoardCreator({
                   </option>
                 ))}
               </select>
-              {isAdmin && (
-                <p className="text-xs text-muted-foreground">
-                  {t("boardCreator.adminPrivateElements")}
-                </p>
-              )}
             </div>
             <div
               className="mx-auto grid max-w-2xl gap-1"

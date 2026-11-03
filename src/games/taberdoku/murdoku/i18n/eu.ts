@@ -143,8 +143,6 @@ export const dict: Dict = {
     "Hautatu elementu bat eta sakatu gelaxketan kokatzeko. Sakatu okupatutako gelaxka kentzeko.",
   "boardCreator.catalogElements": "Elementu berrerabilgarriak",
   "boardCreator.selectElement": "Hautatu elementu bat",
-  "boardCreator.adminPrivateElements":
-    "Elementu pribatuak administratzaileentzat bakarrik daude eskuragarri.",
   "boardCreator.saving": "Gordetzen…",
   "boardCreator.save": "Gorde taula",
   "creator.charactersFromDb": "{count} pertsonaia datu-basetik",

@@ -125,13 +125,7 @@ function toSlug(name: string): string {
 export const createMurdokuBoard = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator(boardInputSchema)
-  .handler(async ({ data, context }) => {
-    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (roleError) throw roleError;
-
+  .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const elementIds = [...new Set(data.elements.map((element) => element.elementId))];
     if (elementIds.length) {
@@ -143,8 +137,8 @@ export const createMurdokuBoard = createServerFn({ method: "POST" })
       if ((catalogElements ?? []).length !== elementIds.length) {
         throw new Error("One or more selected board elements do not exist.");
       }
-      if (!isAdmin && (catalogElements ?? []).some((element) => element.private)) {
-        throw new Error("Unauthorized: private Murdoku elements are restricted to admins.");
+      if ((catalogElements ?? []).some((element) => element.private)) {
+        throw new Error("Private Murdoku elements cannot be used when creating boards.");
       }
     }
 

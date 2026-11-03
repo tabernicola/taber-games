@@ -995,7 +995,7 @@ function Step3({
     setClues([
       ...clues,
       {
-        id: `clue-${clues.length}`,
+        id: `clue-${crypto.randomUUID()}`,
         text: { es: "", en: "", eu: "" },
         type: "fact",
         translateFrom: "es",
@@ -1007,7 +1007,7 @@ function Step3({
     setClues([
       ...clues,
       {
-        id: `clue-${clues.length}`,
+        id: `clue-${crypto.randomUUID()}`,
         text: { es: "", en: "", eu: "" },
         type: "elimination",
         translateFrom: "es",
@@ -1018,7 +1018,7 @@ function Step3({
   const addDeclarationFromSelection = () => {
     if (!infoCharId || !selectedElementInfo) return;
     const declaration: Clue = {
-      id: `clue-${clues.length}`,
+      id: `clue-${crypto.randomUUID()}`,
       text: { es: "", en: "", eu: "" },
       type: "clue",
       characterId: infoCharId,

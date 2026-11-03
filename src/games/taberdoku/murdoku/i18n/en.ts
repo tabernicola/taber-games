@@ -142,7 +142,6 @@ export const dict: Dict = {
     "Select an element and click cells to place it. Click an occupied cell to remove it.",
   "boardCreator.catalogElements": "Reusable elements",
   "boardCreator.selectElement": "Select an element",
-  "boardCreator.adminPrivateElements": "Private elements are available to administrators only.",
   "boardCreator.saving": "Saving…",
   "boardCreator.save": "Save board",
   "creator.charactersFromDb": "{count} characters from the database",

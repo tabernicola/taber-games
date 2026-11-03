@@ -91,11 +91,11 @@ export async function fetchBoardElements(boardId: string): Promise<BoardElement[
   });
 }
 
-export async function fetchMurdokuElements(isAdmin: boolean): Promise<MurdokuElement[]> {
+export async function fetchMurdokuElements(): Promise<MurdokuElement[]> {
   let query = supabase
     .from("murdoku_elements")
     .select("id, name, name_i18n, icon, image, walkable, private");
-  if (!isAdmin) query = query.eq("private", false);
+  query = query.eq("private", false);
   const { data, error } = await query.order("name", { ascending: true });
   if (error) throw error;
   return (data ?? []).map((element) => ({

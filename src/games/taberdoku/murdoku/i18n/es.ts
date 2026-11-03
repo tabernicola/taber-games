@@ -144,8 +144,6 @@ export const dict: Dict = {
     "Selecciona un elemento y pulsa las casillas para colocarlo. Pulsa una casilla ocupada para quitarlo.",
   "boardCreator.catalogElements": "Elementos reutilizables",
   "boardCreator.selectElement": "Selecciona un elemento",
-  "boardCreator.adminPrivateElements":
-    "Los elementos privados solo están disponibles para administradores.",
   "boardCreator.saving": "Guardando…",
   "boardCreator.save": "Guardar tablero",
   "creator.charactersFromDb": "{count} personajes de la base de datos",
