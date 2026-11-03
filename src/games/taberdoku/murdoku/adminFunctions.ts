@@ -54,6 +54,8 @@ export const updateCase = createServerFn({ method: "POST" })
     z.object({
       caseId: z.string().uuid(),
       title: z.string().min(1),
+      titleI18n: z.record(z.string(), z.string()).optional(),
+      boardId: z.string().uuid().nullable(),
       image: z.string().nullable(),
       content: z.any(),
     }),
@@ -62,6 +64,8 @@ export const updateCase = createServerFn({ method: "POST" })
     await verifyAdmin(context as Ctx);
     return updateRow(context as Ctx, data.caseId, {
       title: data.title,
+      title_i18n: data.titleI18n,
+      board_id: data.boardId,
       image: data.image,
       content: data.content,
       status: "pending_review",

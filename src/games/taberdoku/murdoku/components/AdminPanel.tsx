@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { ArrowLeft, Plus } from "lucide-react";
 import { useI18n } from "@/platform/i18n";
 import { useAuth } from "@/platform/hooks/useAuth";
 import { approveCase, rejectCase, updateCase } from "@/games/taberdoku/murdoku/adminFunctions";
@@ -152,16 +153,30 @@ export function AdminPanel() {
   return (
     <div className="murdoku-light min-h-screen pb-20">
       <header className="sticky top-0 z-30 border-b border-border bg-background/80 px-4 py-3 backdrop-blur">
-        <h1 className="text-lg font-bold tracking-widest text-primary">{t("admin.title")}</h1>
-        <Link
-          to="/$lang/taberdoku/murdoku"
-          params={{ lang: slug }}
-          className="text-sm text-muted-foreground hover:text-primary"
-        >
-          ← {t("common.back")}
-        </Link>
+        <div className="mx-auto flex max-w-5xl items-center gap-3">
+          <Link
+            to="/$lang/taberdoku/murdoku"
+            params={{ lang: slug }}
+            aria-label={t("common.back")}
+            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <h1 className="text-lg font-bold tracking-widest text-primary">{t("admin.title")}</h1>
+        </div>
       </header>
-      <main className="mx-auto px-4 py-6">
+      <main className="mx-auto max-w-5xl px-4 py-6">
+        <div className="mb-6 flex justify-end">
+          <Link
+            to="/$lang/taberdoku/murdoku/create"
+            params={{ lang: slug }}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-primary bg-primary/10 px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/20"
+          >
+            <Plus className="h-4 w-4" />
+            {t("murdoku.createCase")}
+          </Link>
+        </div>
+
         {isPending && (
           <p className="text-center text-sm text-muted-foreground">{t("common.loading")}</p>
         )}
@@ -177,16 +192,12 @@ export function AdminPanel() {
             <CaseRow
               key={c.id}
               caseData={c}
-              onTest={() => {
-                setSelectedCase(c);
-                setView("test");
-                setApproveMode(false);
-              }}
               onApprove={() => {
                 setSelectedCase(c);
                 setView("test");
                 setApproveMode(true);
               }}
+              onReject={() => setRejectModal(c)}
               onEdit={() => {
                 setSelectedCase(c);
                 setView("edit");
@@ -215,20 +226,22 @@ export function AdminPanel() {
 
 function CaseRow({
   caseData,
-  onTest,
   onApprove,
+  onReject,
   onEdit,
   approveLoading,
   rejecting,
 }: {
   caseData: MurdokuCase;
-  onTest: () => void;
   onApprove: () => void;
+  onReject: () => void;
   onEdit: () => void;
   approveLoading: boolean;
   rejecting: boolean;
 }) {
   const { t } = useI18n();
+  const isApproved = caseData.status === "approved";
+
   return (
     <div className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-start justify-between">
@@ -248,18 +261,15 @@ function CaseRow({
         <div className="flex gap-1">
           <button
             type="button"
-            onClick={onTest}
-            className="rounded border border-border bg-background px-2 py-1 text-xs font-semibold hover:border-primary hover:text-primary"
+            onClick={isApproved ? onReject : onApprove}
+            disabled={isApproved ? rejecting : approveLoading}
+            className={`rounded border px-2 py-1 text-xs font-semibold disabled:opacity-50 ${
+              isApproved
+                ? "border-destructive bg-destructive/10 text-destructive hover:bg-destructive/20"
+                : "border-primary bg-primary/15 text-primary hover:bg-primary/25"
+            }`}
           >
-            {t("admin.testCase")}
-          </button>
-          <button
-            type="button"
-            onClick={onApprove}
-            disabled={approveLoading}
-            className="rounded border border-primary bg-primary/15 px-2 py-1 text-xs font-semibold text-primary hover:bg-primary/25 disabled:opacity-50"
-          >
-            {t("admin.approve")}
+            {isApproved ? t("admin.reject") : t("admin.approve")}
           </button>
           <button
             type="button"

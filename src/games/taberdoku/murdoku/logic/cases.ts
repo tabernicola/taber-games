@@ -30,6 +30,16 @@ export interface BoardElement {
   walkable: boolean;
 }
 
+export interface MurdokuElement {
+  id: string;
+  name: string;
+  nameI18n?: LocalizedText;
+  icon: string;
+  image?: string;
+  walkable: boolean;
+  private: boolean;
+}
+
 export async function fetchBoards(): Promise<Board[]> {
   const { data, error } = await supabase
     .from("murdoku_boards")
@@ -54,12 +64,12 @@ export async function fetchBoardElements(boardId: string): Promise<BoardElement[
     .eq("board_id", boardId)
     .order("sort_order", { ascending: true });
   if (beError) throw beError;
-  if (!beRows || beRows.length === 0) return [];
+  if (!beRows?.length) return [];
 
   const elementIds = Array.from(new Set(beRows.map((r) => r.element_id)));
   const { data: elRows, error: elError } = await supabase
     .from("murdoku_elements")
-    .select("id, name, name_i18n, icon, image, walkable")
+    .select("id, name, name_i18n, icon, image, walkable, private")
     .in("id", elementIds);
   if (elError) throw elError;
 
@@ -79,6 +89,24 @@ export async function fetchBoardElements(boardId: string): Promise<BoardElement[
       walkable: e?.walkable ?? true,
     };
   });
+}
+
+export async function fetchMurdokuElements(isAdmin: boolean): Promise<MurdokuElement[]> {
+  let query = supabase
+    .from("murdoku_elements")
+    .select("id, name, name_i18n, icon, image, walkable, private");
+  if (!isAdmin) query = query.eq("private", false);
+  const { data, error } = await query.order("name", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map((element) => ({
+    id: element.id,
+    name: element.name,
+    nameI18n: (element.name_i18n ?? undefined) as LocalizedText | undefined,
+    icon: element.icon,
+    image: element.image ?? undefined,
+    walkable: element.walkable,
+    private: element.private,
+  }));
 }
 
 export function attachElementsToRooms(rooms: Room[], elements: BoardElement[]): Room[] {
@@ -181,7 +209,9 @@ export async function fetchAllCases(): Promise<MurdokuCase[]> {
 
 export async function submitCase(params: {
   title: string;
+  titleI18n?: LocalizedText;
   creatorId: string;
+  boardId: string;
   content: CaseContent;
   status?: CaseStatus;
 }): Promise<MurdokuCase> {
@@ -189,7 +219,9 @@ export async function submitCase(params: {
     .from("murdoku_cases")
     .insert({
       title: params.title,
+      title_i18n: params.titleI18n,
       creator_id: params.creatorId,
+      board_id: params.boardId,
       content: params.content as unknown as never,
       status: params.status ?? "pending_review",
     })

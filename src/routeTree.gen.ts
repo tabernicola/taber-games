@@ -31,6 +31,7 @@ import { Route as LangTaberdokuStarBattlePlayRouteImport } from './routes/$lang/
 import { Route as LangTaberdokuMurdokuPlayRouteImport } from './routes/$lang/taberdoku/murdoku/play'
 import { Route as LangTaberdokuMurdokuCreateRouteImport } from './routes/$lang/taberdoku/murdoku/create'
 import { Route as LangTaberdokuMurdokuAdminRouteImport } from './routes/$lang/taberdoku/murdoku/admin'
+import { Route as LangTaberdokuMurdokuBoardsCreateRouteImport } from './routes/$lang/taberdoku/murdoku/boards.create'
 
 const TheTaberSquareRoute = TheTaberSquareRouteImport.update({
   id: '/the-taber-square',
@@ -150,6 +151,12 @@ const LangTaberdokuMurdokuAdminRoute =
     path: '/taberdoku/murdoku/admin',
     getParentRoute: () => LangRouteRoute,
   } as any)
+const LangTaberdokuMurdokuBoardsCreateRoute =
+  LangTaberdokuMurdokuBoardsCreateRouteImport.update({
+    id: '/taberdoku/murdoku/boards/create',
+    path: '/taberdoku/murdoku/boards/create',
+    getParentRoute: () => LangRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByFullPath {
   '/$lang/taberdoku/murdoku/': typeof LangTaberdokuMurdokuIndexRoute
   '/$lang/taberdoku/star-battle/': typeof LangTaberdokuStarBattleIndexRoute
   '/$lang/taberdoku/tabers-sudoku/': typeof LangTaberdokuTabersSudokuIndexRoute
+  '/$lang/taberdoku/murdoku/boards/create': typeof LangTaberdokuMurdokuBoardsCreateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -197,6 +205,7 @@ export interface FileRoutesByTo {
   '/$lang/taberdoku/murdoku': typeof LangTaberdokuMurdokuIndexRoute
   '/$lang/taberdoku/star-battle': typeof LangTaberdokuStarBattleIndexRoute
   '/$lang/taberdoku/tabers-sudoku': typeof LangTaberdokuTabersSudokuIndexRoute
+  '/$lang/taberdoku/murdoku/boards/create': typeof LangTaberdokuMurdokuBoardsCreateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -222,6 +231,7 @@ export interface FileRoutesById {
   '/$lang/taberdoku/murdoku/': typeof LangTaberdokuMurdokuIndexRoute
   '/$lang/taberdoku/star-battle/': typeof LangTaberdokuStarBattleIndexRoute
   '/$lang/taberdoku/tabers-sudoku/': typeof LangTaberdokuTabersSudokuIndexRoute
+  '/$lang/taberdoku/murdoku/boards/create': typeof LangTaberdokuMurdokuBoardsCreateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -248,6 +258,7 @@ export interface FileRouteTypes {
     | '/$lang/taberdoku/murdoku/'
     | '/$lang/taberdoku/star-battle/'
     | '/$lang/taberdoku/tabers-sudoku/'
+    | '/$lang/taberdoku/murdoku/boards/create'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -271,6 +282,7 @@ export interface FileRouteTypes {
     | '/$lang/taberdoku/murdoku'
     | '/$lang/taberdoku/star-battle'
     | '/$lang/taberdoku/tabers-sudoku'
+    | '/$lang/taberdoku/murdoku/boards/create'
   id:
     | '__root__'
     | '/'
@@ -295,6 +307,7 @@ export interface FileRouteTypes {
     | '/$lang/taberdoku/murdoku/'
     | '/$lang/taberdoku/star-battle/'
     | '/$lang/taberdoku/tabers-sudoku/'
+    | '/$lang/taberdoku/murdoku/boards/create'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -460,6 +473,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangTaberdokuMurdokuAdminRouteImport
       parentRoute: typeof LangRouteRoute
     }
+    '/$lang/taberdoku/murdoku/boards/create': {
+      id: '/$lang/taberdoku/murdoku/boards/create'
+      path: '/taberdoku/murdoku/boards/create'
+      fullPath: '/$lang/taberdoku/murdoku/boards/create'
+      preLoaderRoute: typeof LangTaberdokuMurdokuBoardsCreateRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
   }
 }
 
@@ -482,6 +502,7 @@ interface LangRouteRouteChildren {
   LangTaberdokuMurdokuIndexRoute: typeof LangTaberdokuMurdokuIndexRoute
   LangTaberdokuStarBattleIndexRoute: typeof LangTaberdokuStarBattleIndexRoute
   LangTaberdokuTabersSudokuIndexRoute: typeof LangTaberdokuTabersSudokuIndexRoute
+  LangTaberdokuMurdokuBoardsCreateRoute: typeof LangTaberdokuMurdokuBoardsCreateRoute
 }
 
 const LangRouteRouteChildren: LangRouteRouteChildren = {
@@ -503,6 +524,7 @@ const LangRouteRouteChildren: LangRouteRouteChildren = {
   LangTaberdokuMurdokuIndexRoute: LangTaberdokuMurdokuIndexRoute,
   LangTaberdokuStarBattleIndexRoute: LangTaberdokuStarBattleIndexRoute,
   LangTaberdokuTabersSudokuIndexRoute: LangTaberdokuTabersSudokuIndexRoute,
+  LangTaberdokuMurdokuBoardsCreateRoute: LangTaberdokuMurdokuBoardsCreateRoute,
 }
 
 const LangRouteRouteWithChildren = LangRouteRoute._addFileChildren(

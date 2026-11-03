@@ -13,6 +13,7 @@ import {
 import { translateText } from "@/games/taberdoku/murdoku/logic/translate";
 import { fetchCharacters as fetchPlatformCharacters } from "@/platform/characters/characters";
 import { updateCase } from "@/games/taberdoku/murdoku/adminFunctions";
+import { BoardCreator } from "@/games/taberdoku/murdoku/components/BoardCreator";
 import {
   validateSolution,
   isCaseSolvable,
@@ -35,8 +36,10 @@ import "@/games/taberdoku/murdoku/light-theme.css";
 
 export function CaseEditor({
   initialCase,
+  initialBoardId,
 }: {
   initialCase?: MurdokuCase;
+  initialBoardId?: string;
 } = {}) {
   const { t, slug, lang } = useI18n();
   const { user, loading } = useAuth();
@@ -49,7 +52,12 @@ export function CaseEditor({
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [editingCaseId, setEditingCaseId] = useState<string | null>(initialCase?.id ?? null);
 
-  const [title, setTitle] = useState(initialCase?.title ?? "");
+  const [titleI18n, setTitleI18n] = useState<Record<string, string>>(() => ({
+    es: initialCase?.titleI18n?.es ?? initialCase?.title ?? "",
+    eu: initialCase?.titleI18n?.eu ?? "",
+    en: initialCase?.titleI18n?.en ?? "",
+  }));
+  const [titleTranslating, setTitleTranslating] = useState(false);
   const [imageUrl, setImageUrl] = useState(initialCase?.image ?? "");
   const [boards, setBoards] = useState<Board[]>([]);
   const [boardsLoading, setBoardsLoading] = useState(true);
@@ -58,6 +66,7 @@ export function CaseEditor({
   const [selectedBoard, setSelectedBoard] = useState<Board | null>(null);
   const [selectedBoardElements, setSelectedBoardElements] = useState<BoardElement[]>([]);
   const [boardElementsLoading, setBoardElementsLoading] = useState(false);
+  const [showBoardCreator, setShowBoardCreator] = useState(false);
 
   const [placements, setPlacements] = useState<Record<string, Position>>(
     initialCase
@@ -109,6 +118,9 @@ export function CaseEditor({
     [allCharacters, gridRows],
   );
 
+  const title =
+    ["es", "eu", "en"].map((language) => titleI18n[language]?.trim() ?? "").find(Boolean) ?? "";
+
   const step1Valid = useMemo(() => {
     if (!title.trim()) return false;
     if (!editingCaseId && !selectedBoard) return false;
@@ -141,20 +153,31 @@ export function CaseEditor({
       setSelectedBoardElements([]);
       return;
     }
+    let active = true;
     setBoardElementsLoading(true);
-    fetchBoardElements(selectedBoard.id).then((els) => {
-      setSelectedBoardElements(els);
-      setBoardElementsLoading(false);
-    });
+    fetchBoardElements(selectedBoard.id)
+      .then((els) => {
+        if (active) setSelectedBoardElements(els);
+      })
+      .catch((error: unknown) => {
+        if (active) setSubmitError(error instanceof Error ? error.message : String(error));
+      })
+      .finally(() => {
+        if (active) setBoardElementsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [selectedBoard]);
 
   useEffect(() => {
-    if (!initialCase?.board_id || !boards.length) return;
-    const board = boards.find((b) => b.id === initialCase.board_id);
+    const boardId = initialCase?.board_id ?? initialBoardId;
+    if (!boardId || !boards.length) return;
+    const board = boards.find((b) => b.id === boardId);
     if (board && !selectedBoard) {
       setSelectedBoard(board);
     }
-  }, [initialCase?.board_id, boards, selectedBoard]);
+  }, [initialCase?.board_id, initialBoardId, boards, selectedBoard]);
 
   const step2Valid = useMemo(() => {
     if (characters.length === 0) return false;
@@ -174,6 +197,40 @@ export function CaseEditor({
   };
 
   const handleBack = () => setStep(Math.max(0, step - 1));
+
+  const handleBoardCreated = async (boardId: string) => {
+    setBoardsLoading(true);
+    try {
+      const updatedBoards = await fetchBoards();
+      const createdBoard = updatedBoards.find((board) => board.id === boardId);
+      if (!createdBoard) throw new Error("The new board could not be loaded.");
+      setBoards(updatedBoards);
+      setSelectedBoard(createdBoard);
+      setShowBoardCreator(false);
+    } finally {
+      setBoardsLoading(false);
+    }
+  };
+
+  const translateTitle = async (sourceLanguage: string) => {
+    const sourceText = titleI18n[sourceLanguage] ?? "";
+    if (!sourceText.trim()) return;
+
+    setTitleTranslating(true);
+    setSubmitError(null);
+    try {
+      const next = { ...titleI18n };
+      for (const language of ["es", "eu", "en"]) {
+        if (language === sourceLanguage) continue;
+        next[language] = await translateText(sourceText, sourceLanguage, language);
+      }
+      setTitleI18n(next);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Error al traducir.");
+    } finally {
+      setTitleTranslating(false);
+    }
+  };
 
   const handlePlacement = (pos: Position) => {
     if (!selectedCharId) return;
@@ -230,19 +287,29 @@ export function CaseEditor({
 
     setSubmitting(true);
     try {
+      const titleI18nToSave = Object.fromEntries(
+        Object.entries(titleI18n)
+          .map(([language, value]) => [language, value.trim()])
+          .filter(([, value]) => value),
+      );
       if (editingCaseId) {
         await updateCase({
           data: {
             caseId: editingCaseId,
             title,
+            titleI18n: titleI18nToSave,
+            boardId: selectedBoard?.id ?? null,
             image: imageUrl || null,
             content,
           },
         });
       } else {
+        if (!selectedBoard) throw new Error(t("creator.selectBoard"));
         await submitCase({
           title,
+          titleI18n: titleI18nToSave,
           creatorId: user.id,
+          boardId: selectedBoard.id,
           content,
         });
       }
@@ -278,6 +345,12 @@ export function CaseEditor({
           {t("creator.signIn")}
         </Link>
       </div>
+    );
+  }
+
+  if (showBoardCreator) {
+    return (
+      <BoardCreator onCancel={() => setShowBoardCreator(false)} onCreated={handleBoardCreated} />
     );
   }
 
@@ -321,8 +394,10 @@ export function CaseEditor({
 
         {step === 0 && (
           <Step1
-            title={title}
-            setTitle={setTitle}
+            titleI18n={titleI18n}
+            setTitleI18n={setTitleI18n}
+            translatingTitle={titleTranslating}
+            onTranslateTitle={(language) => void translateTitle(language)}
             imageUrl={imageUrl}
             setImageUrl={setImageUrl}
             boards={boards}
@@ -330,6 +405,10 @@ export function CaseEditor({
             selectedBoard={selectedBoard}
             setSelectedBoard={setSelectedBoard}
             characters={characters}
+            onCreateBoard={() => {
+              setSubmitError(null);
+              setShowBoardCreator(true);
+            }}
           />
         )}
 
@@ -405,8 +484,10 @@ export function CaseEditor({
 }
 
 function Step1({
-  title,
-  setTitle,
+  titleI18n,
+  setTitleI18n,
+  translatingTitle,
+  onTranslateTitle,
   imageUrl,
   setImageUrl,
   boards,
@@ -414,9 +495,12 @@ function Step1({
   selectedBoard,
   setSelectedBoard,
   characters,
+  onCreateBoard,
 }: {
-  title: string;
-  setTitle: (v: string) => void;
+  titleI18n: Record<string, string>;
+  setTitleI18n: (v: Record<string, string>) => void;
+  translatingTitle: boolean;
+  onTranslateTitle: (language: string) => void;
   imageUrl: string;
   setImageUrl: (v: string) => void;
   boards: Board[];
@@ -424,21 +508,56 @@ function Step1({
   selectedBoard: Board | null;
   setSelectedBoard: (b: Board | null) => void;
   characters: Character[];
+  onCreateBoard: () => void;
 }) {
   const { t, lang } = useI18n();
+  const [titleLangTab, setTitleLangTab] = useState<"es" | "eu" | "en">("es");
+  const createBoardOption = "__create_new_board__";
 
   const handleBoardChange = (id: string) => {
+    if (id === createBoardOption) {
+      onCreateBoard();
+      return;
+    }
     setSelectedBoard(boards.find((b) => b.id === id) ?? null);
   };
 
   return (
     <div className="space-y-6">
-      <TextFieldSimple
-        label={t("creator.name")}
-        placeholder="Case title"
-        value={title}
-        onChange={setTitle}
-      />
+      <section className="space-y-2">
+        <h3 className="text-sm font-semibold text-foreground">{t("creator.name")}</h3>
+        <div className="flex gap-2 border-b border-border pb-1">
+          {(["es", "eu", "en"] as const).map((language) => (
+            <button
+              key={language}
+              type="button"
+              onClick={() => setTitleLangTab(language)}
+              className={`-mb-1 border-b-2 px-2 py-0.5 text-xs font-semibold transition-colors ${
+                titleLangTab === language
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-primary"
+              }`}
+            >
+              {language.toUpperCase()}
+            </button>
+          ))}
+        </div>
+        <input
+          type="text"
+          value={titleI18n[titleLangTab] ?? ""}
+          onChange={(event) => setTitleI18n({ ...titleI18n, [titleLangTab]: event.target.value })}
+          placeholder={t("creator.name")}
+          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+        />
+        <button
+          type="button"
+          onClick={() => onTranslateTitle(titleLangTab)}
+          disabled={translatingTitle || !titleI18n[titleLangTab]?.trim()}
+          className="rounded-lg border border-primary bg-primary/10 px-3 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary/20 disabled:opacity-50 disabled:hover:bg-primary/10"
+        >
+          {translatingTitle ? t("creator.translating") : t("creator.translateToOthers")}
+        </button>
+      </section>
 
       <TextFieldSimple
         label={t("creator.image")}
@@ -454,67 +573,65 @@ function Step1({
 
         {boardsLoading ? (
           <p className="text-sm text-muted-foreground">{t("murdoku.loading")}</p>
-        ) : boards.length === 0 ? (
-          <p className="text-sm text-destructive">{t("creator.noBoards")}</p>
         ) : (
-          <>
-            <select
-              value={selectedBoard?.id ?? ""}
-              onChange={(e) => handleBoardChange(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
-            >
-              <option value="">{t("creator.selectBoard")}</option>
-              {boards.map((board) => (
-                <option key={board.id} value={board.id}>
-                  {localize(board.name, board.nameI18n, lang)} ({board.gridRows} × {board.gridCols})
-                </option>
-              ))}
-            </select>
+          <select
+            value={selectedBoard?.id ?? ""}
+            onChange={(e) => handleBoardChange(e.target.value)}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+          >
+            <option value="">
+              {boards.length ? t("creator.selectBoard") : t("creator.noBoards")}
+            </option>
+            <option value={createBoardOption}>+ {t("boardCreator.createBoard")}</option>
+            {boards.map((board) => (
+              <option key={board.id} value={board.id}>
+                {localize(board.name, board.nameI18n, lang)} ({board.gridRows} × {board.gridCols})
+              </option>
+            ))}
+          </select>
+        )}
 
-            {selectedBoard && (
-              <div className="mt-3 p-3 rounded-lg border border-border bg-secondary/5 space-y-2">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{t("murdoku.grid")}:</span>
-                  <span>
-                    {selectedBoard.gridRows} × {selectedBoard.gridCols}
-                  </span>
-                  <span>
-                    {t("murdoku.rooms")}: {selectedBoard.rooms.length}
-                  </span>
-                </div>
-
-                <div className="space-y-1">
-                  <h4 className="text-xs font-semibold text-muted-foreground uppercase">
-                    {t("creator.characters")}
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    {t("creator.charactersFromDb", { count: characters.length })}
-                  </p>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                    {characters.map((char) => (
-                      <div
-                        key={char.id}
-                        className="flex items-center gap-2 text-xs rounded-lg border border-border bg-card px-2 py-1"
-                      >
-                        {char.image ? (
-                          <img
-                            src={char.image}
-                            alt={char.name}
-                            className="h-5 w-5 rounded-full object-cover"
-                          />
-                        ) : (
-                          <span className="w-5 h-5 rounded-full bg-muted shrink-0 flex items-center justify-center">
-                            {char.name[0]}
-                          </span>
-                        )}
-                        <span>{char.name}</span>
-                      </div>
-                    ))}
+        {selectedBoard && (
+          <div className="mt-3 space-y-2 rounded-lg border border-border bg-secondary/5 p-3">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>{t("murdoku.grid")}:</span>
+              <span>
+                {selectedBoard.gridRows} × {selectedBoard.gridCols}
+              </span>
+              <span>
+                {t("murdoku.rooms")}: {selectedBoard.rooms.length}
+              </span>
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-xs font-semibold uppercase text-muted-foreground">
+                {t("creator.characters")}
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                {t("creator.charactersFromDb", { count: characters.length })}
+              </p>
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                {characters.map((char) => (
+                  <div
+                    key={char.id}
+                    className="flex items-center gap-2 rounded-lg border border-border bg-card px-2 py-1 text-xs"
+                  >
+                    {char.image ? (
+                      <img
+                        src={char.image}
+                        alt={char.name}
+                        className="h-5 w-5 rounded-full object-cover"
+                      />
+                    ) : (
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted">
+                        {char.name[0]}
+                      </span>
+                    )}
+                    <span>{char.name}</span>
                   </div>
-                </div>
+                ))}
               </div>
-            )}
-          </>
+            </div>
+          </div>
         )}
       </div>
     </div>
