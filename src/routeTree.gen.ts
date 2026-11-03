@@ -14,8 +14,8 @@ import { Route as EternityIiRouteImport } from './routes/eternity-ii'
 import { Route as LangRouteRouteImport } from './routes/$lang/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LangIndexRouteImport } from './routes/$lang/index'
-import { Route as LangAdminRouteImport } from './routes/$lang/admin'
 import { Route as LangAuthRouteImport } from './routes/$lang/auth'
+import { Route as LangAdminRouteImport } from './routes/$lang/admin'
 import { Route as LangTheTabersStarIndexRouteImport } from './routes/$lang/the-tabers-star/index'
 import { Route as LangTheTaberSquareIndexRouteImport } from './routes/$lang/the-taber-square/index'
 import { Route as LangTaberdokuIndexRouteImport } from './routes/$lang/taberdoku/index'
@@ -57,14 +57,14 @@ const LangIndexRoute = LangIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LangRouteRoute,
 } as any)
-const LangAdminRoute = LangAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => LangRouteRoute,
-} as any)
 const LangAuthRoute = LangAuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => LangRouteRoute,
+} as any)
+const LangAdminRoute = LangAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => LangRouteRoute,
 } as any)
 const LangTheTabersStarIndexRoute = LangTheTabersStarIndexRouteImport.update({
@@ -341,18 +341,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangIndexRouteImport
       parentRoute: typeof LangRouteRoute
     }
-    '/$lang/admin': {
-      id: '/$lang/admin'
-      path: '/admin'
-      fullPath: '/$lang/admin'
-      preLoaderRoute: typeof LangAdminRouteImport
-      parentRoute: typeof LangRouteRoute
-    }
     '/$lang/auth': {
       id: '/$lang/auth'
       path: '/auth'
       fullPath: '/$lang/auth'
       preLoaderRoute: typeof LangAuthRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/admin': {
+      id: '/$lang/admin'
+      path: '/admin'
+      fullPath: '/$lang/admin'
+      preLoaderRoute: typeof LangAdminRouteImport
       parentRoute: typeof LangRouteRoute
     }
     '/$lang/the-tabers-star/': {

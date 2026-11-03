@@ -71,6 +71,7 @@ export function MapView({
   selectedCharId,
   onSelectCharacter,
   onCellAction,
+  onNonWalkableClick,
   mode,
   showSolution,
   solutionPositions,
@@ -88,6 +89,7 @@ export function MapView({
   selectedCharId: string | null;
   onSelectCharacter: (charId: string) => void;
   onCellAction: (pos: Position) => void;
+  onNonWalkableClick: () => void;
   mode: "place" | "notes" | "crosses" | "erase" | null;
   showSolution: boolean;
   solutionPositions: Record<string, Position> | null;
@@ -143,6 +145,8 @@ export function MapView({
     if (typeof desc === "string") return desc;
     return desc[lang] ?? Object.values(desc)[0] ?? "";
   };
+
+  const [nonWalkableAnimKey, setNonWalkableAnimKey] = useState<string | null>(null);
 
   const cluesScrollRef = useRef<HTMLDivElement>(null);
 
@@ -292,16 +296,16 @@ export function MapView({
       <div className="mx-auto max-w-[480px]">
         {/* Hechos encima del tablero */}
         {facts.length > 0 && (
-          <div className="mb-2 space-y-1">
+          <div className="mb-3 mt-2 flex flex-wrap gap-1.5">
             {facts.map((clue) => {
               const clueText = resolveClueText(clue);
               return (
-                <div
+                <span
                   key={clue.id}
-                  className="rounded-lg border border-border bg-muted/40 p-2 text-[12px] text-foreground"
+                  className="rounded-full bg-muted/50 px-2.5 py-1 text-[12px] text-foreground"
                 >
-                  <p className="whitespace-pre-wrap">{clueText}</p>
-                </div>
+                  {clueText}
+                </span>
               );
             })}
           </div>
@@ -348,41 +352,53 @@ export function MapView({
               const cellEl = elementAt(pos);
               const cellHasNonWalkable = cellEl && !cellEl.walkable;
 
-              const handleCellClick = () => {
-                if ((mode === "place" || mode === null) && selectedCharId && cellHasNonWalkable) return;
-                onCellAction(pos);
-              };
+const handleCellClick = () => {
+    if ((mode === "place" || mode === null) && selectedCharId && cellHasNonWalkable) {
+      onNonWalkableClick();
+      setNonWalkableAnimKey(key);
+      setTimeout(() => setNonWalkableAnimKey(null), 800);
+      return;
+    }
+    onCellAction(pos);
+  };
 
-              return (
-                <button
-                  key={key}
-                  type="button"
-              disabled={
-                showSolution ||
-                Boolean((mode === "place" || mode === null) && selectedCharId && cellHasNonWalkable)
-              }
-              onClick={handleCellClick}
-              className={`relative flex aspect-square items-center justify-center text-xs font-medium transition-all overflow-visible ${
-                isHighlighted
-                  ? "bg-amber-200/80"
-                  : hasHighlightedRoom && !roomHighlighted
-                    ? "bg-slate-500/70"
-                    : ROOM_COLORS[roomIdx % ROOM_COLORS.length]
-              } ${border} ${
-                hasViolation
-                  ? "ring-2 ring-destructive ring-offset-1 z-20"
-                  : isKvCell && showSolution
-                    ? "ring-2 ring-amber-500 ring-offset-1 z-20"
-                    : isClicked
-                      ? "ring-2 ring-primary ring-offset-1 z-20"
-                      : ""
-              }`}
-                >
-                  {isCrossed && charsHere.length === 0 && (
-                    <span className="z-10 w-[75%] h-[75%] flex items-center justify-center text-3xl sm:text-4xl text-destructive font-bold select-none">
-                      ✕
-                    </span>
-                  )}
+  const isAnimating = nonWalkableAnimKey === key;
+
+  return (
+    <button
+      key={key}
+      type="button"
+  disabled={
+    showSolution
+  }
+  onClick={handleCellClick}
+  className={`relative flex aspect-square items-center justify-center text-xs font-medium transition-all overflow-visible ${
+    isHighlighted
+      ? "bg-amber-200/80"
+      : hasHighlightedRoom && !roomHighlighted
+        ? "bg-slate-500/70"
+        : ROOM_COLORS[roomIdx % ROOM_COLORS.length]
+  } ${border} ${
+    hasViolation
+      ? "ring-2 ring-destructive ring-offset-1 z-20"
+      : isKvCell && showSolution
+        ? "ring-2 ring-amber-500 ring-offset-1 z-20"
+        : isClicked
+          ? "ring-2 ring-primary ring-offset-1 z-20"
+          : ""
+  }`}
+    >
+      {isAnimating && (
+        <span className="z-10 flex h-[90%] w-[90%] items-center justify-center select-none text-[180%] animate-bounce-3">
+          🚫
+        </span>
+      )}
+
+      {isCrossed && charsHere.length === 0 && (
+        <span className="z-10 w-[75%] h-[75%] flex items-center justify-center text-3xl sm:text-4xl text-destructive font-bold select-none">
+          ✕
+        </span>
+      )}
 
                   {isTentative && (
                     <span className="z-10 h-3.5 w-3.5 rounded-full bg-primary/40 ring-1 ring-primary/60" />
@@ -646,7 +662,6 @@ export function MapView({
         <p className="mt-3 text-center text-xs text-muted-foreground">
           {selectedCharId && t("murdoku.placeCharacter")}
           {mode === "notes" && !selectedCharId && t("murdoku.notesHelp")}
-          {mode === "crosses" && !selectedCharId && t("murdoku.crossesHelp")}
         </p>
       )}
     </div>

@@ -8,6 +8,7 @@ import type { GameMode } from "./BottomNavigation";
 import { BottomNavigation } from "./BottomNavigation";
 import { MapView } from "./MapView";
 import { AccusationModal } from "./AccusationModal";
+import { MurdokuTutorial } from "./MurdokuTutorial";
 import { useI18n } from "@/platform/i18n";
 import { localize } from "../logic/game";
 import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
@@ -52,6 +53,9 @@ export function MurdokuGame({
   const [showResultModal, setShowResultModal] = useState(false);
   const [showAnimationOnly, setShowAnimationOnly] = useState(false);
   const [incorrectPlacementsToRemove, setIncorrectPlacementsToRemove] = useState<string[]>([]);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(true);
+  const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const placementsRef = useRef(placements);
   const solutionRef = useRef(content.solution.placements);
 
@@ -60,6 +64,25 @@ export function MurdokuGame({
     placementsRef.current = placements;
     solutionRef.current = content.solution.placements;
   }, [placements, content.solution.placements]);
+
+  // Timer logic - pauses when solution or animation overlay is shown
+  useEffect(() => {
+    if (timerRunning && !showSolution && !showAnimationOnly) {
+      timerIntervalRef.current = setInterval(() => {
+        setElapsedSeconds((prev) => prev + 1);
+      }, 1000);
+    } else {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    }
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+    };
+  }, [timerRunning, showSolution, showAnimationOnly]);
 
   const handleSelectCharacter = (charId: string) => {
     if (showSolution) return;
@@ -309,17 +332,13 @@ export function MurdokuGame({
       // Show result modal after animation completes (only for win/lose, not for life loss)
       if (!showAnimationOnly) {
         const totalAnimationTime = animations.length * 500 + 700; // Add 700ms buffer
-        console.log("Will show win/lose modal in", totalAnimationTime, "ms");
         setTimeout(() => {
-          console.log("Showing win/lose modal now");
           setShowResultModal(true);
         }, totalAnimationTime);
       } else {
         // For life loss, show modal after animation completes
         const totalAnimationTime = animations.length * 500 + 700;
-        console.log("Will show life loss modal in", totalAnimationTime, "ms");
         setTimeout(() => {
-          console.log("Showing life loss modal now");
           setShowResultModal(true);
         }, totalAnimationTime);
       }
@@ -364,6 +383,8 @@ export function MurdokuGame({
     setSolutionAnimation([]);
     setShowResultModal(false);
     setShowAnimationOnly(false);
+    setElapsedSeconds(0);
+    setTimerRunning(true);
     onPlayAgain?.();
   };
 
@@ -398,7 +419,9 @@ export function MurdokuGame({
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-lg font-bold tracking-widest text-primary">{localize(activeCase.title, activeCase.titleI18n, lang)}</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-lg font-bold tracking-widest text-primary">{localize(activeCase.title, activeCase.titleI18n, lang)}</h1>
+        </div>
         <button
           type="button"
           onClick={() => {
@@ -413,16 +436,6 @@ export function MurdokuGame({
       </header>
 
       <main className="pb-24">
-        <div className="px-3 pt-1 pb-1">
-          <div className="flex items-center justify-center gap-2">
-
-            <div className="flex gap-0.5 text-base">
-              {[0, 1, 2].map((i) => (
-                <span key={i}>{i < lives ? "❤️" : "💔"}</span>
-              ))}
-            </div>
-          </div>
-        </div>
         <MapView
           content={content}
           placements={placements}
@@ -431,6 +444,7 @@ export function MurdokuGame({
           selectedCharId={selectedCharId}
           onSelectCharacter={handleSelectCharacter}
           onCellAction={handleCellAction}
+          onNonWalkableClick={() => playSound("error")}
           mode={mode}
           showSolution={showSolution}
           solutionPositions={solutionPlacements}
@@ -447,6 +461,8 @@ export function MurdokuGame({
         mode={mode}
         onChangeMode={handleModeChange}
         onInfo={onInfo ?? (() => setTutorialOpen(true))}
+        lives={lives}
+        elapsedSeconds={elapsedSeconds}
       />
 
       <AccusationModal
@@ -459,36 +475,9 @@ export function MurdokuGame({
         onAccuse={handleAccuse}
       />
 
-      {tutorialOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur"
-          onClick={() => setTutorialOpen(false)}
-        >
-          <div
-            className="relative mx-4 max-w-sm rounded-xl border border-border bg-card/95 p-6 text-center shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="mb-3 text-lg font-bold tracking-widest text-secondary">
-              {t("murdoku.tutorial.title")}
-            </h3>
-            <p className="mb-4 whitespace-pre-line text-xs text-muted-foreground">
-              {t("murdoku.tutorial.rules")}
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                playSound("click");
-                setTutorialOpen(false);
-              }}
-              className="rounded-lg border border-secondary bg-secondary/10 px-4 py-2 text-xs font-semibold text-secondary hover:bg-secondary/20"
-            >
-              {t("murdoku.tutorial.close")}
-            </button>
-          </div>
-        </div>
-      )}
+      <MurdokuTutorial open={tutorialOpen} onClose={() => setTutorialOpen(false)} />
 
-      {showAnimationOnly && solutionAnimation.length > 0 && (
+      {showAnimationOnly && showResultModal && solutionAnimation.length > 0 && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur"
           onClick={() => {
@@ -501,6 +490,7 @@ export function MurdokuGame({
             setShowSolution(false);
             setShowAnimationOnly(false);
             setSolutionAnimation([]);
+            setShowResultModal(false);
           }}
         >
           <div
@@ -525,6 +515,7 @@ export function MurdokuGame({
                 setShowSolution(false);
                 setShowAnimationOnly(false);
                 setSolutionAnimation([]);
+                setShowResultModal(false);
               }}
               className="rounded-lg border border-secondary bg-secondary/10 px-4 py-2 text-xs font-semibold text-secondary hover:bg-secondary/20"
             >
