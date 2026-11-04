@@ -229,6 +229,11 @@ export const dict: Dict = {
   "murdoku.noCluesForChar": "Ez dago pertsonaia hori zerikusitza pistaik",
   "murdoku.viewGrid": "Sareta",
   "murdoku.viewTabs": "Fitxak",
+  "murdoku.difficulty.level1": "easy",
+  "murdoku.difficulty.level2": "medium",
+  "murdoku.difficulty.level3": "hard",
+  "murdoku.difficulty.level4": "very hard",
+  "murdoku.difficulty.level5": "extreme",
   "murdoku.mode.case": "Taber's Murdoku",
   "murdoku.mode.caseDesc": "Ebatzi kasuak arrastoen bidez eta salatu hiltzailea eta biktima.",
 };

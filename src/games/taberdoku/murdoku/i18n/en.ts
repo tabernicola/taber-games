@@ -228,6 +228,11 @@ export const dict: Dict = {
   "murdoku.noCluesForChar": "No clues for this character",
   "murdoku.viewGrid": "Grid",
   "murdoku.viewTabs": "Tabs",
+  "murdoku.difficulty.level1": "easy",
+  "murdoku.difficulty.level2": "medium",
+  "murdoku.difficulty.level3": "hard",
+  "murdoku.difficulty.level4": "very hard",
+  "murdoku.difficulty.level5": "extreme",
   "murdoku.mode.case": "Investigation",
   "murdoku.mode.caseDesc": "Solve cases from the clues and accuse the killer and the victim.",
 };

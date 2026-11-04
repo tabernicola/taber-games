@@ -234,6 +234,11 @@ export const dict: Dict = {
   "murdoku.mode.case": "Taber's Murdoku",
   "murdoku.mode.caseDesc": "Resuelve casos con pistas y acusa al asesino y a la víctima.",
   "murdoku.level.easy": "Fácil",
+  "murdoku.difficulty.level1": "muy fácil",
+  "murdoku.difficulty.level2": "facil",
+  "murdoku.difficulty.level3": "normal",
+  "murdoku.difficulty.level4": "dificil",
+  "murdoku.difficulty.level5": "muy dificil",
 };
 
 export default dict;

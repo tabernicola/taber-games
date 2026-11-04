@@ -119,10 +119,7 @@ function CreateCaseCard({ slug }: { slug: string }) {
 
 function CaseCard({ caseData, slug }: { caseData: MurdokuCase; slug: string }) {
   const { t, lang } = useI18n();
-  const clueCount = Array.isArray(caseData.content?.clues) ? caseData.content.clues.length : 0;
-  const characterCount = Array.isArray(caseData.content?.characters)
-    ? caseData.content.characters.length
-    : 0;
+  const difficulty = caseData.difficulty ?? 3;
   const image = caseData.image || caseData.content?.image;
 
   return (
@@ -148,9 +145,7 @@ function CaseCard({ caseData, slug }: { caseData: MurdokuCase; slug: string }) {
           <h3 className="text-sm font-semibold text-white line-clamp-2">
             {localize(caseData.title, caseData.titleI18n, lang)}
           </h3>
-          <p className="mt-0.5 text-[10px] text-white/90">
-            {t("murdoku.clues")}: {clueCount} · {t("murdoku.characters")}: {characterCount}
-          </p>
+          <p className="mt-0.5 text-[10px] text-white/90">{t(`murdoku.difficulty.level${difficulty}`)}</p>
         </div>
       </div>
     </Link>

@@ -17,6 +17,9 @@ UPDATE public.murdoku_elements
 SET private = false
 WHERE id LIKE 'murdoku%';
 
+ALTER TABLE public.murdoku_cases
+  ADD COLUMN IF NOT EXISTS difficulty integer NOT NULL DEFAULT 3;
+
 DROP VIEW IF EXISTS public.murdoku_playable_cases;
 DROP FUNCTION IF EXISTS public.create_murdoku_board(
   text, text, integer, integer, jsonb, jsonb, jsonb
@@ -74,6 +77,7 @@ SELECT
   c.updated_at,
   c.board_id,
   c.image,
+  c.difficulty,
   CASE
     WHEN b.id IS NULL THEN c.content
     ELSE c.content || jsonb_build_object(

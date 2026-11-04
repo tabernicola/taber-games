@@ -649,20 +649,17 @@ function Step1({
           <h3 className="text-sm font-semibold text-foreground">{t("creator.difficulty")}</h3>
         </div>
         <div className="flex gap-1">
-          {[1, 2, 3, 4, 5].map((level) => (
-            <button
-              key={level}
-              type="button"
-              onClick={() => setDifficulty(level)}
-              className={`flex-1 aspect-square rounded-lg border px-2 py-2 text-xs font-semibold transition-colors ${
-                difficulty === level
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border bg-background text-muted-foreground hover:border-slate-300"
-              }`}
-            >
-              {level}
-            </button>
-          ))}
+          <select
+            value={difficulty}
+            onChange={(e) => setDifficulty(Number(e.target.value))}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+          >
+            {[1, 2, 3, 4, 5].map((level) => (
+              <option key={level} value={level}>
+                {t(`murdoku.difficulty.level${level}`)}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
     </div>
