@@ -58,17 +58,27 @@ export const updateCase = createServerFn({ method: "POST" })
       boardId: z.string().uuid().nullable(),
       image: z.string().nullable(),
       content: z.any(),
+      difficulty: z.number().min(1).max(5).optional(),
     }),
   )
   .handler(async ({ data, context }) => {
     await verifyAdmin(context as Ctx);
+
+    // Leer el estado actual para preservarlo al guardar cambios
+    const { data: currentCase } = await (context as Ctx).supabase
+      .from("murdoku_cases")
+      .select("status")
+      .eq("id", data.caseId)
+      .single();
+
     return updateRow(context as Ctx, data.caseId, {
       title: data.title,
       title_i18n: data.titleI18n,
       board_id: data.boardId,
       image: data.image,
       content: data.content,
-      status: "pending_review",
+      difficulty: data.difficulty ?? currentCase?.difficulty ?? 3,
+      status: currentCase?.status ?? "pending_review",
       rejection_note: null,
     });
   });

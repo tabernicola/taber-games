@@ -122,6 +122,7 @@ export const dict: Dict = {
   "creator.addElement": "Gehitu elementu",
   "creator.characters": "Pertsonaiak",
   "creator.board": "Tablera",
+  "creator.difficulty": "Ziurtasuna (1-5)",
   "creator.selectBoard": "Aukeratu tablera",
   "creator.noBoards": "Ez dago tablerarik datu-basean.",
   "boardCreator.title": "Sortu taula bat",

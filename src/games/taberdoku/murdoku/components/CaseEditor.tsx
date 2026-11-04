@@ -59,6 +59,7 @@ export function CaseEditor({
   }));
   const [titleTranslating, setTitleTranslating] = useState(false);
   const [imageUrl, setImageUrl] = useState(initialCase?.image ?? "");
+  const [difficulty, setDifficulty] = useState(initialCase?.difficulty ?? 3);
   const [boards, setBoards] = useState<Board[]>([]);
   const [boardsLoading, setBoardsLoading] = useState(true);
   const [allCharacters, setAllCharacters] = useState<Character[]>([]);
@@ -301,6 +302,7 @@ export function CaseEditor({
             boardId: selectedBoard?.id ?? null,
             image: imageUrl || null,
             content,
+            difficulty,
           },
         });
       } else {
@@ -311,6 +313,7 @@ export function CaseEditor({
           creatorId: user.id,
           boardId: selectedBoard.id,
           content,
+          difficulty,
         });
       }
       setSubmitSuccess(true);
@@ -405,6 +408,8 @@ export function CaseEditor({
             selectedBoard={selectedBoard}
             setSelectedBoard={setSelectedBoard}
             characters={characters}
+            difficulty={difficulty}
+            setDifficulty={setDifficulty}
             onCreateBoard={() => {
               setSubmitError(null);
               setShowBoardCreator(true);
@@ -495,6 +500,8 @@ function Step1({
   selectedBoard,
   setSelectedBoard,
   characters,
+  difficulty,
+  setDifficulty,
   onCreateBoard,
 }: {
   titleI18n: Record<string, string>;
@@ -508,6 +515,8 @@ function Step1({
   selectedBoard: Board | null;
   setSelectedBoard: (b: Board | null) => void;
   characters: Character[];
+  difficulty: number;
+  setDifficulty: (v: number) => void;
   onCreateBoard: () => void;
 }) {
   const { t, lang } = useI18n();
@@ -633,6 +642,28 @@ function Step1({
             </div>
           </div>
         )}
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-foreground">{t("creator.difficulty")}</h3>
+        </div>
+        <div className="flex gap-1">
+          {[1, 2, 3, 4, 5].map((level) => (
+            <button
+              key={level}
+              type="button"
+              onClick={() => setDifficulty(level)}
+              className={`flex-1 aspect-square rounded-lg border px-2 py-2 text-xs font-semibold transition-colors ${
+                difficulty === level
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border bg-background text-muted-foreground hover:border-slate-300"
+              }`}
+            >
+              {level}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -89,6 +89,7 @@ export type MurdokuCase = {
   updated_at: string;
   board_id?: string | null;
   image?: string | null;
+  difficulty?: number;
 };
 
 export type Guess = {

@@ -162,6 +162,7 @@ function toCase(row: Row): MurdokuCase {
     updated_at: (row as any).updated_at ?? "",
     board_id: (row as any).board_id ?? null,
     image,
+    difficulty: (row as any).difficulty ?? 3,
   };
 }
 
@@ -170,7 +171,7 @@ export async function fetchApprovedCases(): Promise<MurdokuCase[]> {
     .from("murdoku_playable_cases")
     .select("*")
     .eq("status", "approved")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: true });
   if (error) throw error;
   return (data ?? []).map(toCase);
 }
@@ -214,6 +215,7 @@ export async function submitCase(params: {
   boardId: string;
   content: CaseContent;
   status?: CaseStatus;
+  difficulty?: number;
 }): Promise<MurdokuCase> {
   const { data, error } = await supabase
     .from("murdoku_cases")
@@ -224,6 +226,7 @@ export async function submitCase(params: {
       board_id: params.boardId,
       content: params.content as unknown as never,
       status: params.status ?? "pending_review",
+      difficulty: params.difficulty ?? 3,
     })
     .select()
     .single();

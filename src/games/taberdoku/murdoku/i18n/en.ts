@@ -122,6 +122,7 @@ export const dict: Dict = {
   "creator.addElement": "Add element",
   "creator.characters": "Characters",
   "creator.board": "Board",
+  "creator.difficulty": "Difficulty (1-5)",
   "creator.selectBoard": "Select a board",
   "creator.noBoards": "No boards available in the database.",
   "boardCreator.title": "Create a board",
