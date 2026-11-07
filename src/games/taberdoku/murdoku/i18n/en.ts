@@ -235,6 +235,25 @@ export const dict: Dict = {
   "murdoku.difficulty.level5": "extreme",
   "murdoku.mode.case": "Investigation",
   "murdoku.mode.caseDesc": "Solve cases from the clues and accuse the killer and the victim.",
+  "murdoku.ranking.title": "Ranking",
+  "murdoku.ranking.caseTitle": "Ranking for {title}",
+  "murdoku.ranking.time": "Time: {time}",
+  "murdoku.ranking.yourTime": "Your time: {time}",
+  "murdoku.ranking.enterName": "Enter your name",
+  "murdoku.ranking.saveName": "Save name",
+  "murdoku.ranking.nameSaved": "Name saved!",
+  "murdoku.ranking.changeName": "Change name",
+  "murdoku.ranking.scoreSaved": "Saved to ranking!",
+  "murdoku.ranking.submitToRanking": "Submit to ranking",
+  "murdoku.ranking.noScores": "No times for this case yet.",
+  "murdoku.ranking.solvedIn": "Solved in {time}",
+  "murdoku.ranking.wellDone": "Well done, {name}!",
+  "murdoku.ranking.namePlaceholder": "Your name",
+
+  "murdoku.nextCase": "Next case",
+  "murdoku.noMoreCases": "You've solved all cases!",
+  "murdoku.noMoreCasesDesc": "No cases left to solve. Want to create your own?",
+  "murdoku.createOwnCase": "Create my own case",
 };
 
 export default dict;

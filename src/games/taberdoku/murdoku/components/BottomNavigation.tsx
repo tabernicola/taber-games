@@ -39,7 +39,6 @@ export function BottomNavigation({
         />
         <div className="flex-1" />
         <div className="ml-auto flex items-center justify-between gap-2">
-          
           <div className="flex flex-col items-center">
             <div className="flex gap-0.5 text-base">
               {[0, 1, 2].map((i) => (
@@ -47,7 +46,8 @@ export function BottomNavigation({
               ))}
             </div>
             <span className="text-sm font-mono text-muted-foreground">
-              {String(Math.floor(elapsedSeconds / 60)).padStart(2, "0")}:{String(elapsedSeconds % 60).padStart(2, "0")}
+              {String(Math.floor(elapsedSeconds / 60)).padStart(2, "0")}:
+              {String(elapsedSeconds % 60).padStart(2, "0")}
             </span>
           </div>
         </div>

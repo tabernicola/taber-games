@@ -13,6 +13,8 @@ export const dict: Dict = {
     "Coloca un personaje por fila, columna y sala. Ninguno puede tocarse.",
   "taberdoku.sudoku.title": "Sudoku",
   "taberdoku.sudoku.desc": "Sudoku clásico 9x9 con los personajes en lugar de números.",
+  "home.card.taberdoku.tag": "Puzle · Deducción Sudoku",
+  "home.card.taberdoku.desc": "Murdoku, Star Battle y Sudoku con los personajes del barrio.",
 };
 
 export default dict;

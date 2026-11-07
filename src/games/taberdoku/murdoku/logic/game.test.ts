@@ -199,7 +199,6 @@ describe("checkSudokuConstraints", () => {
     const errors = checkSudokuConstraints(SAMPLE_CASE_CONTENT, placements);
     expect(errors.some((e) => e.includes("Column"))).toBe(true);
   });
-
 });
 
 describe("sample case board", () => {
@@ -219,7 +218,9 @@ describe("sample case board", () => {
   it("places killer and victim in the same room (the murder scene)", () => {
     const { solution, rooms } = SAMPLE_CASE_CONTENT;
     const killer = getPlacement(solution.placements, solution.killerId);
-    const victim = solution.victimId ? getPlacement(solution.placements, solution.victimId) : undefined;
+    const victim = solution.victimId
+      ? getPlacement(solution.placements, solution.victimId)
+      : undefined;
     expect(killer).toBeDefined();
     if (solution.victimId) {
       expect(victim).toBeDefined();

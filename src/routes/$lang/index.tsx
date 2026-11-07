@@ -4,7 +4,6 @@ import { SiteHeader } from "@/platform/layout/SiteHeader";
 import { useI18n, langFromSlug } from "@/platform/i18n";
 import { pageMeta, getTranslatedMeta } from "@/platform/seo";
 import { externalGames, games } from "@/platform/games/registry";
-import { CharacterGallery } from "@/platform/characters/CharacterGallery";
 
 export const Route = createFileRoute("/$lang/")({
   head: ({ params }) => {
@@ -109,24 +108,15 @@ function Home() {
             </span>
           </div>
 
-          <div
-            className="grid gap-1"
-            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(128px, 1fr))" }}
-          >
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
             {games.map((game) => (
-              <div key={game.id} className="flex justify-center">
-                <game.Card lang={slug} />
-              </div>
+              <game.Card key={game.id} lang={slug} />
             ))}
             {externalGames.map((game) => (
-              <div key={game.id} className="flex justify-center">
-                <ExternalGameCard entry={game} />
-              </div>
+              <ExternalGameCard key={game.id} entry={game} />
             ))}
           </div>
         </section>
-
-        <CharacterGallery />
       </main>
       <footer className="mx-auto max-w-6xl px-4 pb-10 text-center text-xs text-muted-foreground">
         © {new Date().getFullYear()} The Taber Games
@@ -142,20 +132,36 @@ function ExternalGameCard({ entry }: { entry: (typeof externalGames)[number] }) 
       href={entry.href}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative flex h-[128px] w-[128px] overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-0.5 hover:border-neon-cyan"
+      className="group relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-card p-4 transition-all duration-300 hover:-translate-y-1 hover:border-neon-cyan hover:shadow-lg"
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full opacity-0 blur-3xl transition-opacity group-hover:opacity-60"
+        className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full opacity-0 blur-3xl transition-opacity duration-300 group-hover:opacity-40"
         style={{ background: "var(--neon-cyan)" }}
       />
-      {entry.image && (
-        <img
-          src={entry.image}
-          alt={entry.title}
-          className="h-full w-full object-contain p-3 drop-shadow-[0_0_20px_oklch(0.85_0.18_200/0.5)]"
-        />
-      )}
+      <div className="relative mb-3 flex h-32 w-full items-center justify-center rounded-xl bg-background/50 p-2">
+        {entry.image && (
+          <img
+            src={entry.image}
+            alt={entry.title}
+            className="h-full w-full object-contain p-2 drop-shadow-[0_0_20px_oklch(0.85_0.18_200/0.5)] transition-transform duration-300 group-hover:scale-105"
+          />
+        )}
+      </div>
+      <div className="flex flex-1 flex-col">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-neon-cyan">
+          {t(entry.tagKey)}
+        </span>
+        <h3
+          className="mt-0.5 text-base font-bold tracking-wide text-foreground"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          {entry.title}
+        </h3>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-3">
+          {t(entry.descriptionKey)}
+        </p>
+      </div>
     </a>
   );
 }

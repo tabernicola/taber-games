@@ -12,6 +12,8 @@ export const dict: Dict = {
     "Pertsonaia bat lerro, zutabe eta salako batean. Ezin dira elkar ukitu.",
   "taberdoku.sudoku.title": "Sudoku",
   "taberdoku.sudoku.desc": "Sudoku klasikoa 9x9, pertsonaiak zenbaki ordez.",
+  "home.card.taberdoku.tag": "Puzzlea · Sudoku Dedukzioa",
+  "home.card.taberdoku.desc": "Murdoku, Star Battle eta Sudoku auzoko pertsonaiekin.",
 };
 
 export default dict;

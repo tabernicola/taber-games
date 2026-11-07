@@ -2,7 +2,7 @@
 
 ## 0. Resumen ejecutivo
 
-- **Alcance:** solo la landing y la pantalla de juego de *The Taber's Star*. Nada de neón en estas dos vistas. El resto de la web (home, eternity-ii, taber-square, cabecera global) sigue con su aspecto actual.
+- **Alcance:** solo la landing y la pantalla de juego de _The Taber's Star_. Nada de neón en estas dos vistas. El resto de la web (home, eternity-ii, taber-square, cabecera global) sigue con su aspecto actual.
 - **Motivo del aislamiento:** cada juego tiene su propia identidad. Eternity II ya rompe con el neón mediante `.e2-scope`; replicamos ese patrón para tabers-star.
 - **Activos propios del juego:**
   - Logo: `src/games/tabers-star/ui/TaberStarLogo.tsx` (estrella hexagonal SVG, actualmente con gradiente neón).
@@ -22,19 +22,19 @@ Sensación de cuaderno de viaje / libro ilustrado. Cálido, orgánico, ligeramen
 
 ### Paleta
 
-| Token              | Color        | Uso                                                              |
-| ------------------ | ------------ | ---------------------------------------------------------------- |
-| `--ts-sand`        | `#F2E6CE`    | Fondo principal (papel envejecido)                                |
-| `--ts-sand-2`      | `#E8D6B3`    | Fondo degradado inferior                                         |
-| `--ts-cream`       | `#FFF8EC`    | Paneles / tarjetas ("papel" donde se posa la estrella)            |
-| `--ts-ink`         | `#2A1F14`    | Texto principal                                                   |
-| `--ts-ink-soft`    | `#6B5840`    | Texto secundario, descripciones                                    |
-| `--ts-olive`       | `#5C6B3A`    | Color de marca (juntas con el verde de la bandera)                 |
-| `--ts-olive-deep`  | `#3B4624`    | Acento oscuro (títulos, bordes de foco)                           |
-| `--ts-terracotta`  | `#B5532A`    | Acento cálido (botones primarios, llamada a la acción)            |
-| `--ts-terracotta-d`| `#7A3717`    | Sombra/borde inferior de botones                                    |
-| `--ts-shadow`      | `rgba(60, 40, 20, 0.18)` | Sombras suaves (papel)                              |
-| `--ts-olive-soft`  | `rgba(92, 107, 58, 0.18)` | Anillos de foco, halos                                |
+| Token               | Color                     | Uso                                                    |
+| ------------------- | ------------------------- | ------------------------------------------------------ |
+| `--ts-sand`         | `#F2E6CE`                 | Fondo principal (papel envejecido)                     |
+| `--ts-sand-2`       | `#E8D6B3`                 | Fondo degradado inferior                               |
+| `--ts-cream`        | `#FFF8EC`                 | Paneles / tarjetas ("papel" donde se posa la estrella) |
+| `--ts-ink`          | `#2A1F14`                 | Texto principal                                        |
+| `--ts-ink-soft`     | `#6B5840`                 | Texto secundario, descripciones                        |
+| `--ts-olive`        | `#5C6B3A`                 | Color de marca (juntas con el verde de la bandera)     |
+| `--ts-olive-deep`   | `#3B4624`                 | Acento oscuro (títulos, bordes de foco)                |
+| `--ts-terracotta`   | `#B5532A`                 | Acento cálido (botones primarios, llamada a la acción) |
+| `--ts-terracotta-d` | `#7A3717`                 | Sombra/borde inferior de botones                       |
+| `--ts-shadow`       | `rgba(60, 40, 20, 0.18)`  | Sombras suaves (papel)                                 |
+| `--ts-olive-soft`   | `rgba(92, 107, 58, 0.18)` | Anillos de foco, halos                                 |
 
 > Decisión deliberada: NO usamos rojo vivo, NO usamos negro puro. El rojo y negro de la bandera ya aparecen en las piezas y se respetan. Los verdes de la bandera también, por lo que el verde oliva de UI debe diferenciarse: lo hago más amarillo/ocre y más saturado hacia el verde pero nunca como `oklch(0.82 0.24 145)` (que es neón).
 
@@ -294,15 +294,7 @@ Nuevo: `src/games/tabers-star/ui/Mascot.tsx`
 import mascotUrl from "/public/tabers-star/Taber-palestino.png?url";
 
 export function Mascot({ className = "" }: { className?: string }) {
-  return (
-    <img
-      src={mascotUrl}
-      alt=""
-      aria-hidden
-      className={className}
-      draggable={false}
-    />
-  );
+  return <img src={mascotUrl} alt="" aria-hidden className={className} draggable={false} />;
 }
 ```
 

@@ -14,8 +14,16 @@ export function SubGameTabs({ active }: { active: SubGame }) {
 
   const tabs: { key: SubGame; label: string; href: string }[] = [
     { key: "murdoku", label: t("taberdoku.murdoku.title"), href: "/$lang/taberdoku/murdoku" },
-    { key: "star-battle", label: t("taberdoku.starBattle.title"), href: "/$lang/taberdoku/star-battle" },
-    { key: "tabers-sudoku", label: t("taberdoku.sudoku.title"), href: "/$lang/taberdoku/tabers-sudoku" },
+    {
+      key: "star-battle",
+      label: t("taberdoku.starBattle.title"),
+      href: "/$lang/taberdoku/star-battle",
+    },
+    {
+      key: "tabers-sudoku",
+      label: t("taberdoku.sudoku.title"),
+      href: "/$lang/taberdoku/tabers-sudoku",
+    },
   ];
 
   const logo = logos[active];

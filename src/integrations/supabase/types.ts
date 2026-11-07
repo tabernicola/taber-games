@@ -1,677 +1,677 @@
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
-  }
+    PostgrestVersion: "14.15";
+  };
   public: {
     Tables: {
       eternity_saves: {
         Row: {
-          created_at: string
-          level: number
-          seconds: number
-          state: Json
-          updated_at: string
-          user_id: string
-        }
+          created_at: string;
+          level: number;
+          seconds: number;
+          state: Json;
+          updated_at: string;
+          user_id: string;
+        };
         Insert: {
-          created_at?: string
-          level: number
-          seconds?: number
-          state: Json
-          updated_at?: string
-          user_id: string
-        }
+          created_at?: string;
+          level: number;
+          seconds?: number;
+          state: Json;
+          updated_at?: string;
+          user_id: string;
+        };
         Update: {
-          created_at?: string
-          level?: number
-          seconds?: number
-          state?: Json
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          level?: number;
+          seconds?: number;
+          state?: Json;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       murdoku_board_elements: {
         Row: {
-          board_id: string
-          col_index: number
-          element_id: string
-          instance_id: string | null
-          room_id: string
-          row_index: number
-          sort_order: number
-        }
+          board_id: string;
+          col_index: number;
+          element_id: string;
+          instance_id: string | null;
+          room_id: string;
+          row_index: number;
+          sort_order: number;
+        };
         Insert: {
-          board_id: string
-          col_index: number
-          element_id: string
-          instance_id?: string | null
-          room_id: string
-          row_index: number
-          sort_order?: number
-        }
+          board_id: string;
+          col_index: number;
+          element_id: string;
+          instance_id?: string | null;
+          room_id: string;
+          row_index: number;
+          sort_order?: number;
+        };
         Update: {
-          board_id?: string
-          col_index?: number
-          element_id?: string
-          instance_id?: string | null
-          room_id?: string
-          row_index?: number
-          sort_order?: number
-        }
+          board_id?: string;
+          col_index?: number;
+          element_id?: string;
+          instance_id?: string | null;
+          room_id?: string;
+          row_index?: number;
+          sort_order?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "murdoku_board_elements_board_id_fkey"
-            columns: ["board_id"]
-            isOneToOne: false
-            referencedRelation: "murdoku_boards"
-            referencedColumns: ["id"]
+            foreignKeyName: "murdoku_board_elements_board_id_fkey";
+            columns: ["board_id"];
+            isOneToOne: false;
+            referencedRelation: "murdoku_boards";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "murdoku_board_elements_element_id_fkey"
-            columns: ["element_id"]
-            isOneToOne: false
-            referencedRelation: "murdoku_elements"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
+            foreignKeyName: "murdoku_board_elements_element_id_fkey";
+            columns: ["element_id"];
+            isOneToOne: false;
+            referencedRelation: "murdoku_elements";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       murdoku_boards: {
         Row: {
-          created_at: string
-          grid_cols: number
-          grid_rows: number
-          id: string
-          name: string
-          name_i18n: Json
-          rooms: Json
-          slug: string
-        }
+          created_at: string;
+          grid_cols: number;
+          grid_rows: number;
+          id: string;
+          name: string;
+          name_i18n: Json;
+          rooms: Json;
+          slug: string;
+        };
         Insert: {
-          created_at?: string
-          grid_cols?: number
-          grid_rows?: number
-          id?: string
-          name: string
-          name_i18n?: Json
-          rooms?: Json
-          slug: string
-        }
+          created_at?: string;
+          grid_cols?: number;
+          grid_rows?: number;
+          id?: string;
+          name: string;
+          name_i18n?: Json;
+          rooms?: Json;
+          slug: string;
+        };
         Update: {
-          created_at?: string
-          grid_cols?: number
-          grid_rows?: number
-          id?: string
-          name?: string
-          name_i18n?: Json
-          rooms?: Json
-          slug?: string
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          grid_cols?: number;
+          grid_rows?: number;
+          id?: string;
+          name?: string;
+          name_i18n?: Json;
+          rooms?: Json;
+          slug?: string;
+        };
+        Relationships: [];
+      };
       murdoku_case_characters: {
         Row: {
-          case_id: string
-          character_id: string
-          sort_order: number
-        }
+          case_id: string;
+          character_id: string;
+          sort_order: number;
+        };
         Insert: {
-          case_id: string
-          character_id: string
-          sort_order?: number
-        }
+          case_id: string;
+          character_id: string;
+          sort_order?: number;
+        };
         Update: {
-          case_id?: string
-          character_id?: string
-          sort_order?: number
-        }
+          case_id?: string;
+          character_id?: string;
+          sort_order?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "murdoku_case_characters_case_id_fkey"
-            columns: ["case_id"]
-            isOneToOne: false
-            referencedRelation: "murdoku_cases"
-            referencedColumns: ["id"]
+            foreignKeyName: "murdoku_case_characters_case_id_fkey";
+            columns: ["case_id"];
+            isOneToOne: false;
+            referencedRelation: "murdoku_cases";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "murdoku_case_characters_case_id_fkey"
-            columns: ["case_id"]
-            isOneToOne: false
-            referencedRelation: "murdoku_playable_cases"
-            referencedColumns: ["id"]
+            foreignKeyName: "murdoku_case_characters_case_id_fkey";
+            columns: ["case_id"];
+            isOneToOne: false;
+            referencedRelation: "murdoku_playable_cases";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "murdoku_case_characters_character_id_fkey"
-            columns: ["character_id"]
-            isOneToOne: false
-            referencedRelation: "murdoku_characters"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
+            foreignKeyName: "murdoku_case_characters_character_id_fkey";
+            columns: ["character_id"];
+            isOneToOne: false;
+            referencedRelation: "murdoku_characters";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       murdoku_cases: {
         Row: {
-          board_id: string | null
-          content: Json
-          created_at: string | null
-          creator_id: string
-          id: string
-          image: string | null
-          rejection_note: string | null
-          status: string | null
-          title: string
-          title_i18n: Json
-          updated_at: string | null
-        }
+          board_id: string | null;
+          content: Json;
+          created_at: string | null;
+          creator_id: string;
+          id: string;
+          image: string | null;
+          rejection_note: string | null;
+          status: string | null;
+          title: string;
+          title_i18n: Json;
+          updated_at: string | null;
+        };
         Insert: {
-          board_id?: string | null
-          content?: Json
-          created_at?: string | null
-          creator_id: string
-          id?: string
-          image?: string | null
-          rejection_note?: string | null
-          status?: string | null
-          title: string
-          title_i18n?: Json
-          updated_at?: string | null
-        }
+          board_id?: string | null;
+          content?: Json;
+          created_at?: string | null;
+          creator_id: string;
+          id?: string;
+          image?: string | null;
+          rejection_note?: string | null;
+          status?: string | null;
+          title: string;
+          title_i18n?: Json;
+          updated_at?: string | null;
+        };
         Update: {
-          board_id?: string | null
-          content?: Json
-          created_at?: string | null
-          creator_id?: string
-          id?: string
-          image?: string | null
-          rejection_note?: string | null
-          status?: string | null
-          title?: string
-          title_i18n?: Json
-          updated_at?: string | null
-        }
+          board_id?: string | null;
+          content?: Json;
+          created_at?: string | null;
+          creator_id?: string;
+          id?: string;
+          image?: string | null;
+          rejection_note?: string | null;
+          status?: string | null;
+          title?: string;
+          title_i18n?: Json;
+          updated_at?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "murdoku_cases_board_id_fkey"
-            columns: ["board_id"]
-            isOneToOne: false
-            referencedRelation: "murdoku_boards"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
+            foreignKeyName: "murdoku_cases_board_id_fkey";
+            columns: ["board_id"];
+            isOneToOne: false;
+            referencedRelation: "murdoku_boards";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       murdoku_characters: {
         Row: {
-          description: Json
-          id: string
-          image: string | null
-          name: string
-        }
+          description: Json;
+          id: string;
+          image: string | null;
+          name: string;
+        };
         Insert: {
-          description?: Json
-          id: string
-          image?: string | null
-          name: string
-        }
+          description?: Json;
+          id: string;
+          image?: string | null;
+          name: string;
+        };
         Update: {
-          description?: Json
-          id?: string
-          image?: string | null
-          name?: string
-        }
-        Relationships: []
-      }
+          description?: Json;
+          id?: string;
+          image?: string | null;
+          name?: string;
+        };
+        Relationships: [];
+      };
       murdoku_elements: {
         Row: {
-          created_at: string
-          icon: string
-          id: string
-          image: string | null
-          name: string
-          name_i18n: Json
-          private: boolean
-          walkable: boolean
-        }
+          created_at: string;
+          icon: string;
+          id: string;
+          image: string | null;
+          name: string;
+          name_i18n: Json;
+          private: boolean;
+          walkable: boolean;
+        };
         Insert: {
-          created_at?: string
-          icon?: string
-          id: string
-          image?: string | null
-          name?: string
-          name_i18n?: Json
-          private?: boolean
-          walkable?: boolean
-        }
+          created_at?: string;
+          icon?: string;
+          id: string;
+          image?: string | null;
+          name?: string;
+          name_i18n?: Json;
+          private?: boolean;
+          walkable?: boolean;
+        };
         Update: {
-          created_at?: string
-          icon?: string
-          id?: string
-          image?: string | null
-          name?: string
-          name_i18n?: Json
-          private?: boolean
-          walkable?: boolean
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          icon?: string;
+          id?: string;
+          image?: string | null;
+          name?: string;
+          name_i18n?: Json;
+          private?: boolean;
+          walkable?: boolean;
+        };
+        Relationships: [];
+      };
       scores: {
         Row: {
-          created_at: string
-          game: string
-          id: string
-          level: number
-          player_name: string
-          seconds: number
-        }
+          created_at: string;
+          game: string;
+          id: string;
+          level: number;
+          player_name: string;
+          seconds: number;
+        };
         Insert: {
-          created_at?: string
-          game: string
-          id?: string
-          level: number
-          player_name: string
-          seconds: number
-        }
+          created_at?: string;
+          game: string;
+          id?: string;
+          level: number;
+          player_name: string;
+          seconds: number;
+        };
         Update: {
-          created_at?: string
-          game?: string
-          id?: string
-          level?: number
-          player_name?: string
-          seconds?: number
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          game?: string;
+          id?: string;
+          level?: number;
+          player_name?: string;
+          seconds?: number;
+        };
+        Relationships: [];
+      };
       scores_eternity_ii: {
         Row: {
-          created_at: string
-          id: string
-          level: string
-          player_name: string
-          seconds: number
-        }
+          created_at: string;
+          id: string;
+          level: string;
+          player_name: string;
+          seconds: number;
+        };
         Insert: {
-          created_at?: string
-          id?: string
-          level?: string
-          player_name: string
-          seconds: number
-        }
+          created_at?: string;
+          id?: string;
+          level?: string;
+          player_name: string;
+          seconds: number;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          level?: string
-          player_name?: string
-          seconds?: number
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          id?: string;
+          level?: string;
+          player_name?: string;
+          seconds?: number;
+        };
+        Relationships: [];
+      };
       scores_star_battle: {
         Row: {
-          created_at: string
-          id: string
-          last_completion_time: number | null
-          level: number
-          level_progress: number | null
-          max_level: number | null
-          player_name: string
-          seconds: number
-          session_id: string | null
-        }
+          created_at: string;
+          id: string;
+          last_completion_time: number | null;
+          level: number;
+          level_progress: number | null;
+          max_level: number | null;
+          player_name: string;
+          seconds: number;
+          session_id: string | null;
+        };
         Insert: {
-          created_at?: string
-          id?: string
-          last_completion_time?: number | null
-          level?: number
-          level_progress?: number | null
-          max_level?: number | null
-          player_name: string
-          seconds: number
-          session_id?: string | null
-        }
+          created_at?: string;
+          id?: string;
+          last_completion_time?: number | null;
+          level?: number;
+          level_progress?: number | null;
+          max_level?: number | null;
+          player_name: string;
+          seconds: number;
+          session_id?: string | null;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          last_completion_time?: number | null
-          level?: number
-          level_progress?: number | null
-          max_level?: number | null
-          player_name?: string
-          seconds?: number
-          session_id?: string | null
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          id?: string;
+          last_completion_time?: number | null;
+          level?: number;
+          level_progress?: number | null;
+          max_level?: number | null;
+          player_name?: string;
+          seconds?: number;
+          session_id?: string | null;
+        };
+        Relationships: [];
+      };
       scores_taber_square: {
         Row: {
-          created_at: string
-          id: string
-          level: string
-          player_name: string
-          seconds: number
-        }
+          created_at: string;
+          id: string;
+          level: string;
+          player_name: string;
+          seconds: number;
+        };
         Insert: {
-          created_at?: string
-          id?: string
-          level?: string
-          player_name: string
-          seconds: number
-        }
+          created_at?: string;
+          id?: string;
+          level?: string;
+          player_name: string;
+          seconds: number;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          level?: string
-          player_name?: string
-          seconds?: number
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          id?: string;
+          level?: string;
+          player_name?: string;
+          seconds?: number;
+        };
+        Relationships: [];
+      };
       scores_tabers_star: {
         Row: {
-          created_at: string
-          id: string
-          level: string
-          player_name: string
-          seconds: number
-        }
+          created_at: string;
+          id: string;
+          level: string;
+          player_name: string;
+          seconds: number;
+        };
         Insert: {
-          created_at?: string
-          id?: string
-          level?: string
-          player_name: string
-          seconds: number
-        }
+          created_at?: string;
+          id?: string;
+          level?: string;
+          player_name: string;
+          seconds: number;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          level?: string
-          player_name?: string
-          seconds?: number
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          id?: string;
+          level?: string;
+          player_name?: string;
+          seconds?: number;
+        };
+        Relationships: [];
+      };
       scores_tabers_sudoku: {
         Row: {
-          created_at: string
-          id: string
-          last_completion_time: number | null
-          level: string
-          level_progress: number | null
-          max_level: number | null
-          player_name: string
-          seconds: number
-          session_id: string | null
-        }
+          created_at: string;
+          id: string;
+          last_completion_time: number | null;
+          level: string;
+          level_progress: number | null;
+          max_level: number | null;
+          player_name: string;
+          seconds: number;
+          session_id: string | null;
+        };
         Insert: {
-          created_at?: string
-          id?: string
-          last_completion_time?: number | null
-          level?: string
-          level_progress?: number | null
-          max_level?: number | null
-          player_name: string
-          seconds?: number
-          session_id?: string | null
-        }
+          created_at?: string;
+          id?: string;
+          last_completion_time?: number | null;
+          level?: string;
+          level_progress?: number | null;
+          max_level?: number | null;
+          player_name: string;
+          seconds?: number;
+          session_id?: string | null;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          last_completion_time?: number | null
-          level?: string
-          level_progress?: number | null
-          max_level?: number | null
-          player_name?: string
-          seconds?: number
-          session_id?: string | null
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          id?: string;
+          last_completion_time?: number | null;
+          level?: string;
+          level_progress?: number | null;
+          max_level?: number | null;
+          player_name?: string;
+          seconds?: number;
+          session_id?: string | null;
+        };
+        Relationships: [];
+      };
       taberdoku_history: {
         Row: {
-          board: number
-          completed_at: string
-          id: string
-          level: number
-          player_name: string
-          score: number
-          session_id: string
-          time_seconds: number
-        }
+          board: number;
+          completed_at: string;
+          id: string;
+          level: number;
+          player_name: string;
+          score: number;
+          session_id: string;
+          time_seconds: number;
+        };
         Insert: {
-          board: number
-          completed_at?: string
-          id?: string
-          level: number
-          player_name: string
-          score?: number
-          session_id: string
-          time_seconds: number
-        }
+          board: number;
+          completed_at?: string;
+          id?: string;
+          level: number;
+          player_name: string;
+          score?: number;
+          session_id: string;
+          time_seconds: number;
+        };
         Update: {
-          board?: number
-          completed_at?: string
-          id?: string
-          level?: number
-          player_name?: string
-          score?: number
-          session_id?: string
-          time_seconds?: number
-        }
-        Relationships: []
-      }
+          board?: number;
+          completed_at?: string;
+          id?: string;
+          level?: number;
+          player_name?: string;
+          score?: number;
+          session_id?: string;
+          time_seconds?: number;
+        };
+        Relationships: [];
+      };
       user_roles: {
         Row: {
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
+          id: string;
+          role: Database["public"]["Enums"]["app_role"];
+          user_id: string;
+        };
         Insert: {
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
+          id?: string;
+          role: Database["public"]["Enums"]["app_role"];
+          user_id: string;
+        };
         Update: {
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
-    }
+          id?: string;
+          role?: Database["public"]["Enums"]["app_role"];
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+    };
     Views: {
       murdoku_playable_cases: {
         Row: {
-          board_id: string | null
-          content: Json | null
-          created_at: string | null
-          creator_id: string | null
-          id: string | null
-          image: string | null
-          rejection_note: string | null
-          status: string | null
-          title: string | null
-          title_i18n: Json | null
-          updated_at: string | null
-        }
+          board_id: string | null;
+          content: Json | null;
+          created_at: string | null;
+          creator_id: string | null;
+          id: string | null;
+          image: string | null;
+          rejection_note: string | null;
+          status: string | null;
+          title: string | null;
+          title_i18n: Json | null;
+          updated_at: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "murdoku_cases_board_id_fkey"
-            columns: ["board_id"]
-            isOneToOne: false
-            referencedRelation: "murdoku_boards"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-    }
+            foreignKeyName: "murdoku_cases_board_id_fkey";
+            columns: ["board_id"];
+            isOneToOne: false;
+            referencedRelation: "murdoku_boards";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+    };
     Functions: {
       create_murdoku_board: {
         Args: {
-          p_elements: Json
-          p_grid_cols: number
-          p_grid_rows: number
-          p_name: string
-          p_rooms: Json
-          p_slug: string
-        }
-        Returns: string
-      }
+          p_elements: Json;
+          p_grid_cols: number;
+          p_grid_rows: number;
+          p_name: string;
+          p_rooms: Json;
+          p_slug: string;
+        };
+        Returns: string;
+      };
       admin_list_users: {
-        Args: never
+        Args: never;
         Returns: {
-          created_at: string
-          email: string
-          id: string
-          last_sign_in_at: string
-          roles: string[]
-        }[]
-      }
+          created_at: string;
+          email: string;
+          id: string;
+          last_sign_in_at: string;
+          roles: string[];
+        }[];
+      };
       admin_set_role: {
         Args: {
-          _enabled: boolean
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: undefined
-      }
+          _enabled: boolean;
+          _role: Database["public"]["Enums"]["app_role"];
+          _user_id: string;
+        };
+        Returns: undefined;
+      };
       has_role: {
         Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
-    }
+          _role: Database["public"]["Enums"]["app_role"];
+          _user_id: string;
+        };
+        Returns: boolean;
+      };
+    };
     Enums: {
-      app_role: "admin" | "moderator" | "user"
-    }
+      app_role: "admin" | "moderator" | "user";
+    };
     CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
+      [_ in never]: never;
+    };
+  };
+};
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
+      Row: infer R;
     }
     ? R
     : never
   : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
+        Row: infer R;
       }
       ? R
       : never
-    : never
+    : never;
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
+      Insert: infer I;
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
+        Insert: infer I;
       }
       ? I
       : never
-    : never
+    : never;
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
+      Update: infer U;
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
+        Update: infer U;
       }
       ? U
       : never
-    : never
+    : never;
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never
+    : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+    : never;
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never
+    : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+    : never;
 
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"]
-    }
-  }
-} as const
+      app_role: ["admin", "moderator", "user"],
+    },
+  },
+} as const;

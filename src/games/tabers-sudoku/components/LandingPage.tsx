@@ -9,6 +9,7 @@ import { SubGameTabs } from "@/games/taberdoku/components/SubGameTabs";
 import { getStorageItem } from "@/platform/storage";
 import { Ranking } from "@/platform/scores/Ranking";
 import { createScoresService } from "@/platform/scores/createScoresService";
+import { CharacterGallery } from "@/platform/characters/CharacterGallery";
 import type { SudokuLevel } from "../logic/sudoku";
 
 import "@/games/tabers-sudoku/light-theme.css";
@@ -56,28 +57,27 @@ export function LandingPage() {
         <main className="mx-auto max-w-4xl px-4 pb-24 pt-10">
           <SubGameTabs active="tabers-sudoku" />
           <div className="relative">
-
-          <header className="mt-8 text-center">
-            <h1
-              className="text-3xl font-bold tracking-widest text-primary sm:text-4xl"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              {t("sudoku.title")}
-            </h1>
-          </header>
+            <header className="mt-8 text-center">
+              <h1
+                className="text-3xl font-bold tracking-widest text-primary sm:text-4xl"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                {t("sudoku.title")}
+              </h1>
+            </header>
 
             <div className="relative z-10 bg-background/80">
               <div
-              className="pointer-events-none absolute top-0 left-0 right-0 bottom-0 opacity-10"
-              style={{
-                backgroundImage: "url(/taberdoku/sudoku-numbers.png)",
-                backgroundSize: "contain",
-                backgroundPosition: "center top",
-                backgroundRepeat: "no-repeat",
-                backgroundAttachment: "scroll",
-              }}
-              aria-hidden="true"
-            />
+                className="pointer-events-none absolute top-0 left-0 right-0 bottom-0 opacity-10"
+                style={{
+                  backgroundImage: "url(/taberdoku/sudoku-numbers.png)",
+                  backgroundSize: "contain",
+                  backgroundPosition: "center top",
+                  backgroundRepeat: "no-repeat",
+                  backgroundAttachment: "scroll",
+                }}
+                aria-hidden="true"
+              />
               <ModeSelect slug={slug} savedGame={savedGame} userId={userId} />
 
               <section className="mt-12">
@@ -108,7 +108,9 @@ export function LandingPage() {
                 </div>
               </section>
 
-              <GameFooter basedOn={t('taberdoku.sudoku.desc')} />
+              <CharacterGallery />
+
+              <GameFooter basedOn={t("taberdoku.sudoku.desc")} />
             </div>
           </div>
         </main>

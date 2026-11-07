@@ -33,7 +33,7 @@ Este juego se centra en la coincidencia de bordes y patrones entre piezas vecina
 
 Es un proyecto especialmente interesante para los amantes de los puzles de lógica y la resolución por observación, conexión y eliminación progresiva de opciones.
 
-### Taber's Murdoku: 
+### Taber's Murdoku:
 
 Taber's Murdoku mezcla el estilo de un misterio con la lógica deductiva. El jugador debe deducir el sospechoso, el arma y el lugar a partir de pistas, marcando hechos y eliminaciones en un cuaderno de deducción.
 

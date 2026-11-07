@@ -239,6 +239,26 @@ export const dict: Dict = {
   "murdoku.difficulty.level3": "normal",
   "murdoku.difficulty.level4": "dificil",
   "murdoku.difficulty.level5": "muy dificil",
+
+  "murdoku.ranking.title": "Ranking",
+  "murdoku.ranking.caseTitle": "Ranking de {title}",
+  "murdoku.ranking.time": "Tiempo: {time}",
+  "murdoku.ranking.yourTime": "Tu tiempo: {time}",
+  "murdoku.ranking.enterName": "Introduce tu nombre",
+  "murdoku.ranking.saveName": "Guardar nombre",
+  "murdoku.ranking.nameSaved": "¡Nombre guardado!",
+  "murdoku.ranking.changeName": "Cambiar nombre",
+  "murdoku.ranking.scoreSaved": "¡Guardado en el ranking!",
+  "murdoku.ranking.submitToRanking": "Enviar al ranking",
+  "murdoku.ranking.noScores": "Aún no hay tiempos para este caso.",
+  "murdoku.ranking.solvedIn": "Resuelto en {time}",
+  "murdoku.ranking.wellDone": "¡Bien hecho, {name}!",
+  "murdoku.ranking.namePlaceholder": "Tu nombre",
+
+  "murdoku.nextCase": "Siguiente caso",
+  "murdoku.noMoreCases": "¡Has resuelto todos los casos!",
+  "murdoku.noMoreCasesDesc": "No quedan casos por resolver. ¿Quieres crear el tuyo?",
+  "murdoku.createOwnCase": "Crear mi propio caso",
 };
 
 export default dict;

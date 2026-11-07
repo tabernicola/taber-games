@@ -236,6 +236,25 @@ export const dict: Dict = {
   "murdoku.difficulty.level5": "extreme",
   "murdoku.mode.case": "Taber's Murdoku",
   "murdoku.mode.caseDesc": "Ebatzi kasuak arrastoen bidez eta salatu hiltzailea eta biktima.",
+  "murdoku.ranking.title": "Sailkapena",
+  "murdoku.ranking.caseTitle": "{title} ren sailkapena",
+  "murdoku.ranking.time": "Denbora: {time}",
+  "murdoku.ranking.yourTime": "Zure denbora: {time}",
+  "murdoku.ranking.enterName": "Sartu zure izena",
+  "murdoku.ranking.saveName": "Gorde izena",
+  "murdoku.ranking.nameSaved": "Izena gordeta!",
+  "murdoku.ranking.changeName": "Aldatu izena",
+  "murdoku.ranking.scoreSaved": "Sailkapena gordeta!",
+  "murdoku.ranking.submitToRanking": "Bidali sailkapenara",
+  "murdoku.ranking.noScores": "Ortaindik ez dago denborarik kasu honetarako.",
+  "murdoku.ranking.solvedIn": "Ebatuta {time} bitartean",
+  "murdoku.ranking.wellDone": "Ondo egina, {name}!",
+  "murdoku.ranking.namePlaceholder": "Zure izena",
+
+  "murdoku.nextCase": "Hurrengo kasua",
+  "murdoku.noMoreCases": "Guztiak ebatu dituzu!",
+  "murdoku.noMoreCasesDesc": "Ez dago kasurik ebatziz gero. Zurekasua sortzeko nahi duzu?",
+  "murdoku.createOwnCase": "Nire kasua sortu",
 };
 
 export default dict;

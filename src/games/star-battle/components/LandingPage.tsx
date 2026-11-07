@@ -7,6 +7,7 @@ import { useI18n } from "@/platform/i18n";
 import type { TranslateFn } from "@/platform/games/types";
 import { getStorageItem, setStorageItem } from "@/platform/storage";
 import { SubGameTabs } from "@/games/taberdoku/components/SubGameTabs";
+import { CharacterGallery } from "@/platform/characters/CharacterGallery";
 import { boardToLevel, TABERDOKU_TOTAL_LEVELS } from "../logic/starBattlePuzzles";
 import { LEVEL_STORAGE_KEY, readCompletedBoards, resumeBoard } from "../logic/savedGame";
 
@@ -125,6 +126,8 @@ export function LandingPage() {
               formatScoreNote={formatScoreNote}
             />
           </div>
+
+          <CharacterGallery />
 
           <GameFooter basedOn="Taberdoku — one character per row, column, room, and no touching cells." />
         </main>

@@ -235,7 +235,7 @@
 
 /* D6 Text: warm olive-deep "ink stamp" */
 .dice-face .dice-face-text {
-  color: var(--ts-olive-deep, #3B4624);
+  color: var(--ts-olive-deep, #3b4624);
   text-shadow:
     0 1px 0 #fff8e6,
     0 2px 0 rgba(60, 40, 20, 0.45);
@@ -243,7 +243,7 @@
 
 /* D8 Text: warm terracotta "ink stamp" */
 .dice-d8-face .dice-face-text {
-  color: var(--ts-terracotta-d, #7A3717);
+  color: var(--ts-terracotta-d, #7a3717);
   text-shadow:
     0 1px 0 #fff8e6,
     0 2px 0 rgba(60, 40, 20, 0.45);

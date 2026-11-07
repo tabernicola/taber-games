@@ -1,51 +1,41 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
 import type { GameCardProps, GameModule, TranslateFn } from "@/platform/games/types";
 import { createScoresService } from "@/platform/scores/createScoresService";
 import { useI18n } from "@/platform/i18n";
 import { translations } from "./i18n";
-import { GameInfoModal } from "@/components/GameInfoModal";
-import { Info } from "lucide-react";
 
 function Card({ lang }: GameCardProps) {
   const { t } = useI18n();
-  const [infoOpen, setInfoOpen] = useState(false);
 
   return (
-    <>
-      <Link
-        to="/$lang/taberdoku/tabers-sudoku"
-        params={{ lang }}
-        className="group relative flex h-[128px] w-[128px] overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-0.5 hover:border-muted-foreground/40"
-      >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full opacity-0 blur-2xl transition-opacity group-hover:opacity-30"
-          style={{ background: "var(--primary)" }}
-        />
-        <TabersSudokuLogo className="h-full w-full p-3" />
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setInfoOpen(true);
-          }}
-          className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card/90 text-muted-foreground backdrop-blur transition-colors hover:bg-card hover:text-foreground"
-          aria-label="Info"
-        >
-          <Info className="h-3.5 w-3.5" />
-        </button>
-      </Link>
-      <GameInfoModal
-        open={infoOpen}
-        onOpenChange={setInfoOpen}
-        title={t("sudoku.title")}
-        description={t("home.card.sudoku.desc")}
-        tag={t("home.card.murdoku.tag")}
-        image={<TabersSudokuLogo className="h-32 w-auto" />}
+    <Link
+      to="/$lang/taberdoku/tabers-sudoku"
+      params={{ lang }}
+      className="group relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-card p-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary/60 hover:shadow-lg"
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full opacity-0 blur-3xl transition-opacity duration-300 group-hover:opacity-40"
+        style={{ background: "var(--primary)" }}
       />
-    </>
+      <div className="relative mb-3 flex h-32 w-full items-center justify-center rounded-xl bg-background/50 p-2">
+        <TabersSudokuLogo className="h-full w-full p-2 transition-transform duration-300 group-hover:scale-105" />
+      </div>
+      <div className="flex flex-1 flex-col">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">
+          {t("home.card.murdoku.tag")}
+        </span>
+        <h3
+          className="mt-0.5 text-base font-bold tracking-wide text-foreground"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          {t("sudoku.title")}
+        </h3>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-3">
+          {t("home.card.sudoku.desc")}
+        </p>
+      </div>
+    </Link>
   );
 }
 

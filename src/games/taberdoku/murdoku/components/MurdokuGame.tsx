@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect, useRef } from "react";
-import { ChevronLeft, HelpCircle, Info } from "lucide-react";
+import { useState, useMemo, useEffect, useRef, type FormEvent } from "react";
+import { ChevronLeft, HelpCircle, Info, Check, X } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import type { CaseContent, MurdokuCase, Position } from "../data/gameSchema";
 import type { GuessResult } from "../logic/game";
@@ -12,31 +12,40 @@ import { MurdokuTutorial } from "./MurdokuTutorial";
 import { useI18n } from "@/platform/i18n";
 import { localize } from "../logic/game";
 import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
+import { createScoresService } from "@/platform/scores/createScoresService";
 import "@/games/taberdoku/murdoku/light-theme.css";
+
+const scores = createScoresService("scores_murdoku");
 
 export function MurdokuGame({
   case: activeCase,
   onPlayAgain,
   onInfo,
+  sessionId,
+  playerName,
+  playerNameIsGenerated,
+  onRename,
+  solvedCases,
+  onCaseSolved,
+  approvedCases,
 }: {
   case: MurdokuCase;
   onPlayAgain?: () => void;
   onInfo?: () => void;
+  sessionId?: string | null;
+  playerName?: string | null;
+  playerNameIsGenerated?: boolean;
+  onRename?: (name: string) => void | Promise<void>;
+  solvedCases?: Set<string>;
+  onCaseSolved?: (caseId: string) => void;
+  approvedCases?: MurdokuCase[];
 }) {
   const { t, slug, lang } = useI18n();
   const { playSound } = useSoundEffects();
   const navigate = useNavigate();
   const { content } = activeCase || {};
 
-  if (!content) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="text-muted-foreground">Error loading case</p>
-      </div>
-    );
-  }
-
-  const [mode, setMode] = useState<GameMode>("notes");
+  const [mode, setMode] = useState<GameMode>(null);
   const [placements, setPlacements] = useState<Record<string, Position>>({});
   const [tentativeMarks, setTentativeMarks] = useState<Set<string>>(new Set());
   const [manualCrosses, setManualCrosses] = useState<Set<string>>(new Set());
@@ -55,15 +64,18 @@ export function MurdokuGame({
   const [incorrectPlacementsToRemove, setIncorrectPlacementsToRemove] = useState<string[]>([]);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [timerRunning, setTimerRunning] = useState(true);
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [draftName, setDraftName] = useState(playerName ?? "");
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const placementsRef = useRef(placements);
-  const solutionRef = useRef(content.solution.placements);
+  const solutionRef = useRef(content?.solution?.placements ?? []);
+  const scoreSubmittedRef = useRef(false);
 
   // Update refs when values change
   useEffect(() => {
     placementsRef.current = placements;
-    solutionRef.current = content.solution.placements;
-  }, [placements, content.solution.placements]);
+    solutionRef.current = content?.solution?.placements ?? [];
+  }, [placements, content?.solution?.placements]);
 
   // Timer logic - pauses when solution or animation overlay is shown
   useEffect(() => {
@@ -83,6 +95,158 @@ export function MurdokuGame({
       }
     };
   }, [timerRunning, showSolution, showAnimationOnly]);
+
+  // Auto-submit score when case is solved
+  useEffect(() => {
+    if (
+      guessResult?.correct &&
+      showSolution &&
+      sessionId &&
+      playerName &&
+      !scoreSubmittedRef.current
+    ) {
+      scoreSubmittedRef.current = true;
+      setScoreSubmitted(true);
+      setDraftName(playerName);
+      scores
+        .submit(activeCase.id, playerName, elapsedSeconds, sessionId, elapsedSeconds, 0, 100)
+        .catch((error) => {
+          console.error("Failed to save score:", error);
+          scoreSubmittedRef.current = false;
+          setScoreSubmitted(false);
+        });
+    }
+  }, [guessResult, showSolution, sessionId, playerName, elapsedSeconds, activeCase.id]);
+
+  // Trigger solution animation when showSolution becomes true
+  useEffect(() => {
+    if (showSolution) {
+      // Reset animation state
+      setSolutionAnimation([]);
+      setShowResultModal(false);
+
+      // Calculate correct and incorrect placements
+      const animations: { type: "correct" | "incorrect"; cellKey: string }[] = [];
+
+      for (const [charId, placement] of Object.entries(placementsRef.current)) {
+        const correctPlacement = solutionRef.current.find((p) => p.characterId === charId);
+        const cellKey = posKey(placement.row, placement.col);
+
+        if (
+          correctPlacement &&
+          correctPlacement.row === placement.row &&
+          correctPlacement.col === placement.col
+        ) {
+          animations.push({ type: "correct", cellKey });
+        } else {
+          animations.push({ type: "incorrect", cellKey });
+        }
+      }
+
+      // Sequential animation with sound
+      animations.forEach((anim, index) => {
+        setTimeout(() => {
+          setSolutionAnimation((prev) => [...prev, anim]);
+          setTimeout(() => {
+            playSound(anim.type === "correct" ? "success" : "error");
+          }, 100);
+        }, index * 500);
+      });
+
+      // Show result modal after animation completes (only for win/lose, not for life loss)
+      if (!showAnimationOnly) {
+        const totalAnimationTime = animations.length * 500 + 700;
+        setTimeout(() => {
+          setShowResultModal(true);
+        }, totalAnimationTime);
+      } else {
+        const totalAnimationTime = animations.length * 500 + 700;
+        setTimeout(() => {
+          setShowResultModal(true);
+        }, totalAnimationTime);
+      }
+    } else {
+      // Clear animation when solution is hidden
+      setSolutionAnimation([]);
+      setShowResultModal(false);
+      setShowAnimationOnly(false);
+    }
+  }, [showSolution, showAnimationOnly, playSound]);
+
+  const autoCrosses = useMemo(() => {
+    const crosses = new Set<string>();
+    const entries = Object.entries(placements);
+    for (const [, pos] of entries) {
+      for (let c = 0; c < (content?.gridCols ?? 0); c++) {
+        if (c !== pos.col) {
+          const key = posKey(pos.row, c);
+          const hasChar = entries.some(([, p]) => p.row === pos.row && p.col === c);
+          if (!hasChar) crosses.add(key);
+        }
+      }
+      for (let r = 0; r < (content?.gridRows ?? 0); r++) {
+        if (r !== pos.row) {
+          const key = posKey(r, pos.col);
+          const hasChar = entries.some(([, p]) => p.row === r && p.col === pos.col);
+          if (!hasChar) crosses.add(key);
+        }
+      }
+    }
+    return crosses;
+  }, [placements, content?.gridRows, content?.gridCols]);
+
+  // Displayed crosses = auto + manual, minus cells with characters
+  const crossedCells = useMemo(() => {
+    const combined = new Set([...autoCrosses, ...manualCrosses]);
+    for (const [, p] of Object.entries(placements)) {
+      combined.delete(posKey(p.row, p.col));
+    }
+    return combined;
+  }, [autoCrosses, manualCrosses, placements]);
+
+  const violationMap = useMemo(() => {
+    const violations: Record<string, boolean> = {};
+    const entries = Object.entries(placements);
+    for (let i = 0; i < entries.length; i++) {
+      for (let j = i + 1; j < entries.length; j++) {
+        const [, posA] = entries[i];
+        const [, posB] = entries[j];
+        if (posA.row === posB.row && posA.col === posB.col) continue;
+        if (posA.row === posB.row || posA.col === posB.col) {
+          violations[posKey(posA.row, posA.col)] = true;
+          violations[posKey(posB.row, posB.col)] = true;
+        }
+        const roomA = getRoomForCell(content?.rooms ?? [], posA);
+        const roomB = getRoomForCell(content?.rooms ?? [], posB);
+        if (roomA && roomB && roomA.id === roomB.id) {
+          violations[posKey(posA.row, posA.col)] = true;
+          violations[posKey(posB.row, posB.col)] = true;
+        }
+      }
+    }
+    return violations;
+  }, [placements, content?.rooms]);
+
+  const solutionPlacements: Record<string, Position> | null = useMemo(() => {
+    if (!showSolution || !content?.solution?.placements) return null;
+    const result: Record<string, Position> = {};
+    for (const p of content.solution.placements) {
+      result[p.characterId] = { row: p.row, col: p.col };
+    }
+    return result;
+  }, [showSolution, content?.solution?.placements]);
+
+  const killerVictimCell: Position | null = useMemo(() => {
+    if (!showSolution || !content?.solution) return null;
+    const killerPlacement = getPlacement(content.solution.placements, content.solution.killerId);
+    const victimPlacement = content.solution.victimId
+      ? getPlacement(content.solution.placements, content.solution.victimId)
+      : null;
+    if (!killerPlacement || !victimPlacement) return null;
+    if (killerPlacement.row !== victimPlacement.row || killerPlacement.col !== victimPlacement.col)
+      return null;
+    return { row: killerPlacement.row, col: killerPlacement.col };
+  }, [showSolution, content?.solution]);
 
   const handleSelectCharacter = (charId: string) => {
     if (showSolution) return;
@@ -176,7 +340,7 @@ export function MurdokuGame({
       ) {
         checkSolution(nextPlacements);
       }
-    } else  if (mode === "crosses") {
+    } else if (mode === "crosses") {
       if (hasChar) return;
       const nextCrosses = new Set(manualCrosses);
       if (nextCrosses.has(pkey)) nextCrosses.delete(pkey);
@@ -211,6 +375,7 @@ export function MurdokuGame({
       playSound("win");
       setGuessResult({ correct: true, killer: true, victim: true });
       setShowSolution(true);
+      onCaseSolved?.(activeCase.id);
     } else {
       // Remove incorrect placements
       if (lives > 1) {
@@ -231,137 +396,6 @@ export function MurdokuGame({
     }
   };
 
-  const autoCrosses = useMemo(() => {
-    const crosses = new Set<string>();
-    const entries = Object.entries(placements);
-    for (const [, pos] of entries) {
-      for (let c = 0; c < content.gridCols; c++) {
-        if (c !== pos.col) {
-          const key = posKey(pos.row, c);
-          const hasChar = entries.some(([, p]) => p.row === pos.row && p.col === c);
-          if (!hasChar) crosses.add(key);
-        }
-      }
-      for (let r = 0; r < content.gridRows; r++) {
-        if (r !== pos.row) {
-          const key = posKey(r, pos.col);
-          const hasChar = entries.some(([, p]) => p.row === r && p.col === pos.col);
-          if (!hasChar) crosses.add(key);
-        }
-      }
-    }
-    return crosses;
-  }, [placements, content.gridRows, content.gridCols]);
-
-  // Displayed crosses = auto + manual, minus cells with characters
-  const crossedCells = useMemo(() => {
-    const combined = new Set([...autoCrosses, ...manualCrosses]);
-    for (const [, p] of Object.entries(placements)) {
-      combined.delete(posKey(p.row, p.col));
-    }
-    return combined;
-  }, [autoCrosses, manualCrosses, placements]);
-
-  const violationMap = useMemo(() => {
-    const violations: Record<string, boolean> = {};
-    const entries = Object.entries(placements);
-    for (let i = 0; i < entries.length; i++) {
-      for (let j = i + 1; j < entries.length; j++) {
-        const [, posA] = entries[i];
-        const [, posB] = entries[j];
-        if (posA.row === posB.row && posA.col === posB.col) continue;
-        if (posA.row === posB.row || posA.col === posB.col) {
-          violations[posKey(posA.row, posA.col)] = true;
-          violations[posKey(posB.row, posB.col)] = true;
-        }
-        const roomA = getRoomForCell(content.rooms, posA);
-        const roomB = getRoomForCell(content.rooms, posB);
-        if (roomA && roomB && roomA.id === roomB.id) {
-          violations[posKey(posA.row, posA.col)] = true;
-          violations[posKey(posB.row, posB.col)] = true;
-        }
-      }
-    }
-    return violations;
-  }, [placements, content.rooms]);
-
-  const solutionPlacements: Record<string, Position> | null = useMemo(() => {
-    if (!showSolution) return null;
-    const result: Record<string, Position> = {};
-    for (const p of content.solution.placements) {
-      result[p.characterId] = { row: p.row, col: p.col };
-    }
-    return result;
-  }, [showSolution, content.solution.placements]);
-
-  // Trigger solution animation when showSolution becomes true
-  useEffect(() => {
-    if (showSolution) {
-      // Reset animation state
-      setSolutionAnimation([]);
-      setShowResultModal(false);
-
-      // Calculate correct and incorrect placements
-      const animations: { type: "correct" | "incorrect"; cellKey: string }[] = [];
-
-      for (const [charId, placement] of Object.entries(placementsRef.current)) {
-        const correctPlacement = solutionRef.current.find((p) => p.characterId === charId);
-        const cellKey = posKey(placement.row, placement.col);
-
-        if (
-          correctPlacement &&
-          correctPlacement.row === placement.row &&
-          correctPlacement.col === placement.col
-        ) {
-          animations.push({ type: "correct", cellKey });
-        } else {
-          animations.push({ type: "incorrect", cellKey });
-        }
-      }
-
-      // Sequential animation with sound
-      animations.forEach((anim, index) => {
-        setTimeout(() => {
-          setSolutionAnimation((prev) => [...prev, anim]);
-          setTimeout(() => {
-            playSound(anim.type === "correct" ? "success" : "error");
-          }, 100); // Play sound 100ms after animation appears
-        }, index * 500); // 500ms delay between each animation
-      });
-
-      // Show result modal after animation completes (only for win/lose, not for life loss)
-      if (!showAnimationOnly) {
-        const totalAnimationTime = animations.length * 500 + 700; // Add 700ms buffer
-        setTimeout(() => {
-          setShowResultModal(true);
-        }, totalAnimationTime);
-      } else {
-        // For life loss, show modal after animation completes
-        const totalAnimationTime = animations.length * 500 + 700;
-        setTimeout(() => {
-          setShowResultModal(true);
-        }, totalAnimationTime);
-      }
-    } else {
-      // Clear animation when solution is hidden
-      setSolutionAnimation([]);
-      setShowResultModal(false);
-      setShowAnimationOnly(false);
-    }
-  }, [showSolution, showAnimationOnly]);
-
-  const killerVictimCell: Position | null = useMemo(() => {
-    if (!showSolution) return null;
-    const killerPlacement = getPlacement(content.solution.placements, content.solution.killerId);
-    const victimPlacement = content.solution.victimId
-      ? getPlacement(content.solution.placements, content.solution.victimId)
-      : null;
-    if (!killerPlacement || !victimPlacement) return null;
-    if (killerPlacement.row !== victimPlacement.row || killerPlacement.col !== victimPlacement.col)
-      return null;
-    return { row: killerPlacement.row, col: killerPlacement.col };
-  }, [showSolution, content.solution]);
-
   const handleAccuse = (result: GuessResult) => {
     playSound(result.correct ? "win" : "error");
     setGuessResult(result);
@@ -371,7 +405,7 @@ export function MurdokuGame({
 
   const handlePlayAgain = () => {
     playSound("click");
-    setMode("notes");
+    setMode(null);
     setPlacements({});
     setTentativeMarks(new Set());
     setManualCrosses(new Set());
@@ -385,7 +419,24 @@ export function MurdokuGame({
     setShowAnimationOnly(false);
     setElapsedSeconds(0);
     setTimerRunning(true);
+    setScoreSubmitted(false);
+    scoreSubmittedRef.current = false;
+    setDraftName(playerName ?? "");
     onPlayAgain?.();
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const handleRenameSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    const trimmed = draftName.trim();
+    if (!trimmed || !onRename) return;
+    await onRename(trimmed);
+    setDraftName(trimmed);
   };
 
   const handleModeChange = (nextMode: GameMode) => {
@@ -420,7 +471,9 @@ export function MurdokuGame({
           <ChevronLeft className="h-5 w-5" />
         </button>
         <div className="flex items-center gap-2">
-          <h1 className="text-lg font-bold tracking-widest text-primary">{localize(activeCase.title, activeCase.titleI18n, lang)}</h1>
+          <h1 className="text-lg font-bold tracking-widest text-primary">
+            {localize(activeCase.title, activeCase.titleI18n, lang)}
+          </h1>
         </div>
         <button
           type="button"
@@ -555,13 +608,88 @@ export function MurdokuGame({
               content={content}
               t={t}
             />
+            <p className="mt-3 text-sm font-semibold text-primary">
+              {t("murdoku.ranking.solvedIn", { time: formatTime(elapsedSeconds) })}
+            </p>
+            {scoreSubmitted && (
+              <p className="mt-2 text-sm font-semibold text-primary">
+                {t("murdoku.ranking.scoreSaved")}
+              </p>
+            )}
+            {playerNameIsGenerated && onRename && (
+              <form onSubmit={handleRenameSubmit} className="mt-3 flex w-full items-center gap-2">
+                <input
+                  type="text"
+                  value={draftName}
+                  onChange={(event) => setDraftName(event.target.value)}
+                  maxLength={24}
+                  autoComplete="off"
+                  placeholder={t("murdoku.ranking.namePlaceholder")}
+                  aria-label={t("murdoku.ranking.changeName")}
+                  className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+                />
+                <button
+                  type="submit"
+                  disabled={!draftName.trim()}
+                  className="shrink-0 rounded-lg border border-primary/50 px-3 py-2 text-xs font-semibold text-primary transition-opacity disabled:opacity-40"
+                >
+                  {t("murdoku.ranking.saveName")}
+                </button>
+              </form>
+            )}
+
+            {(() => {
+              const solved = new Set(solvedCases ?? []);
+              solved.add(activeCase.id);
+              const nextCase = (approvedCases ?? []).find(
+                (c) => c.id !== activeCase.id && !solved.has(c.id),
+              );
+              if (nextCase) {
+                return (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playSound("click");
+                      void navigate({
+                        to: "/$lang/taberdoku/murdoku/play",
+                        params: { lang: slug },
+                        search: { caseId: nextCase.id },
+                      });
+                    }}
+                    className="mt-4 rounded-lg border border-primary bg-primary/10 px-6 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary/20"
+                  >
+                    {t("murdoku.nextCase")}
+                  </button>
+                );
+              }
+              return (
+                <div className="mt-4 mb-2 space-y-3">
+                  <p className="text-sm text-muted-foreground">{t("murdoku.noMoreCases")}</p>
+                  <p className="text-xs text-muted-foreground">{t("murdoku.noMoreCasesDesc")}</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playSound("click");
+                      void navigate({
+                        to: "/$lang/taberdoku/murdoku/create",
+                        params: { lang: slug },
+                      });
+                    }}
+                    className="rounded-lg border border-primary bg-primary/10 px-6 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/20"
+                  >
+                    {t("murdoku.createOwnCase")}
+                  </button>
+                </div>
+              );
+            })()}
+
             <button
               type="button"
               onClick={() => {
                 playSound("click");
                 handlePlayAgain();
               }}
-              className="rounded-lg border border-destructive bg-destructive/10 px-6 py-3 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/20"
+              className="mt-6 rounded-lg border border-destructive bg-destructive/10 px-6 py-3 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/20"
             >
               {t("murdoku.playAgain")}
             </button>

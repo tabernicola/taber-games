@@ -33,18 +33,27 @@
 }
 
 html.murdoku-light,
-  body.murdoku-light {
-    background: #f8fafc !important;
-    color: #0f172a;
-  }
+body.murdoku-light {
+  background: #f8fafc !important;
+  color: #0f172a;
+}
 
-  @keyframes bounce-3 {
-    0%, 100% { transform: translateY(0); }
-    25% { transform: translateY(-12px) scale(1.1); }
-    50% { transform: translateY(0); }
-    75% { transform: translateY(-6px) scale(1.05); }
+@keyframes bounce-3 {
+  0%,
+  100% {
+    transform: translateY(0);
   }
+  25% {
+    transform: translateY(-12px) scale(1.1);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-6px) scale(1.05);
+  }
+}
 
-  .animate-bounce-3 {
-    animation: bounce-3 0.8s ease-in-out;
-  }
+.animate-bounce-3 {
+  animation: bounce-3 0.8s ease-in-out;
+}

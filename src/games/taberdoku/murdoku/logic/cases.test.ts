@@ -15,7 +15,10 @@ vi.mock("@/integrations/supabase/client", () => ({ supabase: { from } }));
 import { fetchApprovedCases, fetchCase } from "./cases";
 
 describe("stored reusable Murdoku cases", () => {
-  beforeEach(() => { vi.clearAllMocks(); result.error = null; });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    result.error = null;
+  });
   const saved = {
     ...SAMPLE_CASE,
     id: "02402400-0000-4000-8000-000000000002",
@@ -29,13 +32,15 @@ describe("stored reusable Murdoku cases", () => {
     expect(from).toHaveBeenCalledWith("murdoku_playable_cases");
     expect(loaded?.content).toEqual(SAMPLE_CASE.content);
     expect(loaded?.titleI18n).toEqual(SAMPLE_CASE.titleI18n);
-    expect(loaded?.content.rooms.flatMap(r => r.elements ?? [])).toHaveLength(81);
+    expect(loaded?.content.rooms.flatMap((r) => r.elements ?? [])).toHaveLength(81);
     expect(loaded?.content.characters).toHaveLength(9);
   });
 
   it("uses reconstructed content for the approved case list too", async () => {
     result.data = [saved];
-    expect(await fetchApprovedCases()).toEqual([expect.objectContaining({ id: saved.id, content: SAMPLE_CASE.content })]);
+    expect(await fetchApprovedCases()).toEqual([
+      expect.objectContaining({ id: saved.id, content: SAMPLE_CASE.content }),
+    ]);
     expect(from).toHaveBeenCalledWith("murdoku_playable_cases");
   });
 

@@ -52,7 +52,11 @@ export function AccusationModal({
               options={characters.filter((c) => c.id !== victimId)}
             />
             <SelectField
-              label={isWitness ? (t("murdoku.chooseWitness") || t("murdoku.witness") || "Testigo") : t("murdoku.chooseVictim")}
+              label={
+                isWitness
+                  ? t("murdoku.chooseWitness") || t("murdoku.witness") || "Testigo"
+                  : t("murdoku.chooseVictim")
+              }
               value={victimId}
               onChange={setVictimId}
               options={characters.filter((c) => c.id !== killerId)}
@@ -60,7 +64,10 @@ export function AccusationModal({
           </div>
 
           <p className="mt-2 text-[10px] text-muted-foreground">
-            {isWitness ? (t("creator.killerWitnessSame") || "El culpable y el testigo no pueden ser la misma persona") : t("creator.killerVictimSame")}
+            {isWitness
+              ? t("creator.killerWitnessSame") ||
+                "El culpable y el testigo no pueden ser la misma persona"
+              : t("creator.killerVictimSame")}
           </p>
 
           <div className="mt-6 flex gap-3">

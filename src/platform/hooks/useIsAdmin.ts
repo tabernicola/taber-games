@@ -8,7 +8,10 @@ export function useIsAdmin() {
     queryKey: ["is-admin", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("has_role", { _user_id: user!.id, _role: "admin" });
+      const { data, error } = await supabase.rpc("has_role", {
+        _user_id: user!.id,
+        _role: "admin",
+      });
       if (error) throw error;
       return !!data;
     },
