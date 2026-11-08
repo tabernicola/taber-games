@@ -100,6 +100,7 @@ export const dict: Dict = {
   "murdoku.createConfirm": "Submit case for review?",
   "murdoku.createDesc":
     "Once submitted, your case will be reviewed by an admin before appearing publicly.",
+  "murdoku.comingSoon": "Coming soon",
 
   "murdoku.sample.clue1": "The murder happened in the Hall.",
   "murdoku.sample.clue2": "The colonel was in the top row.",

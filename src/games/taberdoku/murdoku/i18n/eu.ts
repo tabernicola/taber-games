@@ -100,6 +100,7 @@ export const dict: Dict = {
   "murdoku.createConfirm": "Bidali kasuaren berrikuspena?",
   "murdoku.createDesc":
     "Bidali ostean, zure kasu administratzaile batek aztertu ko du argibidera publikoan agertzea.",
+  "murdoku.comingSoon": "Laster",
 
   "murdoku.sample.clue1": "Errukiaren krima Hall-ean gertatu zen.",
   "murdoku.sample.clue2": "Kolonela goi lerroan dagoela.",

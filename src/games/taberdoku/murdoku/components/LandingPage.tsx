@@ -115,6 +115,7 @@ export function LandingPage() {
                     onRankingClick={openRanking}
                   />
                 ))}
+                <ComingSoonCard />
                 <CreateCaseCard slug={slug} />
               </div>
             )}
@@ -160,6 +161,28 @@ function CreateCaseCard({ slug }: { slug: string }) {
         <span className="px-3 text-sm font-semibold">{t("murdoku.createCase")}</span>
       </div>
     </Link>
+  );
+}
+
+function ComingSoonCard() {
+  const { t } = useI18n();
+
+  return (
+    <div className="mx-auto block aspect-square w-full max-w-[220px]">
+      <div className="relative h-full w-full overflow-hidden rounded-xl border border-border bg-card opacity-90">
+        <img
+          src="/taberdoku/murdoku/cases/graffiti.png"
+          alt=""
+          aria-hidden="true"
+          className="h-full w-full object-cover grayscale-[0.15]"
+        />
+        <div className="absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-black/85 via-black/40 to-transparent p-2.5 pt-6">
+          <h3 className="text-sm font-semibold text-white line-clamp-2">
+            {t("murdoku.comingSoon")}
+          </h3>
+        </div>
+      </div>
+    </div>
   );
 }
 
