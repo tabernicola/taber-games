@@ -518,6 +518,17 @@ export type Database = {
         };
         Returns: string;
       };
+      update_murdoku_board: {
+        Args: {
+          p_board_id: string;
+          p_elements: Json;
+          p_grid_cols: number;
+          p_grid_rows: number;
+          p_name: string;
+          p_rooms: Json;
+        };
+        Returns: string;
+      };
       admin_list_users: {
         Args: never;
         Returns: {

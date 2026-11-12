@@ -28,6 +28,7 @@ export interface BoardElement {
   icon: string;
   image?: string;
   walkable: boolean;
+  private: boolean;
 }
 
 export interface MurdokuElement {
@@ -87,6 +88,7 @@ export async function fetchBoardElements(boardId: string): Promise<BoardElement[
       icon: e?.icon ?? "",
       image: e?.image ?? undefined,
       walkable: e?.walkable ?? true,
+      private: e?.private ?? true,
     };
   });
 }

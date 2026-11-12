@@ -228,6 +228,13 @@ export const dict: Dict = {
   "admin.testBeforeApprove": "Probar antes de aprobar",
   "admin.rejectCase": "Rechazar caso",
   "admin.noCases": "No hay casos en la base de datos.",
+  "admin.casesSection": "Casos",
+  "admin.boardsSection": "Tableros",
+  "boardAdmin.editBoard": "Editar tablero",
+  "boardAdmin.createBoard": "Crear tablero",
+  "boardAdmin.saveBoard": "Guardar cambios",
+  "boardAdmin.sharedBoardWarning":
+    "Los cambios en un tablero afectan a todos los casos que lo utilizan.",
   "murdoku.viewDetails": "Ver detalles",
   "murdoku.noCluesForChar": "Sin pistas para este personaje",
   "murdoku.viewGrid": "Cuadrícula",

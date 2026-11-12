@@ -8,17 +8,20 @@ import { approveCase, rejectCase, updateCase } from "@/games/taberdoku/murdoku/a
 import { fetchAllCases, fetchCase, type MurdokuCase } from "@/games/taberdoku/murdoku/logic/cases";
 import { MurdokuGame } from "./MurdokuGame";
 import { CaseEditor } from "./CaseEditor";
+import { BoardAdminSection } from "./BoardAdminSection";
 import { useMurdokuTheme } from "@/games/taberdoku/murdoku/hooks/useMurdokuTheme";
 
 import "@/games/taberdoku/murdoku/light-theme.css";
 
 type View = "list" | "test" | "edit";
+type AdminSection = "cases" | "boards";
 
 export function AdminPanel() {
   const { t, slug } = useI18n();
   const { user, loading } = useAuth();
   const queryClient = useQueryClient();
   const [view, setView] = useState<View>("list");
+  const [section, setSection] = useState<AdminSection>("cases");
   const [selectedCase, setSelectedCase] = useState<MurdokuCase | null>(null);
   const [approveMode, setApproveMode] = useState(false);
   const [rejectModal, setRejectModal] = useState<MurdokuCase | null>(null);
@@ -166,58 +169,84 @@ export function AdminPanel() {
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-6">
-        <div className="mb-6 flex justify-end">
-          <Link
-            to="/$lang/taberdoku/murdoku/create"
-            params={{ lang: slug }}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-primary bg-primary/10 px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/20"
-          >
-            <Plus className="h-4 w-4" />
-            {t("murdoku.createCase")}
-          </Link>
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex gap-2" role="tablist" aria-label={t("admin.title")}>
+            {(["cases", "boards"] as const).map((adminSection) => (
+              <button
+                key={adminSection}
+                type="button"
+                role="tab"
+                aria-selected={section === adminSection}
+                onClick={() => setSection(adminSection)}
+                className={`rounded-lg border px-4 py-2 text-sm font-semibold ${
+                  section === adminSection
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                {t(adminSection === "cases" ? "admin.casesSection" : "admin.boardsSection")}
+              </button>
+            ))}
+          </div>
+          {section === "cases" && (
+            <Link
+              to="/$lang/taberdoku/murdoku/create"
+              params={{ lang: slug }}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-primary bg-primary/10 px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/20"
+            >
+              <Plus className="h-4 w-4" />
+              {t("murdoku.createCase")}
+            </Link>
+          )}
         </div>
 
-        {isPending && (
-          <p className="text-center text-sm text-muted-foreground">{t("common.loading")}</p>
-        )}
+        {section === "boards" ? (
+          <BoardAdminSection />
+        ) : (
+          <>
+            {isPending && (
+              <p className="text-center text-sm text-muted-foreground">{t("common.loading")}</p>
+            )}
 
-        {isError && <p className="text-center text-sm text-destructive">{t("admin.error")}</p>}
+            {isError && <p className="text-center text-sm text-destructive">{t("admin.error")}</p>}
 
-        {cases.length === 0 && !isPending && (
-          <p className="text-center text-sm text-muted-foreground">{t("admin.noCases")}</p>
-        )}
+            {cases.length === 0 && !isPending && (
+              <p className="text-center text-sm text-muted-foreground">{t("admin.noCases")}</p>
+            )}
 
-        <div className="mt-6 space-y-4">
-          {cases.map((c) => (
-            <CaseRow
-              key={c.id}
-              caseData={c}
-              onApprove={() => {
-                setSelectedCase(c);
-                setView("test");
-                setApproveMode(true);
-              }}
-              onReject={() => setRejectModal(c)}
-              onEdit={() => {
-                setSelectedCase(c);
-                setView("edit");
-              }}
-              approveLoading={approveMutation.isPending && approveMode}
-              rejecting={rejectMutation.isPending}
-            />
-          ))}
-        </div>
+            <div className="mt-6 space-y-4">
+              {cases.map((c) => (
+                <CaseRow
+                  key={c.id}
+                  caseData={c}
+                  onApprove={() => {
+                    setSelectedCase(c);
+                    setView("test");
+                    setApproveMode(true);
+                  }}
+                  onReject={() => setRejectModal(c)}
+                  onEdit={() => {
+                    setSelectedCase(c);
+                    setView("edit");
+                  }}
+                  approveLoading={approveMutation.isPending && approveMode}
+                  rejecting={rejectMutation.isPending}
+                />
+              ))}
+            </div>
 
-        {rejectModal && (
-          <RejectModal
-            caseData={rejectModal}
-            open={true}
-            onClose={() => setRejectModal(null)}
-            onReject={(note) => {
-              void rejectMutation.mutate({ caseId: rejectModal.id, note });
-            }}
-            rejecting={rejectMutation.isPending}
-          />
+            {rejectModal && (
+              <RejectModal
+                caseData={rejectModal}
+                open={true}
+                onClose={() => setRejectModal(null)}
+                onReject={(note) => {
+                  void rejectMutation.mutate({ caseId: rejectModal.id, note });
+                }}
+                rejecting={rejectMutation.isPending}
+              />
+            )}
+          </>
         )}
       </main>
     </div>

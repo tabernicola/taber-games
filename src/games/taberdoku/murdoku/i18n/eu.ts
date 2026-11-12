@@ -226,6 +226,13 @@ export const dict: Dict = {
   "admin.testBeforeApprove": "Proba onartze aurretik",
   "admin.rejectCase": "Kasu hau ezeztatu",
   "admin.noCases": "Ez DAGO kasurik datu-basean.",
+  "admin.casesSection": "Kasuak",
+  "admin.boardsSection": "Taulak",
+  "boardAdmin.editBoard": "Editatu taula",
+  "boardAdmin.createBoard": "Sortu taula",
+  "boardAdmin.saveBoard": "Gorde aldaketak",
+  "boardAdmin.sharedBoardWarning":
+    "Taula batean egindako aldaketek hura erabiltzen duten kasu guztiei eragiten diete.",
   "murdoku.viewDetails": "Ikus xehetasunak",
   "murdoku.noCluesForChar": "Ez dago pertsonaia hori zerikusitza pistaik",
   "murdoku.viewGrid": "Sareta",
