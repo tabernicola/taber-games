@@ -77,13 +77,6 @@ export function LandingPage() {
           </header>
 
           <section className="mt-12">
-            <h2
-              className="mb-4 text-2xl tracking-widest text-foreground sm:text-3xl"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              {t("home.games")}
-            </h2>
-
             {isPending && (
               <p className="text-center text-sm text-muted-foreground">{t("murdoku.loading")}</p>
             )}
@@ -104,20 +97,63 @@ export function LandingPage() {
               </div>
             )}
 
-            {cases && (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                {cases.map((c) => (
-                  <CaseCard
-                    key={c.id}
-                    caseData={c}
-                    slug={slug}
-                    solved={solvedCases.has(c.id)}
-                    onRankingClick={openRanking}
-                  />
-                ))}
-                <ComingSoonCard />
-                <CreateCaseCard slug={slug} />
-              </div>
+            {cases && cases.length > 0 && (
+              <>
+                {(() => {
+                  const antxoCases = cases.filter(
+                    (c) => c.content.gridRows === 9 && c.content.gridCols === 9,
+                  );
+                  const otherCases = cases.filter(
+                    (c) => !(c.content.gridRows === 9 && c.content.gridCols === 9),
+                  );
+                  return (
+                    <>
+                      <div>
+                        <h2
+                          className="mb-4 text-2xl tracking-widest text-foreground sm:text-3xl"
+                          style={{ fontFamily: "var(--font-display)" }}
+                        >
+                          {t("murdoku.antxoCrimes")}
+                        </h2>
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                          {antxoCases.map((c) => (
+                            <CaseCard
+                              key={c.id}
+                              caseData={c}
+                              slug={slug}
+                              solved={solvedCases.has(c.id)}
+                              onRankingClick={openRanking}
+                            />
+                          ))}
+                          <ComingSoonCard />
+                          <CreateCaseCard slug={slug} />
+                        </div>
+                      </div>
+
+                      <div className="mt-12">
+                        <h2
+                          className="mb-4 text-2xl tracking-widest text-foreground sm:text-3xl"
+                          style={{ fontFamily: "var(--font-display)" }}
+                        >
+                          {t("murdoku.otherCases")}
+                        </h2>
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                          {otherCases.map((c) => (
+                            <CaseCard
+                              key={c.id}
+                              caseData={c}
+                              slug={slug}
+                              solved={solvedCases.has(c.id)}
+                              onRankingClick={openRanking}
+                            />
+                          ))}
+                          <CreateCaseCard slug={slug} />
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
+              </>
             )}
 
             {!user && (
@@ -199,7 +235,7 @@ function CaseCard({
 }) {
   const { t, lang } = useI18n();
   const difficulty = caseData.difficulty ?? 3;
-  const image = caseData.image || caseData.content?.image;
+  const image = caseData.image || caseData.content?.image || "/taberdoku/murdoku/cases/default.png";
 
   return (
     <Link
@@ -209,17 +245,11 @@ function CaseCard({
       className="group block w-full max-w-[220px] mx-auto"
     >
       <div className="relative aspect-square overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary hover:shadow-md">
-        {image ? (
-          <img
-            src={image}
-            alt={localize(caseData.title, caseData.titleI18n, lang)}
-            className="h-full w-full object-cover transition-transform group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-muted text-center text-xs text-muted-foreground px-2">
-            {localize(caseData.title, caseData.titleI18n, lang)}
-          </div>
-        )}
+        <img
+          src={image}
+          alt={localize(caseData.title, caseData.titleI18n, lang)}
+          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+        />
         {solved && (
           <img
             src="/taberdoku/murdoku/solved.png"

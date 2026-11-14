@@ -98,8 +98,9 @@ export const dict: Dict = {
   "murdoku.clueType.clue": "Clue",
 
   "murdoku.createConfirm": "Submit case for review?",
-  "murdoku.createDesc":
-    "Once submitted, your case will be reviewed by an admin before appearing publicly.",
+  "murdoku.createDesc": "Have your own mystery to share?",
+  "murdoku.antxoCrimes": "Antxo crimes",
+  "murdoku.otherCases": "Other cases",
   "murdoku.comingSoon": "Coming soon",
 
   "murdoku.sample.clue1": "The murder happened in the Hall.",

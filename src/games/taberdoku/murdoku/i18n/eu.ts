@@ -98,8 +98,9 @@ export const dict: Dict = {
   "murdoku.clueType.clue": "Pista",
 
   "murdoku.createConfirm": "Bidali kasuaren berrikuspena?",
-  "murdoku.createDesc":
-    "Bidali ostean, zure kasu administratzaile batek aztertu ko du argibidera publikoan agertzea.",
+  "murdoku.createDesc": "Zure misterio propioa partekatu nahi?",
+  "murdoku.antxoCrimes": "Antxo crimes",
+  "murdoku.otherCases": "Beste kasuak",
   "murdoku.comingSoon": "Laster",
 
   "murdoku.sample.clue1": "Errukiaren krima Hall-ean gertatu zen.",
