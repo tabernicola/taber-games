@@ -30,7 +30,7 @@ export const dict: Dict = {
   "murdoku.col": "Column",
   "murdoku.cell": "Cell",
   "murdoku.place": "Place",
-  "murdoku.placeCharacter": "Tap a cell to place the selected character",
+  "murdoku.placeCharacter": "Tap a cell to note the character; press and hold to place it",
   "murdoku.notesHelp": "Mark cells as occupied (someone here)",
   "murdoku.crossesHelp": "Mark cells with X (no character here)",
   "murdoku.selectCharacter": "Select a character",
@@ -46,14 +46,17 @@ export const dict: Dict = {
   "murdoku.tutorial.step1Desc":
     "Analyze the clues to deduce where to place each character. Use logic to discover who is the killer and who is the victim.",
   "murdoku.tutorial.charactersError": "The tutorial characters could not be loaded.",
-  "murdoku.tutorial.step2Title": "One character per row and column",
+  "murdoku.tutorial.step2Title": "Note your possibilities",
   "murdoku.tutorial.step2Desc":
-    "Place a character by selecting it and tapping a cell. X marks indicate blocked cells in the same row and column.",
-  "murdoku.tutorial.step3Title": "Mark cells with X",
+    "If you're unsure, note the cells where a character might go by tapping them once. Then select another character and double-click a cell to place it.",
+  "murdoku.tutorial.step3Title": "One character per row and column",
   "murdoku.tutorial.step3Desc":
-    "Use the X button to mark cells where no character can be placed. This helps you deduce where the others must go.",
-  "murdoku.tutorial.step4Title": "Obstacles",
+    "Select a character and double-click a cell to place it. X marks show blocked cells in the same row and column.",
+  "murdoku.tutorial.step4Title": "Mark cells with X",
   "murdoku.tutorial.step4Desc":
+    "Use the X button to mark cells where no character can be placed. This helps you deduce where the others must go.",
+  "murdoku.tutorial.step5Title": "Obstacles",
+  "murdoku.tutorial.step5Desc":
     "Characters cannot be placed on buildings or plants. Use this restriction to limit possible positions.",
   "murdoku.tutorial.stepOf": "{current} of {total}",
   "murdoku.tutorial.prev": "Previous",

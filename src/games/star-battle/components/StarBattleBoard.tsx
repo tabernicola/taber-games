@@ -6,16 +6,12 @@ import { useTimer } from "@/platform/hooks/useTimer";
 import { useSoundEffects } from "@/platform/hooks/useSoundEffects";
 import { formatTime } from "@/platform/scores/formatTime";
 import type { Character } from "@/platform/characters/characters";
+import { CharacterSpriteAnimation } from "@/platform/characters/CharacterSpriteAnimation";
 import { isTaberdokuSolved, taberdokuConflicts, type TaberdokuPuzzle } from "../logic/starBattle";
 import { StarBattleRules } from "./StarBattleRules";
 import { StarBattleTutorial } from "./StarBattleTutorial";
 import { StarBattleLevelSelector } from "./StarBattleLevelSelector";
 import "@/games/star-battle/star-battle-theme.css";
-
-function spritePathFor(image: string | undefined): string | undefined {
-  if (!image) return undefined;
-  return image.replace(/\.png$/, "-sprite.png");
-}
 
 const ROOM_COLORS = [
   "#fde68a",
@@ -28,87 +24,6 @@ const ROOM_COLORS = [
   "#f9a8d4",
   "#e5e7eb",
 ];
-
-function SpriteAnimation({ src, frameDuration = 160 }: { src: string; frameDuration?: number }) {
-  const rows = 1;
-  const cols = 6;
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const totalFrames = cols * rows;
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const container = containerRef.current;
-    if (!canvas || !container) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const img = new Image();
-    img.src = src;
-    let loaded = false;
-
-    const resize = () => {
-      const rect = container.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
-    };
-
-    resize();
-
-    const observer = new ResizeObserver(() => resize());
-    observer.observe(container);
-
-    let frame = 0;
-    let lastTime = 0;
-    let animId: number;
-
-    const animate = (time: number) => {
-      if (time - lastTime >= frameDuration && loaded) {
-        frame = (frame + 1) % totalFrames;
-        lastTime = time;
-      }
-      if (loaded && canvas.width > 0 && canvas.height > 0 && img.complete) {
-        const cols = img.width / img.height;
-        const frameWidth = img.width / cols;
-        const frameHeight = img.height / rows;
-        const col = frame % cols;
-        const row = Math.floor(frame / cols);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(
-          img,
-          col * frameWidth,
-          row * frameHeight,
-          frameWidth,
-          frameHeight,
-          0,
-          0,
-          canvas.width,
-          canvas.height,
-        );
-      }
-      animId = requestAnimationFrame(animate);
-    };
-
-    img.onload = () => {
-      loaded = true;
-      resize();
-    };
-
-    animId = requestAnimationFrame(animate);
-
-    return () => {
-      cancelAnimationFrame(animId);
-      observer.disconnect();
-    };
-  }, [src, cols, rows, frameDuration, totalFrames]);
-
-  return (
-    <div ref={containerRef} className="absolute inset-0 overflow-hidden">
-      <canvas ref={canvasRef} className="block h-full w-full" />
-    </div>
-  );
-}
 
 export function StarBattleBoard({
   puzzle,
@@ -641,7 +556,6 @@ export function StarBattleBoard({
         >
           {Array.from({ length: size * size }, (_, cell) => {
             const charInfo_cell = charAt(cell);
-            const spritePath = spritePathFor(charInfo_cell?.char.image);
             const given = isGiven(cell);
             const bad = conflicts.has(cell);
             const hasError = errorCells.has(cell);
@@ -675,15 +589,8 @@ export function StarBattleBoard({
                       className="absolute inset-0 flex items-center justify-center"
                       style={{ background: charInfo_cell.roomColor }}
                     >
-                      {spritePath ? (
-                        <SpriteAnimation src={spritePath} />
-                      ) : charInfo_cell.char.image ? (
-                        <img
-                          src={charInfo_cell.char.image}
-                          alt={charInfo_cell.char.name}
-                          draggable={false}
-                          className={`h-full w-full object-cover object-top ${given ? "" : "opacity-95"}`}
-                        />
+                      {charInfo_cell.char.image ? (
+                        <CharacterSpriteAnimation image={charInfo_cell.char.image} />
                       ) : (
                         <span className="text-xs font-bold">
                           {charInfo_cell.char.name.slice(0, 2)}

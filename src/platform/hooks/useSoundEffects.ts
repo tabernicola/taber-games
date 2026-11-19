@@ -1,6 +1,14 @@
 import { useCallback, useRef } from "react";
 
-type SoundType = "click" | "place" | "rotate" | "win" | "roll" | "error" | "success";
+type SoundType =
+  | "click"
+  | "place"
+  | "rotate"
+  | "win"
+  | "roll"
+  | "error"
+  | "success"
+  | "alreadyPlaced";
 
 let sharedAudioContext: AudioContext | null = null;
 
@@ -121,6 +129,21 @@ export function useSoundEffects() {
           gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
           osc.start(now);
           osc.stop(now + 0.2);
+          break;
+        }
+
+        case "alreadyPlaced": {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.setValueAtTime(660, now);
+          osc.frequency.setValueAtTime(520, now + 0.12);
+          osc.type = "triangle";
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.24);
+          osc.start(now);
+          osc.stop(now + 0.24);
           break;
         }
 

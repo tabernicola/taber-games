@@ -48,6 +48,7 @@ export function MurdokuGame({
   const [mode, setMode] = useState<GameMode>(null);
   const [placements, setPlacements] = useState<Record<string, Position>>({});
   const [tentativeMarks, setTentativeMarks] = useState<Set<string>>(new Set());
+  const [characterAnnotations, setCharacterAnnotations] = useState<Record<string, string[]>>({});
   const [manualCrosses, setManualCrosses] = useState<Set<string>>(new Set());
   const [selectedCharId, setSelectedCharId] = useState<string | null>(null);
   const [selectedClueId, setSelectedClueId] = useState<string | null>(null);
@@ -290,12 +291,31 @@ export function MurdokuGame({
     }
   };
 
-  const handleCellAction = (pos: Position) => {
+  const handleCellAction = (pos: Position, action: "annotate" | "place" = "annotate") => {
     if (showSolution) return;
     const pkey = posKey(pos.row, pos.col);
     const hasChar = Object.values(placements).some((p) => p.row === pos.row && p.col === pos.col);
 
     if (selectedCharId) {
+      if (action === "annotate") {
+        if (placements[selectedCharId]) {
+          playSound("alreadyPlaced");
+          return;
+        }
+        setCharacterAnnotations((prev) => {
+          const current = prev[pkey] ?? [];
+          const nextForCell = current.includes(selectedCharId)
+            ? current.filter((charId) => charId !== selectedCharId)
+            : [...current, selectedCharId];
+          const next = { ...prev };
+          if (nextForCell.length > 0) next[pkey] = nextForCell;
+          else delete next[pkey];
+          return next;
+        });
+        playSound("click");
+        return;
+      }
+
       const existing = placements[selectedCharId];
 
       // Toggle off: same character at same cell
@@ -326,6 +346,14 @@ export function MurdokuGame({
       }
       nextPlacements[selectedCharId] = pos;
       setPlacements(nextPlacements);
+      setCharacterAnnotations((prev) => {
+        const next: Record<string, string[]> = {};
+        for (const [cellKey, charIds] of Object.entries(prev)) {
+          const remaining = charIds.filter((charId) => charId !== selectedCharId);
+          if (remaining.length > 0) next[cellKey] = remaining;
+        }
+        return next;
+      });
       playSound("place");
 
       // Remove manual cross at this cell
@@ -408,6 +436,7 @@ export function MurdokuGame({
     setMode(null);
     setPlacements({});
     setTentativeMarks(new Set());
+    setCharacterAnnotations({});
     setManualCrosses(new Set());
     setSelectedCharId(null);
     setSelectedClueId(null);
@@ -493,6 +522,7 @@ export function MurdokuGame({
           content={content}
           placements={placements}
           tentativeMarks={tentativeMarks}
+          characterAnnotations={characterAnnotations}
           crossedCells={crossedCells}
           selectedCharId={selectedCharId}
           onSelectCharacter={handleSelectCharacter}

@@ -30,7 +30,7 @@ export const dict: Dict = {
   "murdoku.col": "Zutabea",
   "murdoku.cell": "Gelaxka",
   "murdoku.place": "Kokatu",
-  "murdoku.placeCharacter": "Sakatu gelaxka bat pertsonaia kokatzeko",
+  "murdoku.placeCharacter": "Ukitu gelaxka pertsonaia ohartzeko; eduki sakatuta kokatzeko",
   "murdoku.notesHelp": "Markatu gelaxkak lortutzat (hemendik pertsonaia)",
   "murdoku.crossesHelp": "Markatu gelaxkak X-ekin (ez dago pertsonaia)",
   "murdoku.selectCharacter": "Aukeratu pertsonaia",
@@ -46,14 +46,17 @@ export const dict: Dict = {
   "murdoku.tutorial.step1Desc":
     "Analizatu pistak pertsonaia bakoitza non kokatu deduzitzeko. Erabili logika sarracala eta victimoa nor diren aurkitzeko.",
   "murdoku.tutorial.charactersError": "Ezin izan dira tutorialeko pertsonaiak kargatu.",
-  "murdoku.tutorial.step2Title": "Pertsonaia bat lerro eta zutabe bakoitzean",
+  "murdoku.tutorial.step2Title": "Idatzi aukerak",
   "murdoku.tutorial.step2Desc":
-    "Kokatu pertsonaia bat aukeratuz eta gelaxka bat sakatuz. X markak blokeatutako gelaxkak erakusten ditu lerro eta zutabe berean.",
-  "murdoku.tutorial.step3Title": "Markatu gelaxkak X-ekin",
+    "Zalantza baduzu, idatzi pertsonaia bat egon daitekeen gelaxkak behin ukituz. Ondoren, aukeratu beste pertsonaia bat eta egin klik bikoitza gelaxka batean kokatzeko.",
+  "murdoku.tutorial.step3Title": "Pertsonaia bat lerro eta zutabe bakoitzean",
   "murdoku.tutorial.step3Desc":
-    "Erabili X botoia markatzeko gelaxkak non ezin den pertsonaia bat kokatu. honek laguntzen dizu besteak non joan behar diren deduzitzen.",
-  "murdoku.tutorial.step4Title": "Obstakuluak",
+    "Aukeratu pertsonaia bat eta egin klik bikoitza gelaxka batean kokatzeko. X markek lerro eta zutabe bereko gelaxka blokeatuak erakusten dituzte.",
+  "murdoku.tutorial.step4Title": "Markatu gelaxkak X-ekin",
   "murdoku.tutorial.step4Desc":
+    "Erabili X botoia markatzeko gelaxkak non ezin den pertsonaia bat kokatu. honek laguntzen dizu besteak non joan behar diren deduzitzen.",
+  "murdoku.tutorial.step5Title": "Obstakuluak",
+  "murdoku.tutorial.step5Desc":
     "Pertsonaiak ezin dira eraikinetan edo landareetan kokatu. Erabili muga hau posible diren posizioak mugatzeko.",
   "murdoku.tutorial.stepOf": "{current} / {total}",
   "murdoku.tutorial.prev": "Aurrekoa",

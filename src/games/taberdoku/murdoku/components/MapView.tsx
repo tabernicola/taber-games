@@ -1,7 +1,12 @@
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import type { CaseContent, Character, Clue, Position, Room, RoomElement } from "../data/gameSchema";
 import { useI18n } from "@/platform/i18n";
 import { getRoomForCell, localize, posKey } from "../logic/game";
+import { CharacterSpriteAnimation } from "@/platform/characters/CharacterSpriteAnimation";
+
+const LONG_PRESS_DURATION_MS = 500;
+const LONG_PRESS_MOVE_TOLERANCE_PX = 10;
+const SINGLE_CLICK_DELAY_MS = 300;
 
 const ROOM_COLORS = [
   "bg-sky-100/75 hover:bg-sky-100",
@@ -67,6 +72,7 @@ export function MapView({
   content,
   placements,
   tentativeMarks,
+  characterAnnotations,
   crossedCells,
   selectedCharId,
   onSelectCharacter,
@@ -85,10 +91,11 @@ export function MapView({
   content: CaseContent;
   placements: Record<string, Position>;
   tentativeMarks: Set<string>;
+  characterAnnotations: Record<string, string[]>;
   crossedCells: Set<string>;
   selectedCharId: string | null;
   onSelectCharacter: (charId: string) => void;
-  onCellAction: (pos: Position) => void;
+  onCellAction: (pos: Position, action?: "annotate" | "place") => void;
   onNonWalkableClick: () => void;
   mode: "place" | "notes" | "crosses" | "erase" | null;
   showSolution: boolean;
@@ -103,6 +110,38 @@ export function MapView({
   const { t, lang } = useI18n();
   const { gridRows = 9, gridCols = 9, characters = [], rooms = [], clues = [] } = content || {};
   const scrollRef = useRef<HTMLDivElement>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const singleClickTimersRef = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  const longPressTriggeredRef = useRef(false);
+  const pointerGestureCancelledRef = useRef(false);
+  const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  const clearLongPress = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    pointerStartRef.current = null;
+  }, []);
+
+  const clearSingleClick = useCallback((key?: string) => {
+    if (key !== undefined) {
+      const timer = singleClickTimersRef.current.get(key);
+      if (timer) clearTimeout(timer);
+      singleClickTimersRef.current.delete(key);
+      return;
+    }
+    singleClickTimersRef.current.forEach((timer) => clearTimeout(timer));
+    singleClickTimersRef.current.clear();
+  }, []);
+
+  useEffect(
+    () => () => {
+      clearLongPress();
+      clearSingleClick();
+    },
+    [clearLongPress, clearSingleClick],
+  );
 
   const displayPlacements = showSolution && solutionPositions ? solutionPositions : placements;
 
@@ -328,6 +367,7 @@ export function MapView({
               const isKvCell = isKillerVictimCell(pos);
               const hasViolation = violationMap[key];
               const charsHere = getCharsAt(pos);
+              const annotationsHere = characterAnnotations[key] ?? [];
               const isCrossed = crossedCells.has(key);
               const isTentative = tentativeMarks.has(key) && charsHere.length === 0;
               const isClicked =
@@ -354,14 +394,93 @@ export function MapView({
               const cellEl = elementAt(pos);
               const cellHasNonWalkable = cellEl && !cellEl.walkable;
 
-              const handleCellClick = () => {
-                if ((mode === "place" || mode === null) && selectedCharId && cellHasNonWalkable) {
-                  onNonWalkableClick();
-                  setNonWalkableAnimKey(key);
-                  setTimeout(() => setNonWalkableAnimKey(null), 800);
+              const showNonWalkableError = () => {
+                onNonWalkableClick();
+                setNonWalkableAnimKey(key);
+                setTimeout(() => setNonWalkableAnimKey(null), 800);
+              };
+
+              const handleLongPress = () => {
+                if (!selectedCharId || (mode !== "place" && mode !== null)) return;
+                if (cellHasNonWalkable) {
+                  showNonWalkableError();
                   return;
                 }
-                onCellAction(pos);
+                onCellAction(pos, "place");
+              };
+
+              const handleCellClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+                if (longPressTriggeredRef.current) {
+                  longPressTriggeredRef.current = false;
+                  return;
+                }
+                if (pointerGestureCancelledRef.current) {
+                  pointerGestureCancelledRef.current = false;
+                  return;
+                }
+                if (event.detail === 2) {
+                  clearSingleClick(key);
+                  return;
+                }
+                if (selectedCharId && (mode === "place" || mode === null) && cellHasNonWalkable) {
+                  showNonWalkableError();
+                  return;
+                }
+                if (!selectedCharId || (mode !== "place" && mode !== null) || event.detail === 0) {
+                  onCellAction(pos, "annotate");
+                  return;
+                }
+                clearSingleClick(key);
+                const timer = setTimeout(() => {
+                  singleClickTimersRef.current.delete(key);
+                  onCellAction(pos, "annotate");
+                }, SINGLE_CLICK_DELAY_MS);
+                singleClickTimersRef.current.set(key, timer);
+              };
+
+              const handleCellDoubleClick = () => {
+                clearSingleClick(key);
+                if (!selectedCharId || (mode !== "place" && mode !== null)) return;
+                if (cellHasNonWalkable) {
+                  showNonWalkableError();
+                  return;
+                }
+                onCellAction(pos, "place");
+              };
+
+              const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+                if (!selectedCharId || (mode !== "place" && mode !== null)) return;
+                if (event.pointerType === "mouse" && event.button !== 0) return;
+                event.currentTarget.setPointerCapture(event.pointerId);
+                clearLongPress();
+                longPressTriggeredRef.current = false;
+                pointerGestureCancelledRef.current = false;
+                pointerStartRef.current = { x: event.clientX, y: event.clientY };
+                longPressTimerRef.current = setTimeout(() => {
+                  longPressTimerRef.current = null;
+                  longPressTriggeredRef.current = true;
+                  handleLongPress();
+                }, LONG_PRESS_DURATION_MS);
+              };
+
+              const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
+                const start = pointerStartRef.current;
+                if (!start) return;
+                const dx = event.clientX - start.x;
+                const dy = event.clientY - start.y;
+                if (dx * dx + dy * dy > LONG_PRESS_MOVE_TOLERANCE_PX ** 2) {
+                  pointerGestureCancelledRef.current = true;
+                  clearLongPress();
+                }
+              };
+
+              const handlePointerUp = () => {
+                clearLongPress();
+                if (longPressTriggeredRef.current) {
+                  setTimeout(() => {
+                    longPressTriggeredRef.current = false;
+                  }, 0);
+                }
               };
 
               const isAnimating = nonWalkableAnimKey === key;
@@ -372,6 +491,16 @@ export function MapView({
                   type="button"
                   disabled={showSolution}
                   onClick={handleCellClick}
+                  onDoubleClick={handleCellDoubleClick}
+                  onPointerDown={handlePointerDown}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={handlePointerUp}
+                  onPointerLeave={clearLongPress}
+                  onPointerCancel={() => {
+                    clearLongPress();
+                    longPressTriggeredRef.current = false;
+                    pointerGestureCancelledRef.current = false;
+                  }}
                   className={`relative flex aspect-square items-center justify-center text-xs font-medium transition-all overflow-visible ${
                     isHighlighted
                       ? "bg-amber-200/80"
@@ -404,54 +533,79 @@ export function MapView({
                     <span className="z-10 h-3.5 w-3.5 rounded-full bg-primary/40 ring-1 ring-primary/60" />
                   )}
 
+                  {annotationsHere.map((charId, index) => {
+                    const character = characters.find((candidate) => candidate.id === charId);
+                    if (!character) return null;
+                    const cornerClasses = [
+                      "left-0 top-0",
+                      "right-0 top-0",
+                      "left-0 bottom-0",
+                      "right-0 bottom-0",
+                    ];
+                    const stackOffset = Math.floor(index / 4) * 50;
+                    const offsetStyle =
+                      index % 4 === 0
+                        ? { transform: `translate(${stackOffset}%, ${stackOffset}%)` }
+                        : index % 4 === 1
+                          ? { transform: `translate(-${stackOffset}%, ${stackOffset}%)` }
+                          : index % 4 === 2
+                            ? { transform: `translate(${stackOffset}%, -${stackOffset}%)` }
+                            : { transform: `translate(-${stackOffset}%, -${stackOffset}%)` };
+                    return (
+                      <span
+                        key={`${charId}-${index}`}
+                        className={`absolute z-20 flex h-[42%] w-[42%] items-center justify-center overflow-hidden ${cornerClasses[index % 4]}`}
+                        style={offsetStyle}
+                        title={character.name}
+                      >
+                        {character.image ? (
+                          <img
+                            src={character.image}
+                            alt={character.name}
+                            className="h-full w-full rounded-sm object-cover object-top"
+                          />
+                        ) : (
+                          <span className="flex h-full w-full items-center justify-center rounded-full bg-white/80 text-[9px] font-bold text-foreground">
+                            {character.name[0]}
+                          </span>
+                        )}
+                      </span>
+                    );
+                  })}
+
                   {charsHere.length > 0 && (
-                    <span className="z-10 flex flex-col items-center">
+                    <span className="pointer-events-none absolute inset-0 z-10">
                       {charsHere.map((ch) => (
                         <span
                           key={ch.id}
-                          className={`text-center text-sm font-bold ${
-                            showSolution && isKvCell ? "text-amber-600" : "text-foreground"
-                          }`}
+                          className={`absolute inset-0 ${ch.image ? "" : "flex items-center justify-center text-3xl font-bold text-foreground"}`}
                           title={
                             showSolution && isKvCell
                               ? `${t("murdoku.killer")} / ${t("murdoku.victim")}`
                               : ch.name
                           }
                         >
-                          {ch.image ? (
-                            <img
-                              src={ch.image}
-                              alt={ch.name}
-                              className="h-7 w-7 sm:h-8 sm:w-8 rounded-full object-top object-cover ring-2 ring-white shadow-xs"
-                              title={
-                                showSolution && isKvCell
-                                  ? `${t("murdoku.killer")} / ${t("murdoku.victim")}`
-                                  : ch.name
-                              }
-                            />
-                          ) : (
-                            <span className="text-xl sm:text-2xl drop-shadow-xs">{ch.name[0]}</span>
-                          )}
-                          {/* Solution animation */}
-                          {(() => {
-                            const anim = solutionAnimation.find((a) => a.cellKey === key);
-                            if (!anim) return null;
-                            if (anim.type === "correct") {
-                              return (
-                                <div className="absolute inset-0 rounded-full ring-4 ring-green-500 z-30 animate-pulse" />
-                              );
-                            } else {
-                              return (
-                                <div className="absolute inset-0 flex items-center justify-center z-30">
-                                  <span className="text-4xl font-bold text-black">✕</span>
-                                </div>
-                              );
-                            }
-                          })()}
+                          {ch.image ? <CharacterSpriteAnimation image={ch.image} /> : ch.name[0]}
                         </span>
                       ))}
                     </span>
                   )}
+
+                  {charsHere.length > 0 &&
+                    (() => {
+                      const anim = solutionAnimation.find((a) => a.cellKey === key);
+                      if (!anim) return null;
+                      if (anim.type === "correct") {
+                        return (
+                          <div className="absolute inset-0 rounded-full ring-4 ring-green-500 z-30 animate-pulse" />
+                        );
+                      }
+                      return (
+                        <div className="absolute inset-0 flex items-center justify-center z-30">
+                          <span className="text-4xl font-bold text-black">✕</span>
+                        </div>
+                      );
+                    })()}
 
                   {(() => {
                     const el = elementAt(pos);

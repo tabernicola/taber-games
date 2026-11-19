@@ -32,10 +32,14 @@ const DEMO_BOARD_TOP = 8;
 const DEMO_TRAY_TOP = 158;
 const DEMO_TRAY_HAND_Y = 176;
 const CROSS_BOARD_TOP = 96;
+const DOUBLE_CLICK_PRESS_MS = 180;
+const DOUBLE_CLICK_RELEASE_MS = 150;
 
 type GoalAction =
   | { kind: "move"; x: number; y: number }
   | { kind: "select"; characterIndex: number }
+  | { kind: "tap" }
+  | { kind: "release" }
   | { kind: "place"; characterIndex: number; cell: number }
   | { kind: "pause"; duration: number };
 
@@ -55,6 +59,10 @@ function buildGoalScript(): GoalAction[] {
       { kind: "pause", duration: 250 },
       { kind: "move", x: boardX, y: boardY },
       { kind: "pause", duration: 300 },
+      { kind: "tap" },
+      { kind: "release" },
+      { kind: "tap" },
+      { kind: "release" },
       { kind: "place", characterIndex, cell },
       { kind: "pause", duration: 600 },
     );
@@ -114,6 +122,7 @@ function DemoBoard({
   manualCrosses = [],
   rejectedCell = null,
   obstacleCells = [],
+  annotations = {},
   boardTop = DEMO_BOARD_TOP,
 }: {
   characters: Character[];
@@ -121,6 +130,7 @@ function DemoBoard({
   manualCrosses?: number[];
   rejectedCell?: number | null;
   obstacleCells?: number[];
+  annotations?: Record<number, number[]>;
   boardTop?: number;
 }) {
   return (
@@ -161,6 +171,18 @@ function DemoBoard({
             }}
           >
             {character && renderCharacter(character, "h-7 w-7 animate-in zoom-in-50 duration-300")}
+            {(annotations[cell] ?? []).map((characterIndex, index) => {
+              const annotatedCharacter = characters[characterIndex];
+              if (!annotatedCharacter) return null;
+              return (
+                <span
+                  key={`${characterIndex}-${index}`}
+                  className="absolute left-0 top-0 z-10 h-[42%] w-[42%] overflow-hidden"
+                >
+                  {renderCharacter(annotatedCharacter, "h-full w-full rounded-sm")}
+                </span>
+              );
+            })}
             {obstacleCells.includes(cell) && (
               <span className="absolute inset-0 z-0 flex items-center justify-center text-2xl select-none">
                 🏢
@@ -185,12 +207,16 @@ function DemoHand({ position, pressed }: { position: { x: number; y: number }; p
   return (
     <div
       aria-hidden="true"
-      className={`pointer-events-none absolute z-10 text-2xl transition-all duration-300 ease-in-out ${
-        pressed ? "scale-75" : "scale-100"
-      }`}
+      className="pointer-events-none absolute z-10 text-2xl transition-[left,top] duration-300 ease-in-out"
       style={{ left: position.x - 10, top: position.y - 10 }}
     >
-      👆
+      <span
+        className={`inline-block transition-transform duration-100 ease-out ${
+          pressed ? "scale-75" : "scale-100"
+        }`}
+      >
+        👆
+      </span>
     </div>
   );
 }
@@ -220,9 +246,14 @@ function GoalStep({ characters }: { characters: Character[] }) {
         setSelectedIndex(action.characterIndex);
         setHandPressed(true);
         break;
+      case "tap":
+        setHandPressed(true);
+        break;
+      case "release":
+        setHandPressed(false);
+        break;
       case "place":
         setPlacedCells((current) => ({ ...current, [action.characterIndex]: action.cell }));
-        setHandPressed(true);
         break;
       case "pause":
         break;
@@ -239,7 +270,13 @@ function GoalStep({ characters }: { characters: Character[] }) {
         setHandPosition({ x: 26, y: DEMO_TRAY_HAND_Y });
         setActionIndex(0);
       },
-      action.kind === "pause" ? action.duration : 350,
+      action.kind === "pause"
+        ? action.duration
+        : action.kind === "tap"
+          ? DOUBLE_CLICK_PRESS_MS
+          : action.kind === "release"
+            ? DOUBLE_CLICK_RELEASE_MS
+            : 350,
     );
 
     return () => clearTimeout(timer);
@@ -259,6 +296,8 @@ function GoalStep({ characters }: { characters: Character[] }) {
 type RowColumnAction =
   | { kind: "move"; x: number; y: number }
   | { kind: "select"; characterIndex: number }
+  | { kind: "tap" }
+  | { kind: "release" }
   | { kind: "place"; characterIndex: number; cell: number }
   | { kind: "reject"; cell: number }
   | { kind: "pause"; duration: number };
@@ -273,6 +312,10 @@ const ROW_COLUMN_SCRIPT: RowColumnAction[] = [
     y: DEMO_BOARD_TOP + DEMO_CELL_SIZE / 2,
   },
   { kind: "pause", duration: 250 },
+  { kind: "tap" },
+  { kind: "release" },
+  { kind: "tap" },
+  { kind: "release" },
   { kind: "place", characterIndex: 0, cell: 0 },
   { kind: "pause", duration: 700 },
   { kind: "move", x: 70, y: DEMO_TRAY_HAND_Y },
@@ -284,6 +327,10 @@ const ROW_COLUMN_SCRIPT: RowColumnAction[] = [
     y: DEMO_BOARD_TOP + DEMO_CELL_SIZE / 2,
   },
   { kind: "pause", duration: 350 },
+  { kind: "tap" },
+  { kind: "release" },
+  { kind: "tap" },
+  { kind: "release" },
   { kind: "reject", cell: 2 },
   { kind: "pause", duration: 1000 },
 ];
@@ -310,9 +357,14 @@ function RowColumnStep({ characters }: { characters: Character[] }) {
         setRejectedCell(null);
         setHandPressed(true);
         break;
+      case "tap":
+        setHandPressed(true);
+        break;
+      case "release":
+        setHandPressed(false);
+        break;
       case "place":
         setPlacedCells({ [action.characterIndex]: action.cell });
-        setHandPressed(true);
         break;
       case "reject":
         setRejectedCell(action.cell);
@@ -334,7 +386,13 @@ function RowColumnStep({ characters }: { characters: Character[] }) {
         setHandPosition({ x: 26, y: DEMO_TRAY_HAND_Y });
         setActionIndex(0);
       },
-      action.kind === "pause" ? action.duration : 350,
+      action.kind === "pause"
+        ? action.duration
+        : action.kind === "tap"
+          ? DOUBLE_CLICK_PRESS_MS
+          : action.kind === "release"
+            ? DOUBLE_CLICK_RELEASE_MS
+            : 350,
     );
 
     return () => clearTimeout(timer);
@@ -460,6 +518,8 @@ function CrossMarkStep() {
 type ObstacleAction =
   | { kind: "move"; x: number; y: number }
   | { kind: "select"; characterIndex: number }
+  | { kind: "tap" }
+  | { kind: "release" }
   | { kind: "attempt"; cell: number }
   | { kind: "pause"; duration: number };
 
@@ -480,6 +540,10 @@ const OBSTACLE_SCRIPT: ObstacleAction[] = [
   { kind: "pause", duration: 350 },
   { kind: "move", ...BUILDING_POSITION },
   { kind: "pause", duration: 400 },
+  { kind: "tap" },
+  { kind: "release" },
+  { kind: "tap" },
+  { kind: "release" },
   { kind: "attempt", cell: BUILDING_CELL },
   { kind: "pause", duration: 1200 },
 ];
@@ -505,9 +569,14 @@ function ObstaclesStep({ characters }: { characters: Character[] }) {
         setBlockedCell(null);
         setHandPressed(true);
         break;
+      case "tap":
+        setHandPressed(true);
+        break;
+      case "release":
+        setHandPressed(false);
+        break;
       case "attempt":
         setBlockedCell(action.cell);
-        setHandPressed(true);
         break;
       case "pause":
         break;
@@ -524,7 +593,13 @@ function ObstaclesStep({ characters }: { characters: Character[] }) {
         setHandPosition({ x: 26, y: DEMO_TRAY_HAND_Y });
         setActionIndex(0);
       },
-      action.kind === "pause" ? action.duration : 350,
+      action.kind === "pause"
+        ? action.duration
+        : action.kind === "tap"
+          ? DOUBLE_CLICK_PRESS_MS
+          : action.kind === "release"
+            ? DOUBLE_CLICK_RELEASE_MS
+            : 350,
     );
 
     return () => clearTimeout(timer);
@@ -540,6 +615,133 @@ function ObstaclesStep({ characters }: { characters: Character[] }) {
           obstacleCells={[BUILDING_CELL]}
           rejectedCell={blockedCell}
         />
+        <DemoHand position={handPosition} pressed={handPressed} />
+      </div>
+    </div>
+  );
+}
+
+type AnnotationAction =
+  | { kind: "move"; x: number; y: number }
+  | { kind: "select"; characterIndex: number }
+  | { kind: "annotate"; cell: number; characterIndex: number }
+  | { kind: "tap" }
+  | { kind: "release" }
+  | { kind: "place"; cell: number; characterIndex: number }
+  | { kind: "pause"; duration: number };
+
+const ANNOTATION_CELLS = [5, 10] as const;
+const ANNOTATION_PLACEMENT_CELL = 3;
+const getDemoCellPosition = (cell: number) => ({
+  x: DEMO_BOARD_LEFT + (cell % DEMO_SIZE) * (DEMO_CELL_SIZE + DEMO_BOARD_GAP) + DEMO_CELL_SIZE / 2,
+  y:
+    DEMO_BOARD_TOP +
+    Math.floor(cell / DEMO_SIZE) * (DEMO_CELL_SIZE + DEMO_BOARD_GAP) +
+    DEMO_CELL_SIZE / 2,
+});
+
+const ANNOTATION_SCRIPT: AnnotationAction[] = [
+  { kind: "move", x: 26, y: DEMO_TRAY_HAND_Y },
+  { kind: "select", characterIndex: 0 },
+  { kind: "pause", duration: 300 },
+  ...ANNOTATION_CELLS.flatMap((cell) => {
+    return [
+      { kind: "move" as const, ...getDemoCellPosition(cell) },
+      { kind: "pause" as const, duration: 250 },
+      { kind: "annotate" as const, cell, characterIndex: 0 },
+      { kind: "release" as const },
+      { kind: "pause" as const, duration: 300 },
+    ];
+  }),
+  { kind: "move", x: 70, y: DEMO_TRAY_HAND_Y },
+  { kind: "select", characterIndex: 1 },
+  { kind: "pause", duration: 300 },
+  { kind: "move", ...getDemoCellPosition(ANNOTATION_PLACEMENT_CELL) },
+  { kind: "pause", duration: 250 },
+  { kind: "tap" },
+  { kind: "release" },
+  { kind: "tap" },
+  { kind: "release" },
+  { kind: "place", cell: ANNOTATION_PLACEMENT_CELL, characterIndex: 1 },
+  { kind: "pause", duration: 700 },
+  { kind: "pause", duration: 900 },
+];
+
+function AnnotationStep({ characters }: { characters: Character[] }) {
+  const [actionIndex, setActionIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [annotations, setAnnotations] = useState<Record<number, number[]>>({});
+  const [placedCells, setPlacedCells] = useState<Record<number, number>>({});
+  const [handPosition, setHandPosition] = useState({ x: 26, y: DEMO_TRAY_HAND_Y });
+  const [handPressed, setHandPressed] = useState(false);
+
+  useEffect(() => {
+    const action = ANNOTATION_SCRIPT[actionIndex];
+    if (!action) return;
+
+    switch (action.kind) {
+      case "move":
+        setHandPosition({ x: action.x, y: action.y });
+        setHandPressed(false);
+        break;
+      case "select":
+        setSelectedIndex(action.characterIndex);
+        setHandPressed(true);
+        break;
+      case "annotate":
+        setAnnotations((current) => ({
+          ...current,
+          [action.cell]: [...(current[action.cell] ?? []), action.characterIndex],
+        }));
+        setHandPressed(true);
+        break;
+      case "tap":
+        setHandPressed(true);
+        break;
+      case "release":
+        setHandPressed(false);
+        break;
+      case "place":
+        setPlacedCells((current) => ({
+          ...current,
+          [action.characterIndex]: action.cell,
+        }));
+        break;
+      case "pause":
+        break;
+    }
+
+    const timer = setTimeout(
+      () => {
+        if (actionIndex + 1 < ANNOTATION_SCRIPT.length) {
+          setActionIndex(actionIndex + 1);
+          return;
+        }
+        setSelectedIndex(null);
+        setAnnotations({});
+        setPlacedCells({});
+        setHandPosition({ x: 26, y: DEMO_TRAY_HAND_Y });
+        setActionIndex(0);
+      },
+      action.kind === "pause"
+        ? action.duration
+        : action.kind === "tap"
+          ? DOUBLE_CLICK_PRESS_MS
+          : action.kind === "release"
+            ? DOUBLE_CLICK_RELEASE_MS
+            : action.kind === "annotate"
+              ? 160
+              : 350,
+    );
+
+    return () => clearTimeout(timer);
+  }, [actionIndex]);
+
+  return (
+    <div className="flex min-h-[230px] flex-col items-center justify-center">
+      <div className="relative" style={{ width: DEMO_STAGE_WIDTH, height: 230 }}>
+        <CharacterTray characters={characters} selectedIndex={selectedIndex} />
+        <DemoBoard characters={characters} placedCells={placedCells} annotations={annotations} />
         <DemoHand position={handPosition} pressed={handPressed} />
       </div>
     </div>
@@ -598,16 +800,21 @@ export function MurdokuTutorial({ open, onClose }: MurdokuTutorialProps) {
     {
       title: t("murdoku.tutorial.step2Title"),
       desc: t("murdoku.tutorial.step2Desc"),
-      component: characterStepContent ?? <RowColumnStep characters={characters} />,
+      component: characterStepContent ?? <AnnotationStep characters={characters} />,
     },
     {
       title: t("murdoku.tutorial.step3Title"),
       desc: t("murdoku.tutorial.step3Desc"),
-      component: <CrossMarkStep />,
+      component: characterStepContent ?? <RowColumnStep characters={characters} />,
     },
     {
       title: t("murdoku.tutorial.step4Title"),
       desc: t("murdoku.tutorial.step4Desc"),
+      component: <CrossMarkStep />,
+    },
+    {
+      title: t("murdoku.tutorial.step5Title"),
+      desc: t("murdoku.tutorial.step5Desc"),
       component: characterStepContent ?? <ObstaclesStep characters={characters} />,
     },
   ];

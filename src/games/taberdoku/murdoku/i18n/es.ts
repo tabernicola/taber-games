@@ -30,7 +30,8 @@ export const dict: Dict = {
   "murdoku.col": "Columna",
   "murdoku.cell": "Celda",
   "murdoku.place": "Colocar",
-  "murdoku.placeCharacter": "Toca una celda para colocar el personaje seleccionado",
+  "murdoku.placeCharacter":
+    "Toca una celda para anotarlo; mantén pulsado para colocar el personaje",
   "murdoku.notesHelp": "Marca celdas como ocupadas (alguien aquí)",
   "murdoku.crossesHelp": "Marca celdas con X (no hay personaje aquí)",
   "murdoku.selectCharacter": "Selecciona un personaje",
@@ -46,14 +47,17 @@ export const dict: Dict = {
   "murdoku.tutorial.step1Desc":
     "Analiza las pistas para deducir dónde colocar cada personaje. Usa la lógica para descubrir quién es el asesino y quién la víctima.",
   "murdoku.tutorial.charactersError": "No se pudieron cargar los personajes del tutorial.",
-  "murdoku.tutorial.step2Title": "Un personaje por fila y columna",
+  "murdoku.tutorial.step2Title": "Anota tus posibilidades",
   "murdoku.tutorial.step2Desc":
-    "Coloca un personaje seleccionándolo y tocando una celda. Las X marcan las celdas bloqueadas en la misma fila y columna.",
-  "murdoku.tutorial.step3Title": "Marcar celdas con X",
+    "Si tienes dudas, anota las casillas donde podría ir un personaje tocándolas una vez. Después, selecciona otro personaje y haz doble clic en una casilla para colocarlo.",
+  "murdoku.tutorial.step3Title": "Un personaje por fila y columna",
   "murdoku.tutorial.step3Desc":
-    "Usa el botón de X para marcar celdas donde no puede haber personajes. Esto te ayuda a deducer dónde deben ir los demás.",
-  "murdoku.tutorial.step4Title": "Obstáculos",
+    "Selecciona un personaje y haz doble clic en una casilla para colocarlo. Las X muestran las casillas bloqueadas en la misma fila y columna.",
+  "murdoku.tutorial.step4Title": "Marcar casillas con X",
   "murdoku.tutorial.step4Desc":
+    "Usa el botón de X para marcar celdas donde no puede haber personajes. Esto te ayuda a deducer dónde deben ir los demás.",
+  "murdoku.tutorial.step5Title": "Obstáculos",
+  "murdoku.tutorial.step5Desc":
     "Los personajes no pueden colocarse sobre edificios o plantas. Usa esta restricción para limitar las posibles posiciones.",
   "murdoku.tutorial.stepOf": "{current} de {total}",
   "murdoku.tutorial.prev": "Anterior",
