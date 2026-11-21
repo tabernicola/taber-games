@@ -34,6 +34,7 @@ export const dict: Dict = {
   "murdoku.notesHelp": "Mark cells as occupied (someone here)",
   "murdoku.crossesHelp": "Mark cells with X (no character here)",
   "murdoku.selectCharacter": "Select a character",
+  "murdoku.selectCharacterToSeeClue": "Tap a character to select it and see its associated clue",
   "murdoku.crosses": "Crosses",
   "murdoku.erase": "Erase",
   "murdoku.eraser": "Erase mode: tap cells to remove marks, notes or placements",

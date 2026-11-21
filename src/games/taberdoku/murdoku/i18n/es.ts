@@ -35,6 +35,8 @@ export const dict: Dict = {
   "murdoku.notesHelp": "Marca celdas como ocupadas (alguien aquí)",
   "murdoku.crossesHelp": "Marca celdas con X (no hay personaje aquí)",
   "murdoku.selectCharacter": "Selecciona un personaje",
+  "murdoku.selectCharacterToSeeClue":
+    "Pulsa en un personaje para seleccionarlo y ver su pista asociada",
   "murdoku.crosses": "Bloquear casillas",
   "murdoku.erase": "Borrar",
   "murdoku.eraser": "Modo borrar: toca celdas para eliminar marcas, notas o colocaciones",

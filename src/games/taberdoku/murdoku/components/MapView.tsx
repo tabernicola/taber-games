@@ -729,6 +729,12 @@ export function MapView({
         </div>
       </div>
 
+      {!showSolution && (
+        <p className="mt-3 text-center text-xs text-muted-foreground">
+          {selectedCharId ? t("murdoku.placeCharacter") : t("murdoku.selectCharacterToSeeClue")}
+        </p>
+      )}
+
       <div className="mt-3 px-3">
         {/* Lista de personajes en cuadrícula del mismo tamaño que el tablero */}
         <div
@@ -839,13 +845,6 @@ export function MapView({
           </div>
         </div>
       </div>
-
-      {!showSolution && (
-        <p className="mt-3 text-center text-xs text-muted-foreground">
-          {selectedCharId && t("murdoku.placeCharacter")}
-          {mode === "notes" && !selectedCharId && t("murdoku.notesHelp")}
-        </p>
-      )}
     </div>
   );
 }

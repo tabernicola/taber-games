@@ -34,6 +34,8 @@ export const dict: Dict = {
   "murdoku.notesHelp": "Markatu gelaxkak lortutzat (hemendik pertsonaia)",
   "murdoku.crossesHelp": "Markatu gelaxkak X-ekin (ez dago pertsonaia)",
   "murdoku.selectCharacter": "Aukeratu pertsonaia",
+  "murdoku.selectCharacterToSeeClue":
+    "Sakatu pertsonaia bat hautatzeko eta hari lotutako pista ikusteko",
   "murdoku.crosses": "Kroak",
   "murdoku.erase": "Ezabatu",
   "murdoku.eraser": "Ezabatu modua: sakatu gelaxkak markak, oharrak edo kokaldiak kentzeko",
