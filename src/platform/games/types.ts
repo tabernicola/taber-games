@@ -16,7 +16,7 @@ export interface GameModule {
   id: string;
   Card: ComponentType<GameCardProps>;
   translations: Translations;
-  createScoresService: () => ScoresService;
+  createScoresService?: () => ScoresService;
   formatLevelLabel: (level: number, t: TranslateFn) => string;
 }
 

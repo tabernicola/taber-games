@@ -88,7 +88,6 @@ export const dict: Dict = {
   "murdoku.noNotes": "Zure dedukzio-oharrak hutsak dira. Sakatu geldituak ❌ edo ✔️n markatzeko.",
   "murdoku.marked": "Markatutak: {m}/{n}",
   "murdoku.playAgain": "Berriro jolastu",
-  "murdoku.nextCase": "Hurrengo kasu",
   "murdoku.gridSize": "Sareta tamaina",
   "murdoku.roomSize": "Sala tamaina",
   "murdoku.autoGenerate": "Sorciak automatikoki sortu",

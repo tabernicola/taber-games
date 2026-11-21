@@ -3,9 +3,8 @@ import { pageMeta } from "@/platform/seo";
 import { CaseEditor } from "@/games/taberdoku/murdoku/components/CaseEditor";
 
 export const Route = createFileRoute("/$lang/taberdoku/murdoku/create")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    boardId: typeof search["boardId"] === "string" ? search["boardId"] : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { boardId?: string } =>
+    typeof search["boardId"] === "string" ? { boardId: search["boardId"] } : {},
   head: () => ({
     meta: pageMeta({
       title: "Create a case — Murdoku | The Taber Games",
