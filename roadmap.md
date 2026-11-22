@@ -9,3 +9,8 @@
 - [x] Add Taber artwork, a playable lava level and keyboard/touch controls.
 - [x] Add a game entry and localized pages.
 - [x] Test petrification, rolling stones, lava bridges and level completion; verify mobile and desktop.
+
+# Taber walking animation
+
+- [ ] Add eight walking frames per direction and enlarge Taber while preserving the club swing.
+- [ ] Smooth movement between cells and verify keyboard and touch gameplay.

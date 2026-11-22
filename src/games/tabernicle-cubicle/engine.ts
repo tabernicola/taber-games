@@ -1,5 +1,7 @@
 import * as Phaser from "phaser";
 import sprites from "@/assets/taber-cubicle-sprites.png.asset.json";
+import walking from "@/assets/taber-cubicle-walk.png.asset.json";
+import { STEP_MS, stepPosition } from "./motion";
 import {
   createLevel,
   fire,
@@ -37,7 +39,12 @@ export function mountGame(parent: HTMLElement, controls: Controls, publish: (s: 
   class Volcano extends Phaser.Scene {
     g: Phaser.GameObjects.Graphics | undefined;
     hero: Phaser.GameObjects.Sprite | undefined;
-    lastMove = 0;
+    lastMove = -STEP_MS;
+    travelFrom = { ...state.hero };
+    travelTo = { ...state.hero };
+    travelStarted = -STEP_MS;
+    visualClock = 0;
+    walkClock = 0;
     lastRoll = 0;
     lastPatrol = 0;
     lastPublish = 0;
@@ -48,25 +55,39 @@ export function mountGame(parent: HTMLElement, controls: Controls, publish: (s: 
     reduced = false;
     preload() {
       this.load.spritesheet("taber", sprites.url, { frameWidth: 256, frameHeight: 256 });
+      this.load.spritesheet("taber-walk", walking.url, { frameWidth: 256, frameHeight: 256 });
     }
     create() {
       this.reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       this.g = this.add.graphics();
       this.hero = this.add
-        .sprite((state.hero.x + 0.5) * tile, (state.hero.y + 0.5) * tile, "taber", 3)
-        .setDisplaySize(76, 76)
+        .sprite((state.hero.x + 0.5) * tile, (state.hero.y + 0.5) * tile + 29, "taber", 3)
+        .setOrigin(0.5, 0.9)
+        .setDisplaySize(88, 88)
         .setDepth(2);
       this.load.on("loaderror", () => {});
       publish({ ...state });
     }
     update(time: number, delta: number) {
       if (!this.g || !this.hero) return;
+      const dt = Math.min(delta, 50);
+      if (!controls.paused) this.visualClock += dt;
       const active = !controls.paused && state.status === "playing";
+      const position = stepPosition(
+        this.travelFrom,
+        this.travelTo,
+        this.visualClock - this.travelStarted,
+      );
       if (active) {
-        state.elapsed += Math.min(delta, 50) / 1000;
-        this.clock += Math.min(delta, 50);
-        if (controls.direction && this.clock - this.lastMove > 180) {
+        state.elapsed += dt / 1000;
+        this.clock += dt;
+        if (controls.direction && this.clock - this.lastMove >= STEP_MS) {
           move(state, controls.direction);
+          if (state.hero.x !== this.travelTo.x || state.hero.y !== this.travelTo.y) {
+            this.travelFrom = position;
+            this.travelTo = { ...state.hero };
+            this.travelStarted = this.visualClock;
+          }
           this.lastMove = this.clock;
         }
         if (controls.action) {
@@ -92,17 +113,21 @@ export function mountGame(parent: HTMLElement, controls: Controls, publish: (s: 
       }
       const motion = this.reduced ? 0 : time;
       this.draw(motion, time);
-      const x = (state.hero.x + 0.5) * tile,
-        y = (state.hero.y + 0.5) * tile;
-      this.hero.x = Phaser.Math.Linear(this.hero.x, x, Math.min(1, delta / 55));
-      this.hero.y = Phaser.Math.Linear(this.hero.y, y, Math.min(1, delta / 55));
+      this.hero.setPosition((position.x + 0.5) * tile, (position.y + 0.5) * tile + 29);
       const frames: Record<Direction, number> = { down: 0, up: 1, left: 2, right: 3 };
-      this.hero.setFrame(
-        frames[state.direction] + (this.effect > time && this.effectKind === "strike" ? 4 : 0),
-      );
-      this.hero.setAngle(
-        active && controls.direction && !this.reduced ? Math.sin(time / 65) * 4 : 0,
-      );
+      const moving = this.visualClock - this.travelStarted < STEP_MS;
+      if (moving && !controls.paused) this.walkClock += dt;
+      if (this.effect > time && this.effectKind === "strike") {
+        this.hero.setTexture("taber", frames[state.direction] + 4);
+      } else if (moving && !this.reduced) {
+        this.hero.setTexture(
+          "taber-walk",
+          frames[state.direction] * 8 + (Math.floor(this.walkClock / 45) % 8),
+        );
+      } else {
+        this.hero.setTexture("taber", frames[state.direction]);
+      }
+      this.hero.setDisplaySize(88, 88);
     }
     draw(motion: number, time: number) {
       const g = this.g;
@@ -203,8 +228,8 @@ export function mountGame(parent: HTMLElement, controls: Controls, publish: (s: 
       }
       if (this.effect > time && this.effectKind === "fire") {
         const [dx, dy] = vectors[state.direction];
-        const x = (state.hero.x + 0.5) * tile,
-          y = (state.hero.y + 0.5) * tile;
+        const x = this.hero?.x ?? (state.hero.x + 0.5) * tile,
+          y = (this.hero?.y ?? (state.hero.y + 0.5) * tile + 29) - 29;
         for (let i = 1; i <= 7; i++) {
           const dist = i * 22;
           g.fillStyle(i % 2 ? palette.glow : palette.egg, (this.effect - time) / 280);

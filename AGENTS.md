@@ -16,3 +16,4 @@
 - Reusable board/artwork catalogs are publicly readable and writable only through trusted database operations; cases expose only approved or caller-owned records, and player submissions cannot self-approve.
 - Action puzzle games keep deterministic grid rules in their game module and dynamically import Phaser only after mounting; this keeps gameplay testable and browser-only rendering out of SSR.
 - Game manifests may omit score services for playable prototypes; this avoids creating unused ranking tables.
+- Tabernicle Cubicle interpolates visual positions independently of grid rules and uses a separate directional walk sheet; this preserves deterministic gameplay and the original attack artwork.
