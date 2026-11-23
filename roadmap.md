@@ -12,5 +12,5 @@
 
 # Taber walking animation
 
-- [ ] Add eight walking frames per direction and enlarge Taber while preserving the club swing.
-- [ ] Smooth movement between cells and verify keyboard and touch gameplay.
+- [x] Add eight walking frames per direction and enlarge Taber while preserving the club swing.
+- [x] Smooth movement between cells and verify keyboard and touch gameplay.
