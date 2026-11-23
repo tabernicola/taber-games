@@ -4,6 +4,7 @@ import { SiteHeader } from "@/platform/layout/SiteHeader";
 import { useI18n, langFromSlug } from "@/platform/i18n";
 import { pageMeta, getTranslatedMeta } from "@/platform/seo";
 import { externalGames, games } from "@/platform/games/registry";
+import { useIsAdmin } from "@/platform/hooks/useIsAdmin";
 
 export const Route = createFileRoute("/$lang/")({
   head: ({ params }) => {
@@ -56,8 +57,10 @@ export const Route = createFileRoute("/$lang/")({
 
 function Home() {
   const { t, slug } = useI18n();
+  const { isAdmin } = useIsAdmin();
+  const visibleGames = games.filter((game) => game.id !== "tabernicle-cubicle" || isAdmin);
 
-  const totalCards = games.length + externalGames.length;
+  const totalCards = visibleGames.length + externalGames.length;
 
   return (
     <div className="min-h-screen">
@@ -109,7 +112,7 @@ function Home() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
-            {games.map((game) => (
+            {visibleGames.map((game) => (
               <game.Card key={game.id} lang={slug} />
             ))}
             {externalGames.map((game) => (

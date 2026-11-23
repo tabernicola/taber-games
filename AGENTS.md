@@ -11,6 +11,15 @@
 
 <!-- LOVABLE:END -->
 
+## Code Style Preferences
+
+- **Keep functions small**: Aim for functions under 30-40 lines that can be viewed at a glance on screen. Extract large functions into smaller, focused helper functions.
+- **Keep files small**: Prefer splitting large files into smaller, focused modules rather than having massive files that are hard to navigate.
+- **Modular design**: Extract reusable logic into separate functions/modules to improve maintainability and readability.
+- **Add JSDoc comments**: Every function should have a JSDoc comment describing what it does, its purpose, and key details about its behavior.
+
+## Project-Specific Rules
+
 - Murdoku stores reusable artwork in `murdoku_elements`, board geometry in `murdoku_boards`, and cell instances in `murdoku_board_elements`; case-specific clues/solutions stay in `murdoku_cases.content` and cast membership references `murdoku_characters` through `murdoku_case_characters`, so boards and artwork can be shared without duplicating them in cases.
 - Read Murdoku cases through the security-invoker `murdoku_playable_cases` view, which reconstructs the existing game contract under RLS and preserves legacy embedded cases without a board reference.
 - Reusable board/artwork catalogs are publicly readable and writable only through trusted database operations; cases expose only approved or caller-owned records, and player submissions cannot self-approve.
