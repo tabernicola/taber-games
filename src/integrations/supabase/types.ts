@@ -506,6 +506,24 @@ export type Database = {
         }
         Relationships: []
       }
+      tabernicle_levels: {
+        Row: {
+          definition: Json
+          level_id: number
+          updated_at: string
+        }
+        Insert: {
+          definition: Json
+          level_id: number
+          updated_at?: string
+        }
+        Update: {
+          definition?: Json
+          level_id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string

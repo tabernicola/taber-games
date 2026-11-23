@@ -9,46 +9,36 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TheTaberSquareRouteImport } from './routes/the-taber-square'
-import { Route as TabernicleCubicleRouteImport } from './routes/tabernicle-cubicle'
-import { Route as EternityIiRouteImport } from './routes/eternity-ii'
-import { Route as LangRouteRouteImport } from './routes/$lang/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LangRouteRouteImport } from './routes/$lang/route'
+import { Route as EternityIiRouteImport } from './routes/eternity-ii'
+import { Route as TabernicleCubicleRouteImport } from './routes/tabernicle-cubicle'
+import { Route as TheTaberSquareRouteImport } from './routes/the-taber-square'
 import { Route as LangIndexRouteImport } from './routes/$lang/index'
-import { Route as LangAuthRouteImport } from './routes/$lang/auth'
 import { Route as LangAdminRouteImport } from './routes/$lang/admin'
-import { Route as LangTheTabersStarIndexRouteImport } from './routes/$lang/the-tabers-star/index'
-import { Route as LangTheTaberSquareIndexRouteImport } from './routes/$lang/the-taber-square/index'
-import { Route as LangTabernicleCubicleIndexRouteImport } from './routes/$lang/tabernicle-cubicle/index'
-import { Route as LangTaberdokuIndexRouteImport } from './routes/$lang/taberdoku/index'
+import { Route as LangAuthRouteImport } from './routes/$lang/auth'
 import { Route as LangEternityIiIndexRouteImport } from './routes/$lang/eternity-ii/index'
-import { Route as LangTheTabersStarPlayRouteImport } from './routes/$lang/the-tabers-star/play'
-import { Route as LangTheTaberSquarePlayRouteImport } from './routes/$lang/the-taber-square/play'
-import { Route as LangTabernicleCubiclePlayRouteImport } from './routes/$lang/tabernicle-cubicle/play'
 import { Route as LangEternityIiPlayRouteImport } from './routes/$lang/eternity-ii/play'
-import { Route as LangTaberdokuTabersSudokuIndexRouteImport } from './routes/$lang/taberdoku/tabers-sudoku/index'
-import { Route as LangTaberdokuStarBattleIndexRouteImport } from './routes/$lang/taberdoku/star-battle/index'
+import { Route as LangTaberdokuIndexRouteImport } from './routes/$lang/taberdoku/index'
+import { Route as LangTabernicleCubicleIndexRouteImport } from './routes/$lang/tabernicle-cubicle/index'
+import { Route as LangTabernicleCubiclePlayRouteImport } from './routes/$lang/tabernicle-cubicle/play'
+import { Route as LangTheTaberSquareIndexRouteImport } from './routes/$lang/the-taber-square/index'
+import { Route as LangTheTaberSquarePlayRouteImport } from './routes/$lang/the-taber-square/play'
+import { Route as LangTheTabersStarIndexRouteImport } from './routes/$lang/the-tabers-star/index'
+import { Route as LangTheTabersStarPlayRouteImport } from './routes/$lang/the-tabers-star/play'
 import { Route as LangTaberdokuMurdokuIndexRouteImport } from './routes/$lang/taberdoku/murdoku/index'
-import { Route as LangTaberdokuTabersSudokuPlayRouteImport } from './routes/$lang/taberdoku/tabers-sudoku/play'
-import { Route as LangTaberdokuStarBattlePlayRouteImport } from './routes/$lang/taberdoku/star-battle/play'
-import { Route as LangTaberdokuMurdokuPlayRouteImport } from './routes/$lang/taberdoku/murdoku/play'
-import { Route as LangTaberdokuMurdokuCreateRouteImport } from './routes/$lang/taberdoku/murdoku/create'
 import { Route as LangTaberdokuMurdokuAdminRouteImport } from './routes/$lang/taberdoku/murdoku/admin'
+import { Route as LangTaberdokuMurdokuCreateRouteImport } from './routes/$lang/taberdoku/murdoku/create'
+import { Route as LangTaberdokuMurdokuPlayRouteImport } from './routes/$lang/taberdoku/murdoku/play'
+import { Route as LangTaberdokuStarBattleIndexRouteImport } from './routes/$lang/taberdoku/star-battle/index'
+import { Route as LangTaberdokuStarBattlePlayRouteImport } from './routes/$lang/taberdoku/star-battle/play'
+import { Route as LangTaberdokuTabersSudokuIndexRouteImport } from './routes/$lang/taberdoku/tabers-sudoku/index'
+import { Route as LangTaberdokuTabersSudokuPlayRouteImport } from './routes/$lang/taberdoku/tabers-sudoku/play'
 import { Route as LangTaberdokuMurdokuBoardsCreateRouteImport } from './routes/$lang/taberdoku/murdoku/boards.create'
 
-const TheTaberSquareRoute = TheTaberSquareRouteImport.update({
-  id: '/the-taber-square',
-  path: '/the-taber-square',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TabernicleCubicleRoute = TabernicleCubicleRouteImport.update({
-  id: '/tabernicle-cubicle',
-  path: '/tabernicle-cubicle',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EternityIiRoute = EternityIiRouteImport.update({
-  id: '/eternity-ii',
-  path: '/eternity-ii',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LangRouteRoute = LangRouteRouteImport.update({
@@ -56,9 +46,19 @@ const LangRouteRoute = LangRouteRouteImport.update({
   path: '/$lang',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const EternityIiRoute = EternityIiRouteImport.update({
+  id: '/eternity-ii',
+  path: '/eternity-ii',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TabernicleCubicleRoute = TabernicleCubicleRouteImport.update({
+  id: '/tabernicle-cubicle',
+  path: '/tabernicle-cubicle',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TheTaberSquareRoute = TheTaberSquareRouteImport.update({
+  id: '/the-taber-square',
+  path: '/the-taber-square',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LangIndexRoute = LangIndexRouteImport.update({
@@ -66,24 +66,29 @@ const LangIndexRoute = LangIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LangRouteRoute,
 } as any)
-const LangAuthRoute = LangAuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => LangRouteRoute,
-} as any)
 const LangAdminRoute = LangAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => LangRouteRoute,
 } as any)
-const LangTheTabersStarIndexRoute = LangTheTabersStarIndexRouteImport.update({
-  id: '/the-tabers-star/',
-  path: '/the-tabers-star/',
+const LangAuthRoute = LangAuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => LangRouteRoute,
 } as any)
-const LangTheTaberSquareIndexRoute = LangTheTaberSquareIndexRouteImport.update({
-  id: '/the-taber-square/',
-  path: '/the-taber-square/',
+const LangEternityIiIndexRoute = LangEternityIiIndexRouteImport.update({
+  id: '/eternity-ii/',
+  path: '/eternity-ii/',
+  getParentRoute: () => LangRouteRoute,
+} as any)
+const LangEternityIiPlayRoute = LangEternityIiPlayRouteImport.update({
+  id: '/eternity-ii/play',
+  path: '/eternity-ii/play',
+  getParentRoute: () => LangRouteRoute,
+} as any)
+const LangTaberdokuIndexRoute = LangTaberdokuIndexRouteImport.update({
+  id: '/taberdoku/',
+  path: '/taberdoku/',
   getParentRoute: () => LangRouteRoute,
 } as any)
 const LangTabernicleCubicleIndexRoute =
@@ -92,19 +97,15 @@ const LangTabernicleCubicleIndexRoute =
     path: '/tabernicle-cubicle/',
     getParentRoute: () => LangRouteRoute,
   } as any)
-const LangTaberdokuIndexRoute = LangTaberdokuIndexRouteImport.update({
-  id: '/taberdoku/',
-  path: '/taberdoku/',
-  getParentRoute: () => LangRouteRoute,
-} as any)
-const LangEternityIiIndexRoute = LangEternityIiIndexRouteImport.update({
-  id: '/eternity-ii/',
-  path: '/eternity-ii/',
-  getParentRoute: () => LangRouteRoute,
-} as any)
-const LangTheTabersStarPlayRoute = LangTheTabersStarPlayRouteImport.update({
-  id: '/the-tabers-star/play',
-  path: '/the-tabers-star/play',
+const LangTabernicleCubiclePlayRoute =
+  LangTabernicleCubiclePlayRouteImport.update({
+    id: '/tabernicle-cubicle/play',
+    path: '/tabernicle-cubicle/play',
+    getParentRoute: () => LangRouteRoute,
+  } as any)
+const LangTheTaberSquareIndexRoute = LangTheTaberSquareIndexRouteImport.update({
+  id: '/the-taber-square/',
+  path: '/the-taber-square/',
   getParentRoute: () => LangRouteRoute,
 } as any)
 const LangTheTaberSquarePlayRoute = LangTheTaberSquarePlayRouteImport.update({
@@ -112,51 +113,26 @@ const LangTheTaberSquarePlayRoute = LangTheTaberSquarePlayRouteImport.update({
   path: '/the-taber-square/play',
   getParentRoute: () => LangRouteRoute,
 } as any)
-const LangTabernicleCubiclePlayRoute =
-  LangTabernicleCubiclePlayRouteImport.update({
-    id: '/tabernicle-cubicle/play',
-    path: '/tabernicle-cubicle/play',
-    getParentRoute: () => LangRouteRoute,
-  } as any)
-const LangEternityIiPlayRoute = LangEternityIiPlayRouteImport.update({
-  id: '/eternity-ii/play',
-  path: '/eternity-ii/play',
+const LangTheTabersStarIndexRoute = LangTheTabersStarIndexRouteImport.update({
+  id: '/the-tabers-star/',
+  path: '/the-tabers-star/',
   getParentRoute: () => LangRouteRoute,
 } as any)
-const LangTaberdokuTabersSudokuIndexRoute =
-  LangTaberdokuTabersSudokuIndexRouteImport.update({
-    id: '/taberdoku/tabers-sudoku/',
-    path: '/taberdoku/tabers-sudoku/',
-    getParentRoute: () => LangRouteRoute,
-  } as any)
-const LangTaberdokuStarBattleIndexRoute =
-  LangTaberdokuStarBattleIndexRouteImport.update({
-    id: '/taberdoku/star-battle/',
-    path: '/taberdoku/star-battle/',
-    getParentRoute: () => LangRouteRoute,
-  } as any)
+const LangTheTabersStarPlayRoute = LangTheTabersStarPlayRouteImport.update({
+  id: '/the-tabers-star/play',
+  path: '/the-tabers-star/play',
+  getParentRoute: () => LangRouteRoute,
+} as any)
 const LangTaberdokuMurdokuIndexRoute =
   LangTaberdokuMurdokuIndexRouteImport.update({
     id: '/taberdoku/murdoku/',
     path: '/taberdoku/murdoku/',
     getParentRoute: () => LangRouteRoute,
   } as any)
-const LangTaberdokuTabersSudokuPlayRoute =
-  LangTaberdokuTabersSudokuPlayRouteImport.update({
-    id: '/taberdoku/tabers-sudoku/play',
-    path: '/taberdoku/tabers-sudoku/play',
-    getParentRoute: () => LangRouteRoute,
-  } as any)
-const LangTaberdokuStarBattlePlayRoute =
-  LangTaberdokuStarBattlePlayRouteImport.update({
-    id: '/taberdoku/star-battle/play',
-    path: '/taberdoku/star-battle/play',
-    getParentRoute: () => LangRouteRoute,
-  } as any)
-const LangTaberdokuMurdokuPlayRoute =
-  LangTaberdokuMurdokuPlayRouteImport.update({
-    id: '/taberdoku/murdoku/play',
-    path: '/taberdoku/murdoku/play',
+const LangTaberdokuMurdokuAdminRoute =
+  LangTaberdokuMurdokuAdminRouteImport.update({
+    id: '/taberdoku/murdoku/admin',
+    path: '/taberdoku/murdoku/admin',
     getParentRoute: () => LangRouteRoute,
   } as any)
 const LangTaberdokuMurdokuCreateRoute =
@@ -165,10 +141,34 @@ const LangTaberdokuMurdokuCreateRoute =
     path: '/taberdoku/murdoku/create',
     getParentRoute: () => LangRouteRoute,
   } as any)
-const LangTaberdokuMurdokuAdminRoute =
-  LangTaberdokuMurdokuAdminRouteImport.update({
-    id: '/taberdoku/murdoku/admin',
-    path: '/taberdoku/murdoku/admin',
+const LangTaberdokuMurdokuPlayRoute =
+  LangTaberdokuMurdokuPlayRouteImport.update({
+    id: '/taberdoku/murdoku/play',
+    path: '/taberdoku/murdoku/play',
+    getParentRoute: () => LangRouteRoute,
+  } as any)
+const LangTaberdokuStarBattleIndexRoute =
+  LangTaberdokuStarBattleIndexRouteImport.update({
+    id: '/taberdoku/star-battle/',
+    path: '/taberdoku/star-battle/',
+    getParentRoute: () => LangRouteRoute,
+  } as any)
+const LangTaberdokuStarBattlePlayRoute =
+  LangTaberdokuStarBattlePlayRouteImport.update({
+    id: '/taberdoku/star-battle/play',
+    path: '/taberdoku/star-battle/play',
+    getParentRoute: () => LangRouteRoute,
+  } as any)
+const LangTaberdokuTabersSudokuIndexRoute =
+  LangTaberdokuTabersSudokuIndexRouteImport.update({
+    id: '/taberdoku/tabers-sudoku/',
+    path: '/taberdoku/tabers-sudoku/',
+    getParentRoute: () => LangRouteRoute,
+  } as any)
+const LangTaberdokuTabersSudokuPlayRoute =
+  LangTaberdokuTabersSudokuPlayRouteImport.update({
+    id: '/taberdoku/tabers-sudoku/play',
+    path: '/taberdoku/tabers-sudoku/play',
     getParentRoute: () => LangRouteRoute,
   } as any)
 const LangTaberdokuMurdokuBoardsCreateRoute =
@@ -358,25 +358,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/the-taber-square': {
-      id: '/the-taber-square'
-      path: '/the-taber-square'
-      fullPath: '/the-taber-square'
-      preLoaderRoute: typeof TheTaberSquareRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tabernicle-cubicle': {
-      id: '/tabernicle-cubicle'
-      path: '/tabernicle-cubicle'
-      fullPath: '/tabernicle-cubicle'
-      preLoaderRoute: typeof TabernicleCubicleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/eternity-ii': {
-      id: '/eternity-ii'
-      path: '/eternity-ii'
-      fullPath: '/eternity-ii'
-      preLoaderRoute: typeof EternityIiRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$lang': {
@@ -386,11 +372,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/eternity-ii': {
+      id: '/eternity-ii'
+      path: '/eternity-ii'
+      fullPath: '/eternity-ii'
+      preLoaderRoute: typeof EternityIiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tabernicle-cubicle': {
+      id: '/tabernicle-cubicle'
+      path: '/tabernicle-cubicle'
+      fullPath: '/tabernicle-cubicle'
+      preLoaderRoute: typeof TabernicleCubicleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/the-taber-square': {
+      id: '/the-taber-square'
+      path: '/the-taber-square'
+      fullPath: '/the-taber-square'
+      preLoaderRoute: typeof TheTaberSquareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$lang/': {
@@ -400,13 +400,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangIndexRouteImport
       parentRoute: typeof LangRouteRoute
     }
-    '/$lang/auth': {
-      id: '/$lang/auth'
-      path: '/auth'
-      fullPath: '/$lang/auth'
-      preLoaderRoute: typeof LangAuthRouteImport
-      parentRoute: typeof LangRouteRoute
-    }
     '/$lang/admin': {
       id: '/$lang/admin'
       path: '/admin'
@@ -414,32 +407,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangAdminRouteImport
       parentRoute: typeof LangRouteRoute
     }
-    '/$lang/the-tabers-star/': {
-      id: '/$lang/the-tabers-star/'
-      path: '/the-tabers-star'
-      fullPath: '/$lang/the-tabers-star/'
-      preLoaderRoute: typeof LangTheTabersStarIndexRouteImport
-      parentRoute: typeof LangRouteRoute
-    }
-    '/$lang/the-taber-square/': {
-      id: '/$lang/the-taber-square/'
-      path: '/the-taber-square'
-      fullPath: '/$lang/the-taber-square/'
-      preLoaderRoute: typeof LangTheTaberSquareIndexRouteImport
-      parentRoute: typeof LangRouteRoute
-    }
-    '/$lang/tabernicle-cubicle/': {
-      id: '/$lang/tabernicle-cubicle/'
-      path: '/tabernicle-cubicle'
-      fullPath: '/$lang/tabernicle-cubicle/'
-      preLoaderRoute: typeof LangTabernicleCubicleIndexRouteImport
-      parentRoute: typeof LangRouteRoute
-    }
-    '/$lang/taberdoku/': {
-      id: '/$lang/taberdoku/'
-      path: '/taberdoku'
-      fullPath: '/$lang/taberdoku/'
-      preLoaderRoute: typeof LangTaberdokuIndexRouteImport
+    '/$lang/auth': {
+      id: '/$lang/auth'
+      path: '/auth'
+      fullPath: '/$lang/auth'
+      preLoaderRoute: typeof LangAuthRouteImport
       parentRoute: typeof LangRouteRoute
     }
     '/$lang/eternity-ii/': {
@@ -449,18 +421,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangEternityIiIndexRouteImport
       parentRoute: typeof LangRouteRoute
     }
-    '/$lang/the-tabers-star/play': {
-      id: '/$lang/the-tabers-star/play'
-      path: '/the-tabers-star/play'
-      fullPath: '/$lang/the-tabers-star/play'
-      preLoaderRoute: typeof LangTheTabersStarPlayRouteImport
+    '/$lang/eternity-ii/play': {
+      id: '/$lang/eternity-ii/play'
+      path: '/eternity-ii/play'
+      fullPath: '/$lang/eternity-ii/play'
+      preLoaderRoute: typeof LangEternityIiPlayRouteImport
       parentRoute: typeof LangRouteRoute
     }
-    '/$lang/the-taber-square/play': {
-      id: '/$lang/the-taber-square/play'
-      path: '/the-taber-square/play'
-      fullPath: '/$lang/the-taber-square/play'
-      preLoaderRoute: typeof LangTheTaberSquarePlayRouteImport
+    '/$lang/taberdoku/': {
+      id: '/$lang/taberdoku/'
+      path: '/taberdoku'
+      fullPath: '/$lang/taberdoku/'
+      preLoaderRoute: typeof LangTaberdokuIndexRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/tabernicle-cubicle/': {
+      id: '/$lang/tabernicle-cubicle/'
+      path: '/tabernicle-cubicle'
+      fullPath: '/$lang/tabernicle-cubicle/'
+      preLoaderRoute: typeof LangTabernicleCubicleIndexRouteImport
       parentRoute: typeof LangRouteRoute
     }
     '/$lang/tabernicle-cubicle/play': {
@@ -470,25 +449,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangTabernicleCubiclePlayRouteImport
       parentRoute: typeof LangRouteRoute
     }
-    '/$lang/eternity-ii/play': {
-      id: '/$lang/eternity-ii/play'
-      path: '/eternity-ii/play'
-      fullPath: '/$lang/eternity-ii/play'
-      preLoaderRoute: typeof LangEternityIiPlayRouteImport
+    '/$lang/the-taber-square/': {
+      id: '/$lang/the-taber-square/'
+      path: '/the-taber-square'
+      fullPath: '/$lang/the-taber-square/'
+      preLoaderRoute: typeof LangTheTaberSquareIndexRouteImport
       parentRoute: typeof LangRouteRoute
     }
-    '/$lang/taberdoku/tabers-sudoku/': {
-      id: '/$lang/taberdoku/tabers-sudoku/'
-      path: '/taberdoku/tabers-sudoku'
-      fullPath: '/$lang/taberdoku/tabers-sudoku/'
-      preLoaderRoute: typeof LangTaberdokuTabersSudokuIndexRouteImport
+    '/$lang/the-taber-square/play': {
+      id: '/$lang/the-taber-square/play'
+      path: '/the-taber-square/play'
+      fullPath: '/$lang/the-taber-square/play'
+      preLoaderRoute: typeof LangTheTaberSquarePlayRouteImport
       parentRoute: typeof LangRouteRoute
     }
-    '/$lang/taberdoku/star-battle/': {
-      id: '/$lang/taberdoku/star-battle/'
-      path: '/taberdoku/star-battle'
-      fullPath: '/$lang/taberdoku/star-battle/'
-      preLoaderRoute: typeof LangTaberdokuStarBattleIndexRouteImport
+    '/$lang/the-tabers-star/': {
+      id: '/$lang/the-tabers-star/'
+      path: '/the-tabers-star'
+      fullPath: '/$lang/the-tabers-star/'
+      preLoaderRoute: typeof LangTheTabersStarIndexRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/the-tabers-star/play': {
+      id: '/$lang/the-tabers-star/play'
+      path: '/the-tabers-star/play'
+      fullPath: '/$lang/the-tabers-star/play'
+      preLoaderRoute: typeof LangTheTabersStarPlayRouteImport
       parentRoute: typeof LangRouteRoute
     }
     '/$lang/taberdoku/murdoku/': {
@@ -498,25 +484,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangTaberdokuMurdokuIndexRouteImport
       parentRoute: typeof LangRouteRoute
     }
-    '/$lang/taberdoku/tabers-sudoku/play': {
-      id: '/$lang/taberdoku/tabers-sudoku/play'
-      path: '/taberdoku/tabers-sudoku/play'
-      fullPath: '/$lang/taberdoku/tabers-sudoku/play'
-      preLoaderRoute: typeof LangTaberdokuTabersSudokuPlayRouteImport
-      parentRoute: typeof LangRouteRoute
-    }
-    '/$lang/taberdoku/star-battle/play': {
-      id: '/$lang/taberdoku/star-battle/play'
-      path: '/taberdoku/star-battle/play'
-      fullPath: '/$lang/taberdoku/star-battle/play'
-      preLoaderRoute: typeof LangTaberdokuStarBattlePlayRouteImport
-      parentRoute: typeof LangRouteRoute
-    }
-    '/$lang/taberdoku/murdoku/play': {
-      id: '/$lang/taberdoku/murdoku/play'
-      path: '/taberdoku/murdoku/play'
-      fullPath: '/$lang/taberdoku/murdoku/play'
-      preLoaderRoute: typeof LangTaberdokuMurdokuPlayRouteImport
+    '/$lang/taberdoku/murdoku/admin': {
+      id: '/$lang/taberdoku/murdoku/admin'
+      path: '/taberdoku/murdoku/admin'
+      fullPath: '/$lang/taberdoku/murdoku/admin'
+      preLoaderRoute: typeof LangTaberdokuMurdokuAdminRouteImport
       parentRoute: typeof LangRouteRoute
     }
     '/$lang/taberdoku/murdoku/create': {
@@ -526,11 +498,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangTaberdokuMurdokuCreateRouteImport
       parentRoute: typeof LangRouteRoute
     }
-    '/$lang/taberdoku/murdoku/admin': {
-      id: '/$lang/taberdoku/murdoku/admin'
-      path: '/taberdoku/murdoku/admin'
-      fullPath: '/$lang/taberdoku/murdoku/admin'
-      preLoaderRoute: typeof LangTaberdokuMurdokuAdminRouteImport
+    '/$lang/taberdoku/murdoku/play': {
+      id: '/$lang/taberdoku/murdoku/play'
+      path: '/taberdoku/murdoku/play'
+      fullPath: '/$lang/taberdoku/murdoku/play'
+      preLoaderRoute: typeof LangTaberdokuMurdokuPlayRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/taberdoku/star-battle/': {
+      id: '/$lang/taberdoku/star-battle/'
+      path: '/taberdoku/star-battle'
+      fullPath: '/$lang/taberdoku/star-battle/'
+      preLoaderRoute: typeof LangTaberdokuStarBattleIndexRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/taberdoku/star-battle/play': {
+      id: '/$lang/taberdoku/star-battle/play'
+      path: '/taberdoku/star-battle/play'
+      fullPath: '/$lang/taberdoku/star-battle/play'
+      preLoaderRoute: typeof LangTaberdokuStarBattlePlayRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/taberdoku/tabers-sudoku/': {
+      id: '/$lang/taberdoku/tabers-sudoku/'
+      path: '/taberdoku/tabers-sudoku'
+      fullPath: '/$lang/taberdoku/tabers-sudoku/'
+      preLoaderRoute: typeof LangTaberdokuTabersSudokuIndexRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/taberdoku/tabers-sudoku/play': {
+      id: '/$lang/taberdoku/tabers-sudoku/play'
+      path: '/taberdoku/tabers-sudoku/play'
+      fullPath: '/$lang/taberdoku/tabers-sudoku/play'
+      preLoaderRoute: typeof LangTaberdokuTabersSudokuPlayRouteImport
       parentRoute: typeof LangRouteRoute
     }
     '/$lang/taberdoku/murdoku/boards/create': {
