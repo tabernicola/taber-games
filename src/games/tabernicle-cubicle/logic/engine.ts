@@ -28,7 +28,7 @@ import {
 } from "./audio";
 
 const DIRECTION_HOLD_TO_MOVE_SECONDS = 0.08;
-const CREATURE_MOVE_INTERVAL_SECONDS = 0.7;
+const CREATURE_MOVE_INTERVAL_SECONDS = 0.9;
 
 export interface InputState {
   direction: Direction | null;
@@ -236,10 +236,16 @@ function findDirectionToPlayer(
   filledLava: boolean[][],
   mounds: Mound[],
   blocks: StoneBlock[],
+  creatures: LavaCreature[],
 ): Direction | null {
   const startIndex = creature.tileY * GRID_COLS + creature.tileX;
   const targetIndex = player.tileY * GRID_COLS + player.tileX;
   if (startIndex === targetIndex) return null;
+  const occupiedCells = new Set(
+    creatures
+      .filter((other) => other.alive && other.id !== creature.id)
+      .map((other) => other.tileY * GRID_COLS + other.tileX),
+  );
 
   const queue = [startIndex];
   const visited = new Set(queue);
@@ -260,7 +266,9 @@ function findDirectionToPlayer(
       }
 
       const nextIndex = nextY * GRID_COLS + nextX;
-      if (visited.has(nextIndex)) continue;
+      if (visited.has(nextIndex) || occupiedCells.has(nextIndex)) {
+        continue;
+      }
 
       visited.add(nextIndex);
       firstDirection.set(nextIndex, index === startIndex ? direction : firstDirection.get(index)!);
@@ -636,7 +644,8 @@ export function stepGame(state: GameState, dt: number, input: InputState): GameS
             sy < GRID_ROWS &&
             (nextState.grid[sy][sx] === "empty" || nextState.filledLava[sy][sx]) &&
             !nextState.mounds.some((m) => m.x === sx && m.y === sy) &&
-            !nextState.blocks.some((b) => b.tileX === sx && b.tileY === sy)
+            !nextState.blocks.some((b) => b.tileX === sx && b.tileY === sy) &&
+            !nextState.creatures.some((creature) => creature.tileX === sx && creature.tileY === sy)
           ) {
             nextState.creatures.push({
               id: `creature-${Date.now()}-${Math.random()}`,
@@ -670,6 +679,7 @@ export function stepGame(state: GameState, dt: number, input: InputState): GameS
         nextState.filledLava,
         nextState.mounds,
         nextState.blocks,
+        nextState.creatures,
       );
       if (direction) {
         creature.dir = direction;

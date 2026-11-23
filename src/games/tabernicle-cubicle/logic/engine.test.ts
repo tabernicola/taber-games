@@ -127,6 +127,54 @@ describe("Tabernicle Cubicle Engine", () => {
     expect(state.creatures[0].tileY).toBe(4);
   });
 
+  it("avoids occupied enemy cells and turns to take another route", () => {
+    const state = initLevel(1);
+    state.player.tileX = 9;
+    state.player.tileY = 5;
+    state.player.x = 9;
+    state.player.y = 5;
+    state.player.invincibleTimer = 10;
+
+    state.creatures = [
+      {
+        id: "chasing-creature",
+        x: 5,
+        y: 5,
+        tileX: 5,
+        tileY: 5,
+        dir: "right",
+        moveCooldown: 0,
+        alive: true,
+      },
+      {
+        id: "blocking-creature",
+        x: 6,
+        y: 5,
+        tileX: 6,
+        tileY: 5,
+        dir: "left",
+        moveCooldown: 10,
+        alive: true,
+      },
+    ];
+
+    const nextState = stepGame(state, 0.016, {
+      direction: null,
+      firePressed: false,
+      clubPressed: false,
+    });
+
+    const [chaser, blocker] = nextState.creatures;
+    expect(chaser.tileX).toBe(5);
+    expect(chaser.tileY).toBe(4);
+    expect(chaser.dir).toBe("up");
+    expect(blocker.tileX).toBe(6);
+    expect(blocker.tileY).toBe(5);
+    expect(
+      nextState.creatures.map((creature) => `${creature.tileX},${creature.tileY}`),
+    ).toHaveLength(new Set(nextState.creatures.map((c) => `${c.tileX},${c.tileY}`)).size);
+  });
+
   it("ends the level when the 90-second time limit expires", () => {
     const state = initLevel(0);
     state.levelTimeSeconds = state.levelTimeLimitSeconds - 0.05;

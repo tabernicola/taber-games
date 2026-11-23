@@ -34,6 +34,7 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
   const gameStateRef = useRef<GameState>(gameState);
   gameStateRef.current = gameState;
   const levelIntroElapsedRef = useRef(0);
+  const levelMusicStartedRef = useRef(false);
   const damageDarknessRemainingRef = useRef(0);
 
   // Modals
@@ -67,7 +68,9 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
 
   const beginLevelIntro = (darkenScreen = false) => {
     levelIntroElapsedRef.current = 0;
+    levelMusicStartedRef.current = false;
     damageDarknessRemainingRef.current = darkenScreen ? DAMAGE_DARKNESS_DURATION_SECONDS : 0;
+    stopMusic();
   };
 
   // Preload Taber sprites once
@@ -78,11 +81,6 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
   // Initialize audio element once
   useEffect(() => {
     initMusic();
-  }, []);
-
-  // Start music on first mount and when level changes
-  useEffect(() => {
-    startMusic();
   }, []);
 
   const isUrgencyMusic =
@@ -125,7 +123,9 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
 
       console.log("KeyDown:", e.code);
       // Try to start music on first interaction if autoplay was blocked
-      tryPlayMusicOnInteraction();
+      if (gameStateRef.current.status === "playing" && levelMusicStartedRef.current) {
+        tryPlayMusicOnInteraction();
+      }
 
       // Avoid scrolling on arrow/space
       if (
@@ -197,6 +197,14 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
               LEVEL_INTRO_DURATION_SECONDS,
               levelIntroElapsedRef.current + dt,
             );
+            if (
+              levelIntroElapsedRef.current >= LEVEL_INTRO_DURATION_SECONDS &&
+              current.status === "playing" &&
+              !levelMusicStartedRef.current
+            ) {
+              levelMusicStartedRef.current = true;
+              startMusic();
+            }
             inputRef.current.firePressed = false;
             inputRef.current.clubPressed = false;
             inputRef.current.directionChanged = false;
@@ -229,6 +237,10 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
 
                 if (next.status === "level_won") {
                   recordLevelProgress(next.levelIndex + 1);
+                }
+                if (next.status !== "playing") {
+                  levelMusicStartedRef.current = false;
+                  stopMusic();
                 }
               }
             }
@@ -270,7 +282,6 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
     gameStateRef.current = fresh;
     setGameState(fresh);
     beginLevelIntro();
-    startMusic();
   };
 
   const handleNextLevel = () => {
@@ -281,13 +292,11 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
       gameStateRef.current = completedState;
       setGameState(completedState);
       beginLevelIntro();
-      stopMusic();
     } else {
       const nextState = initLevel(nextIndex, cur.player.lives, cur.score);
       gameStateRef.current = nextState;
       setGameState(nextState);
       beginLevelIntro();
-      startMusic();
     }
   };
 
@@ -296,22 +305,27 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
     gameStateRef.current = fresh;
     setGameState(fresh);
     beginLevelIntro();
-    startMusic();
   };
 
   // Touch control callbacks
   const handleTouchDir = (dir: Direction | null) => {
-    tryPlayMusicOnInteraction();
+    if (gameStateRef.current.status === "playing" && levelMusicStartedRef.current) {
+      tryPlayMusicOnInteraction();
+    }
     inputRef.current.direction = dir;
   };
 
   const handleTouchFire = () => {
-    tryPlayMusicOnInteraction();
+    if (gameStateRef.current.status === "playing" && levelMusicStartedRef.current) {
+      tryPlayMusicOnInteraction();
+    }
     inputRef.current.firePressed = true;
   };
 
   const handleTouchClub = () => {
-    tryPlayMusicOnInteraction();
+    if (gameStateRef.current.status === "playing" && levelMusicStartedRef.current) {
+      tryPlayMusicOnInteraction();
+    }
     inputRef.current.clubPressed = true;
   };
 
