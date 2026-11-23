@@ -87,7 +87,6 @@ export const dict: Dict = {
   "murdoku.noNotes": "Your deduction notebook is empty. Tap cells to mark ❌ or ✔️.",
   "murdoku.marked": "Marked: {m}/{n}",
   "murdoku.playAgain": "Play again",
-  "murdoku.nextCase": "Next case",
   "murdoku.gridSize": "Grid size",
   "murdoku.roomSize": "Room size",
   "murdoku.autoGenerate": "Auto-generate rooms",

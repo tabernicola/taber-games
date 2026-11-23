@@ -37,7 +37,7 @@ export function BoardAdminSection() {
   if (selectedBoard || creatingBoard) {
     return (
       <BoardCreator
-        initialBoard={selectedBoard}
+        initialBoard={selectedBoard ?? undefined}
         embedded
         onCancel={() => {
           setSelectedBoard(null);
