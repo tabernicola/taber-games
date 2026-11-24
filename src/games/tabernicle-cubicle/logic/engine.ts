@@ -5,6 +5,7 @@ import {
   type Flame,
   type GameState,
   type LavaCreature,
+  type LevelDef,
   type Mound,
   type Player,
   type StoneBlock,
@@ -50,9 +51,15 @@ export function getDirDelta(dir: Direction): { dx: number; dy: number } {
   }
 }
 
-export function initLevel(levelIndex: number, lives = 3, score = 0): GameState {
-  const safeIndex = Math.max(0, Math.min(levelIndex, LEVELS.length - 1));
-  const levelDef = LEVELS[safeIndex];
+export function initLevel(
+  levelIndex: number,
+  lives = 3,
+  score = 0,
+  levels: LevelDef[] = LEVELS,
+): GameState {
+  const activeLevels = levels.length > 0 ? levels : LEVELS;
+  const safeIndex = Math.max(0, Math.min(levelIndex, activeLevels.length - 1));
+  const levelDef = activeLevels[safeIndex]!;
 
   const grid: CellType[][] = [];
   const filledLava: boolean[][] = [];

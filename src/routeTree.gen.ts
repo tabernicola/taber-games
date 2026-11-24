@@ -21,6 +21,7 @@ import { Route as LangEternityIiIndexRouteImport } from './routes/$lang/eternity
 import { Route as LangEternityIiPlayRouteImport } from './routes/$lang/eternity-ii/play'
 import { Route as LangTaberdokuIndexRouteImport } from './routes/$lang/taberdoku/index'
 import { Route as LangTabernicleCubicleIndexRouteImport } from './routes/$lang/tabernicle-cubicle/index'
+import { Route as LangTabernicleCubicleAdminRouteImport } from './routes/$lang/tabernicle-cubicle/admin'
 import { Route as LangTabernicleCubiclePlayRouteImport } from './routes/$lang/tabernicle-cubicle/play'
 import { Route as LangTheTaberSquareIndexRouteImport } from './routes/$lang/the-taber-square/index'
 import { Route as LangTheTaberSquarePlayRouteImport } from './routes/$lang/the-taber-square/play'
@@ -95,6 +96,12 @@ const LangTabernicleCubicleIndexRoute =
   LangTabernicleCubicleIndexRouteImport.update({
     id: '/tabernicle-cubicle/',
     path: '/tabernicle-cubicle/',
+    getParentRoute: () => LangRouteRoute,
+  } as any)
+const LangTabernicleCubicleAdminRoute =
+  LangTabernicleCubicleAdminRouteImport.update({
+    id: '/tabernicle-cubicle/admin',
+    path: '/tabernicle-cubicle/admin',
     getParentRoute: () => LangRouteRoute,
   } as any)
 const LangTabernicleCubiclePlayRoute =
@@ -188,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/$lang/auth': typeof LangAuthRoute
   '/$lang/': typeof LangIndexRoute
   '/$lang/eternity-ii/play': typeof LangEternityIiPlayRoute
+  '/$lang/tabernicle-cubicle/admin': typeof LangTabernicleCubicleAdminRoute
   '/$lang/tabernicle-cubicle/play': typeof LangTabernicleCubiclePlayRoute
   '/$lang/the-taber-square/play': typeof LangTheTaberSquarePlayRoute
   '/$lang/the-tabers-star/play': typeof LangTheTabersStarPlayRoute
@@ -215,6 +223,7 @@ export interface FileRoutesByTo {
   '/$lang/auth': typeof LangAuthRoute
   '/$lang': typeof LangIndexRoute
   '/$lang/eternity-ii/play': typeof LangEternityIiPlayRoute
+  '/$lang/tabernicle-cubicle/admin': typeof LangTabernicleCubicleAdminRoute
   '/$lang/tabernicle-cubicle/play': typeof LangTabernicleCubiclePlayRoute
   '/$lang/the-taber-square/play': typeof LangTheTaberSquarePlayRoute
   '/$lang/the-tabers-star/play': typeof LangTheTabersStarPlayRoute
@@ -244,6 +253,7 @@ export interface FileRoutesById {
   '/$lang/auth': typeof LangAuthRoute
   '/$lang/': typeof LangIndexRoute
   '/$lang/eternity-ii/play': typeof LangEternityIiPlayRoute
+  '/$lang/tabernicle-cubicle/admin': typeof LangTabernicleCubicleAdminRoute
   '/$lang/tabernicle-cubicle/play': typeof LangTabernicleCubiclePlayRoute
   '/$lang/the-taber-square/play': typeof LangTheTaberSquarePlayRoute
   '/$lang/the-tabers-star/play': typeof LangTheTabersStarPlayRoute
@@ -274,6 +284,7 @@ export interface FileRouteTypes {
     | '/$lang/auth'
     | '/$lang/'
     | '/$lang/eternity-ii/play'
+    | '/$lang/tabernicle-cubicle/admin'
     | '/$lang/tabernicle-cubicle/play'
     | '/$lang/the-taber-square/play'
     | '/$lang/the-tabers-star/play'
@@ -301,6 +312,7 @@ export interface FileRouteTypes {
     | '/$lang/auth'
     | '/$lang'
     | '/$lang/eternity-ii/play'
+    | '/$lang/tabernicle-cubicle/admin'
     | '/$lang/tabernicle-cubicle/play'
     | '/$lang/the-taber-square/play'
     | '/$lang/the-tabers-star/play'
@@ -329,6 +341,7 @@ export interface FileRouteTypes {
     | '/$lang/auth'
     | '/$lang/'
     | '/$lang/eternity-ii/play'
+    | '/$lang/tabernicle-cubicle/admin'
     | '/$lang/tabernicle-cubicle/play'
     | '/$lang/the-taber-square/play'
     | '/$lang/the-tabers-star/play'
@@ -442,6 +455,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangTabernicleCubicleIndexRouteImport
       parentRoute: typeof LangRouteRoute
     }
+    '/$lang/tabernicle-cubicle/admin': {
+      id: '/$lang/tabernicle-cubicle/admin'
+      path: '/tabernicle-cubicle/admin'
+      fullPath: '/$lang/tabernicle-cubicle/admin'
+      preLoaderRoute: typeof LangTabernicleCubicleAdminRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
     '/$lang/tabernicle-cubicle/play': {
       id: '/$lang/tabernicle-cubicle/play'
       path: '/tabernicle-cubicle/play'
@@ -548,6 +568,7 @@ interface LangRouteRouteChildren {
   LangAuthRoute: typeof LangAuthRoute
   LangIndexRoute: typeof LangIndexRoute
   LangEternityIiPlayRoute: typeof LangEternityIiPlayRoute
+  LangTabernicleCubicleAdminRoute: typeof LangTabernicleCubicleAdminRoute
   LangTabernicleCubiclePlayRoute: typeof LangTabernicleCubiclePlayRoute
   LangTheTaberSquarePlayRoute: typeof LangTheTaberSquarePlayRoute
   LangTheTabersStarPlayRoute: typeof LangTheTabersStarPlayRoute
@@ -572,6 +593,7 @@ const LangRouteRouteChildren: LangRouteRouteChildren = {
   LangAuthRoute: LangAuthRoute,
   LangIndexRoute: LangIndexRoute,
   LangEternityIiPlayRoute: LangEternityIiPlayRoute,
+  LangTabernicleCubicleAdminRoute: LangTabernicleCubicleAdminRoute,
   LangTabernicleCubiclePlayRoute: LangTabernicleCubiclePlayRoute,
   LangTheTaberSquarePlayRoute: LangTheTaberSquarePlayRoute,
   LangTheTabersStarPlayRoute: LangTheTabersStarPlayRoute,

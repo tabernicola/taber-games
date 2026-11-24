@@ -6,6 +6,7 @@ import type { LangSlug } from "@/platform/i18n";
 interface VictoryModalProps {
   state: GameState;
   lang: LangSlug;
+  totalLevels?: number;
   onNextLevel: () => void;
   onRetryLevel: () => void;
   onRestartGame: () => void;
@@ -14,6 +15,7 @@ interface VictoryModalProps {
 export function VictoryModal({
   state,
   lang,
+  totalLevels = LEVELS.length,
   onNextLevel,
   onRetryLevel,
   onRestartGame,
@@ -26,9 +28,9 @@ export function VictoryModal({
     return null;
   }
 
-  const isEu = lang === "eu";
+  const isEu = lang === "eus";
   const isEn = lang === "en";
-  const isFinalStage = state.levelIndex >= LEVELS.length - 1;
+  const isFinalStage = state.levelIndex >= totalLevels - 1;
   const timeExpired = state.levelTimeSeconds >= state.levelTimeLimitSeconds;
 
   if (state.status === "level_won") {

@@ -6,7 +6,11 @@ import { detectLangSlug } from "@/platform/i18n";
  * visitor's saved or browser language. Meant to be thrown from `beforeLoad`.
  */
 export function redirectToLang(
-  to: "/$lang" | "/$lang/eternity-ii" | "/$lang/the-taber-square",
+  to:
+    | "/$lang"
+    | "/$lang/eternity-ii"
+    | "/$lang/the-taber-square"
+    | "/$lang/tabernicle-cubicle",
 ): never {
   throw redirect({ to, params: { lang: detectLangSlug() } });
 }

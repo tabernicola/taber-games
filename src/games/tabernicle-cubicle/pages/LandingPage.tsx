@@ -3,23 +3,26 @@ import { SiteHeader } from "@/platform/layout/SiteHeader";
 import { GameFooter } from "@/platform/layout/GameFooter";
 import { useI18n } from "@/platform/i18n";
 import { LEVELS } from "../logic/levels";
+import { useTabernicleLevels } from "../logic/levelStore";
 import { Flame, Play, ShieldAlert, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export function LandingPage() {
   const { t, slug } = useI18n();
+  const { data: loadedLevels } = useTabernicleLevels();
+  const levels = loadedLevels?.levels ?? LEVELS;
   const [maxUnlocked, setMaxUnlocked] = useState(1);
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem("tabernicle_max_level");
       if (stored) {
-        setMaxUnlocked(Math.max(1, Math.min(LEVELS.length, parseInt(stored, 10))));
+        setMaxUnlocked(Math.max(1, Math.min(levels.length, parseInt(stored, 10))));
       }
     } catch {
       // localStorage may fail
     }
-  }, []);
+  }, [levels.length]);
 
   return (
     <div className="min-h-screen bg-stone-950 text-stone-100">
@@ -59,6 +62,7 @@ export function LandingPage() {
           <Link
             to="/$lang/tabernicle-cubicle/play"
             params={{ lang: slug }}
+            search={{ stage: 1 }}
             className="group mt-6 flex items-center gap-3 rounded-2xl border-2 border-amber-500 bg-amber-600 px-8 py-3.5 text-base font-black uppercase tracking-wider text-white shadow-xl shadow-amber-950/60 transition-all hover:bg-amber-500 hover:shadow-amber-600/40 active:scale-95"
           >
             <Play className="h-5 w-5 fill-current transition-transform group-hover:scale-110" />
@@ -76,14 +80,14 @@ export function LandingPage() {
               {t("tabernicle.selectStage")}
             </h2>
             <span className="text-xs text-stone-400">
-              {maxUnlocked} / {LEVELS.length} desbloqueadas
+              {maxUnlocked} / {levels.length} desbloqueadas
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-5">
-            {LEVELS.map((lvl, index) => {
+            {levels.map((lvl, index) => {
               const isUnlocked = index < maxUnlocked;
-              const langKey = slug === "eu" ? "eu" : slug === "en" ? "en" : "es";
+              const langKey = slug === "eus" ? "eu" : slug === "en" ? "en" : "es";
 
               return isUnlocked ? (
                 <Link

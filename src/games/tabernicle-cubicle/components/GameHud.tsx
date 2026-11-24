@@ -1,5 +1,5 @@
 import { Clock, Heart, HelpCircle, RotateCcw, Volume2, VolumeX } from "lucide-react";
-import type { GameState } from "../logic/types";
+import type { GameState, LevelDef } from "../logic/types";
 import { LEVELS } from "../logic/levels";
 import { sounds, updateVolume } from "../logic/audio";
 import { useState } from "react";
@@ -8,14 +8,15 @@ import type { LangSlug } from "@/platform/i18n";
 interface GameHudProps {
   state: GameState;
   lang: LangSlug;
+  levels?: LevelDef[];
   onResetLevel: () => void;
   onOpenHelp: () => void;
 }
 
-export function GameHud({ state, lang, onResetLevel, onOpenHelp }: GameHudProps) {
+export function GameHud({ state, lang, levels = LEVELS, onResetLevel, onOpenHelp }: GameHudProps) {
   const [muted, setMuted] = useState(!sounds.enabled);
-  const currentDef = LEVELS[state.levelIndex];
-  const langKey = lang === "eu" ? "eu" : lang === "en" ? "en" : "es";
+  const currentDef = levels[state.levelIndex];
+  const langKey = lang === "eus" ? "eu" : lang === "en" ? "en" : "es";
   const levelTitle = currentDef?.name[langKey] || `Fase ${state.levelIndex + 1}`;
 
   const toggleSound = () => {
@@ -30,8 +31,8 @@ export function GameHud({ state, lang, onResetLevel, onOpenHelp }: GameHudProps)
       <div className="flex items-center">
         <div>
           <span className="text-[11px] font-bold uppercase tracking-wider text-amber-500">
-            {lang === "en" ? "Stage" : lang === "eu" ? "Fasea" : "Fase"} {state.levelIndex + 1} /{" "}
-            {LEVELS.length}
+            {lang === "en" ? "Stage" : lang === "eus" ? "Fasea" : "Fase"} {state.levelIndex + 1} /{" "}
+            {levels.length}
           </span>
           <h2 className="text-sm font-bold text-amber-100 sm:text-base">{levelTitle}</h2>
         </div>

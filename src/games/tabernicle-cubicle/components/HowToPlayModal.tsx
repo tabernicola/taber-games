@@ -10,7 +10,7 @@ interface HowToPlayModalProps {
 export function HowToPlayModal({ isOpen, onClose, lang }: HowToPlayModalProps) {
   if (!isOpen) return null;
 
-  const isEu = lang === "eu";
+  const isEu = lang === "eus";
   const isEn = lang === "en";
 
   return (

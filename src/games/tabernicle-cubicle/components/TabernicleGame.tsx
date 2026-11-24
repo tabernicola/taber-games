@@ -14,6 +14,7 @@ import { TouchControls } from "./TouchControls";
 import { HowToPlayModal } from "./HowToPlayModal";
 import { VictoryModal } from "./VictoryModal";
 import { LEVELS } from "../logic/levels";
+import { useTabernicleLevels } from "../logic/levelStore";
 import type { LangSlug } from "@/platform/i18n";
 
 const LOCAL_STORAGE_KEY = "tabernicle_max_level";
@@ -28,9 +29,15 @@ interface TabernicleGameProps {
 
 export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const { data: loadedLevels } = useTabernicleLevels();
+  const activeLevels = loadedLevels?.levels ?? LEVELS;
+  const activeLevelsRef = useRef(activeLevels);
+  activeLevelsRef.current = activeLevels;
 
   // Game state
-  const [gameState, setGameState] = useState<GameState>(() => initLevel(initialLevel));
+  const [gameState, setGameState] = useState<GameState>(() =>
+    initLevel(initialLevel, 3, 0, activeLevels),
+  );
   const gameStateRef = useRef<GameState>(gameState);
   gameStateRef.current = gameState;
   const levelIntroElapsedRef = useRef(0);
@@ -45,6 +52,7 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
     direction: null,
     firePressed: false,
     clubPressed: false,
+    directionChanged: false,
   });
 
   // Track previous direction to detect first press
@@ -82,6 +90,19 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
   useEffect(() => {
     initMusic();
   }, []);
+
+  // Reload current stage when database level overrides finish loading
+  const loadedOverrideKey = (loadedLevels?.overriddenIds ?? []).join(",");
+  const lastAppliedKeyRef = useRef(loadedOverrideKey);
+  useEffect(() => {
+    if (loadedOverrideKey !== lastAppliedKeyRef.current) {
+      lastAppliedKeyRef.current = loadedOverrideKey;
+      const cur = gameStateRef.current;
+      const fresh = initLevel(cur.levelIndex, cur.player.lives, cur.score, activeLevelsRef.current);
+      gameStateRef.current = fresh;
+      setGameState(fresh);
+    }
+  }, [loadedOverrideKey]);
 
   const isUrgencyMusic =
     gameState.status === "playing" &&
@@ -224,7 +245,12 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
 
             if (next !== current) {
               if (next.player.lives < current.player.lives && next.status === "playing") {
-                const restarted = initLevel(next.levelIndex, next.player.lives, next.score);
+                const restarted = initLevel(
+                  next.levelIndex,
+                  next.player.lives,
+                  next.score,
+                  activeLevelsRef.current,
+                );
                 gameStateRef.current = restarted;
                 setGameState(restarted);
                 beginLevelIntro(true);
@@ -278,7 +304,7 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
   // Level controls
   const handleResetLevel = () => {
     const cur = gameStateRef.current;
-    const fresh = initLevel(cur.levelIndex, 3, cur.score);
+    const fresh = initLevel(cur.levelIndex, 3, cur.score, activeLevelsRef.current);
     gameStateRef.current = fresh;
     setGameState(fresh);
     beginLevelIntro();
@@ -287,13 +313,13 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
   const handleNextLevel = () => {
     const cur = gameStateRef.current;
     const nextIndex = cur.levelIndex + 1;
-    if (nextIndex >= LEVELS.length) {
+    if (nextIndex >= activeLevelsRef.current.length) {
       const completedState: GameState = { ...cur, status: "game_completed" };
       gameStateRef.current = completedState;
       setGameState(completedState);
       beginLevelIntro();
     } else {
-      const nextState = initLevel(nextIndex, cur.player.lives, cur.score);
+      const nextState = initLevel(nextIndex, cur.player.lives, cur.score, activeLevelsRef.current);
       gameStateRef.current = nextState;
       setGameState(nextState);
       beginLevelIntro();
@@ -301,7 +327,7 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
   };
 
   const handleRestartGame = () => {
-    const fresh = initLevel(0, 3, 0);
+    const fresh = initLevel(0, 3, 0, activeLevelsRef.current);
     gameStateRef.current = fresh;
     setGameState(fresh);
     beginLevelIntro();
@@ -329,7 +355,7 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
     inputRef.current.clubPressed = true;
   };
 
-  const levelHint = LEVELS[gameState.levelIndex]?.hint;
+  const levelHint = activeLevels[gameState.levelIndex]?.hint;
   const levelHintText = levelHint?.[lang === "eus" ? "eu" : lang];
 
   return (
@@ -338,6 +364,7 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
       <GameHud
         state={gameState}
         lang={lang}
+        levels={activeLevels}
         onResetLevel={handleResetLevel}
         onOpenHelp={() => setHelpOpen(true)}
       />
@@ -378,6 +405,7 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
       <VictoryModal
         state={gameState}
         lang={lang}
+        totalLevels={activeLevels.length}
         onNextLevel={handleNextLevel}
         onRetryLevel={handleResetLevel}
         onRestartGame={handleRestartGame}

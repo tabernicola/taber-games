@@ -27,6 +27,7 @@ const TX = {
     users: "Usuarios",
     sections: "Secciones",
     murdoku: "Casos de Murdoku",
+    tabernicle: "Niveles de Tabernicle Cubicle",
     search: "Buscar por correo…",
     email: "Correo",
     joined: "Alta",
@@ -45,6 +46,7 @@ const TX = {
     users: "Erabiltzaileak",
     sections: "Atalak",
     murdoku: "Murdoku kasuak",
+    tabernicle: "Tabernicle Cubicle mailak",
     search: "Bilatu posta bidez…",
     email: "Posta",
     joined: "Alta",
@@ -63,6 +65,7 @@ const TX = {
     users: "Users",
     sections: "Sections",
     murdoku: "Murdoku cases",
+    tabernicle: "Tabernicle Cubicle levels",
     search: "Search by email…",
     email: "Email",
     joined: "Joined",
@@ -139,13 +142,22 @@ function AdminPage() {
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
             {tx.sections}
           </h2>
-          <Link
-            to="/$lang/taberdoku/murdoku/admin"
-            params={{ lang: slug }}
-            className="inline-block rounded-lg border border-border bg-card px-4 py-3 text-sm hover:border-primary"
-          >
-            {tx.murdoku} →
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/$lang/taberdoku/murdoku/admin"
+              params={{ lang: slug }}
+              className="inline-block rounded-lg border border-border bg-card px-4 py-3 text-sm hover:border-primary"
+            >
+              {tx.murdoku} →
+            </Link>
+            <Link
+              to="/$lang/tabernicle-cubicle/admin"
+              params={{ lang: slug }}
+              className="inline-block rounded-lg border border-border bg-card px-4 py-3 text-sm hover:border-primary"
+            >
+              {tx.tabernicle} →
+            </Link>
+          </div>
         </section>
         <section>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
