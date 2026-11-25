@@ -1,5 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
-import { initLevel, stepGame, isWalkableForCreature, isWalkableForPlayer } from "./engine";
+import {
+  applyTimeBonusTick,
+  initLevel,
+  stepGame,
+  isWalkableForCreature,
+  isWalkableForPlayer,
+} from "./engine";
 import { DEFAULT_LEVEL_TIME_LIMIT_SECONDS, GRID_COLS, GRID_ROWS } from "./types";
 import { LEVELS } from "./levels";
 
@@ -294,6 +300,165 @@ describe("Tabernicle Cubicle Engine", () => {
     expect(state.blocks.length).toBe(initialBlockCount + 1);
   });
 
+  it("counts a petrified creature toward the volcano spawn limit", () => {
+    let state = initLevel(3);
+    state.player.tileX = 2;
+    state.player.tileY = 4;
+    state.player.x = 2;
+    state.player.y = 4;
+    state.player.dir = "right";
+    state.blocks = [];
+    state.creatures = [
+      {
+        id: "petrified-test",
+        x: 5,
+        y: 4,
+        tileX: 5,
+        tileY: 4,
+        dir: "left",
+        moveCooldown: 100,
+        alive: true,
+      },
+    ];
+    state.volcanoes = [{ x: 12, y: 2, cooldown: 100, timer: 100, maxCreatures: 1 }];
+
+    state = stepGame(state, 0.016, {
+      direction: null,
+      firePressed: true,
+      clubPressed: false,
+    });
+
+    for (let i = 0; i < 10 && state.creatures.length > 0; i++) {
+      state = stepGame(state, 0.05, {
+        direction: null,
+        firePressed: false,
+        clubPressed: false,
+      });
+    }
+
+    expect(state.creatures).toHaveLength(0);
+    expect(state.blocks).toContainEqual(expect.objectContaining({ isPetrifiedCreature: true }));
+
+    state.volcanoes[0].timer = 0;
+    state = stepGame(state, 0.016, {
+      direction: null,
+      firePressed: false,
+      clubPressed: false,
+    });
+    expect(state.creatures).toHaveLength(0);
+
+    state.blocks = [];
+    state.volcanoes[0].timer = 0;
+    state = stepGame(state, 0.016, {
+      direction: null,
+      firePressed: false,
+      clubPressed: false,
+    });
+    expect(state.creatures).toHaveLength(1);
+  });
+
+  it("ages petrified rocks, shows smoke on expiry, and leaves ordinary blocks intact", () => {
+    let state = initLevel(3);
+    state.creatures = [];
+    state.volcanoes = [];
+    state.blocks = [
+      {
+        id: "timed-petrified-rock",
+        isPetrifiedCreature: true,
+        petrifiedAgeSeconds: 14.9,
+        x: 5,
+        y: 5,
+        tileX: 5,
+        tileY: 5,
+        sliding: false,
+        slideDir: null,
+        speed: 8.5,
+      },
+      {
+        id: "ordinary-rock",
+        x: 7,
+        y: 5,
+        tileX: 7,
+        tileY: 5,
+        sliding: false,
+        slideDir: null,
+        speed: 8.5,
+      },
+    ];
+
+    state = stepGame(state, 0.2, {
+      direction: null,
+      firePressed: false,
+      clubPressed: false,
+    });
+    expect(state.blocks[0].petrifiedAgeSeconds).toBeCloseTo(15.1);
+
+    state = stepGame(state, 4.9, {
+      direction: null,
+      firePressed: false,
+      clubPressed: false,
+    });
+    expect(state.blocks[0].petrifiedAgeSeconds).toBeCloseTo(20);
+
+    state = stepGame(state, 4.9, {
+      direction: null,
+      firePressed: false,
+      clubPressed: false,
+    });
+    expect(state.blocks.map((block) => block.id)).toEqual([
+      "timed-petrified-rock",
+      "ordinary-rock",
+    ]);
+    expect(state.blocks[0].petrifiedAgeSeconds).toBeCloseTo(24.9);
+
+    state = stepGame(state, 0.1, {
+      direction: null,
+      firePressed: false,
+      clubPressed: false,
+    });
+    expect(state.blocks.map((block) => block.id)).toEqual(["ordinary-rock"]);
+    expect(state.petrifiedSmokeEffects).toHaveLength(1);
+    expect(state.petrifiedSmokeEffects[0]).toMatchObject({ x: 5, y: 5 });
+
+    state = stepGame(state, 0.8, {
+      direction: null,
+      firePressed: false,
+      clubPressed: false,
+    });
+    expect(state.petrifiedSmokeEffects).toHaveLength(0);
+  });
+
+  it("resets a petrified rock's lifetime when hit by fire", () => {
+    let state = initLevel(3);
+    state.creatures = [];
+    state.volcanoes = [];
+    state.blocks = [
+      {
+        id: "resettable-rock",
+        isPetrifiedCreature: true,
+        petrifiedAgeSeconds: 24.9,
+        x: 5,
+        y: 5,
+        tileX: 5,
+        tileY: 5,
+        sliding: false,
+        slideDir: null,
+        speed: 8.5,
+      },
+    ];
+    state.flames = [{ id: "reset-flame", x: 4.5, y: 5, dir: "right", speed: 10, alive: true }];
+
+    state = stepGame(state, 0.05, {
+      direction: null,
+      firePressed: false,
+      clubPressed: false,
+    });
+
+    expect(state.blocks).toHaveLength(1);
+    expect(state.blocks[0].petrifiedAgeSeconds).toBe(0);
+    expect(state.flames).toHaveLength(0);
+  });
+
   it("pushes a block with the fire button without shooting a flame", () => {
     let state = initLevel(0);
     state.player.tileX = 5;
@@ -441,6 +606,8 @@ describe("Tabernicle Cubicle Engine", () => {
 
   it("collecting all eggs triggers level_won", () => {
     let state = initLevel(0);
+    state.score = 500;
+    state.levelTimeSeconds = 30.25;
     // Mark all eggs collected except one
     for (let i = 1; i < state.eggs.length; i++) {
       state.eggs[i].collected = true;
@@ -464,5 +631,29 @@ describe("Tabernicle Cubicle Engine", () => {
     });
 
     expect(state.status).toBe("level_won");
+    expect(state.score).toBe(500 + 150);
+  });
+
+  it("converts five remaining seconds into 500 bonus points per tick", () => {
+    const state = initLevel(0);
+    state.status = "level_won";
+    state.score = 650;
+    state.levelTimeSeconds = 30.25;
+
+    const next = applyTimeBonusTick(state);
+
+    expect(next.levelTimeSeconds).toBe(35.25);
+    expect(next.score).toBe(1_150);
+  });
+
+  it("converts only the remaining fraction in the final time bonus tick", () => {
+    const state = initLevel(0);
+    state.status = "level_won";
+    state.levelTimeSeconds = 89.5;
+
+    const next = applyTimeBonusTick(state);
+
+    expect(next.levelTimeSeconds).toBe(90);
+    expect(next.score).toBe(50);
   });
 });

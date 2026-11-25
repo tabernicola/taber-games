@@ -222,3 +222,33 @@ export function playHurt(): void {
     start();
   }
 }
+
+export function playTimeBonusTick(): void {
+  if (!sounds.enabled || typeof window === "undefined" || !window.AudioContext) {
+    return;
+  }
+
+  effectsContext ??= new AudioContext();
+  const context = effectsContext;
+  const oscillator = context.createOscillator();
+  const volume = context.createGain();
+  const start = () => {
+    const now = context.currentTime;
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(880, now);
+    oscillator.frequency.exponentialRampToValueAtTime(660, now + 0.06);
+    volume.gain.setValueAtTime(0.0001, now);
+    volume.gain.exponentialRampToValueAtTime(0.08, now + 0.008);
+    volume.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+    oscillator.connect(volume);
+    volume.connect(context.destination);
+    oscillator.start(now);
+    oscillator.stop(now + 0.075);
+  };
+
+  if (context.state === "suspended") {
+    void context.resume().then(start, () => undefined);
+  } else {
+    start();
+  }
+}

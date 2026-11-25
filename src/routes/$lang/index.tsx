@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import logoAsset from "@/assets/taber-games-logo-v2.png.asset.json";
 import { SiteHeader } from "@/platform/layout/SiteHeader";
 import { useI18n, langFromSlug } from "@/platform/i18n";
-import { pageMeta, getTranslatedMeta } from "@/platform/seo";
+import { pageMeta, getTranslatedMeta, seoLinks } from "@/platform/seo";
+import type { LangSlug } from "@/platform/i18n/engine";
 import { externalGames, games } from "@/platform/games/registry";
 import { useIsAdmin } from "@/platform/hooks/useIsAdmin";
 
@@ -10,7 +11,6 @@ export const Route = createFileRoute("/$lang/")({
   head: ({ params }) => {
     const lang = langFromSlug(params.lang) ?? "es";
     const meta = getTranslatedMeta(lang);
-    const canonicalUrl = `https://taber-games.lovable.app/${params.lang}`;
 
     return {
       meta: pageMeta({
@@ -49,7 +49,7 @@ export const Route = createFileRoute("/$lang/")({
           }),
         },
       ],
-      links: [{ rel: "canonical", href: canonicalUrl }],
+      links: seoLinks({ lang: params.lang as LangSlug, path: "/" }),
     };
   },
   component: Home,

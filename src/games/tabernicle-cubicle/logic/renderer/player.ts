@@ -24,6 +24,12 @@ function getPlayerAnimationFrameCol(moving: boolean, moveProgress: number): numb
   return Math.min(SPRITE_COLS - 1, Math.max(0, Math.floor(moveProgress * SPRITE_COLS)));
 }
 
+function getPlayerActionFrameCol(action: "shooting" | "smashing", actionTimer: number): number {
+  const actionDuration = action === "shooting" ? 0.18 : 0.22;
+  const progress = Math.max(0, Math.min(1, 1 - actionTimer / actionDuration));
+  return Math.min(SPRITE_COLS - 1, Math.floor(progress * SPRITE_COLS));
+}
+
 /**
  * Renders the player from the spritesheet.
  * Uses appropriate frame based on direction and animation progress.
@@ -36,19 +42,17 @@ function renderPlayerSprite(
   cellW: number,
   cellH: number,
   dir: Direction,
-  moving: boolean,
-  moveProgress: number,
+  frameCol: number,
 ) {
   const frameW = sheet.naturalWidth / SPRITE_COLS;
   const frameH = sheet.naturalHeight / SPRITE_ROWS;
 
   const frameRow = getPlayerSpriteFrame(dir);
-  const frameCol = getPlayerAnimationFrameCol(moving, moveProgress);
 
   const sx = frameCol * frameW;
   const sy = frameRow * frameH;
 
-  const drawW = cellW * 1.35;
+  const drawW = cellW * 1.6;
   const drawH = drawW * (frameH / frameW);
   const drawX = px + (cellW - drawW) / 2;
   const drawY = py + (cellH - drawH) / 2 - cellH * 0.16;
@@ -89,6 +93,7 @@ export function renderPlayer(
   cellH: number,
   t: number,
   introProgress = 1,
+  victoryFlightProgress = 0,
 ) {
   const p = state.player;
   const px = p.x * cellW;
@@ -97,19 +102,84 @@ export function renderPlayer(
   const flightOffset = cellH * (4 * (1 - easeOut) + Math.sin(progress * Math.PI) * 0.2);
   const py = p.y * cellH - flightOffset;
 
+  if (victoryFlightProgress > 0) {
+    renderVictoryFlight(ctx, images, p.x * cellW, p.y * cellH, cellW, cellH, victoryFlightProgress);
+    return;
+  }
+
   const isBlinking = p.invincibleTimer > 0 && Math.floor(t * 12) % 2 === 0;
 
   if (!isBlinking) {
     renderPlayerShadow(ctx, px, p.y * cellH, cellW, cellH, easeOut);
 
-    const sheet = images.spritesheet;
+    const attackAction = p.action === "shooting" || p.action === "smashing" ? p.action : null;
+    const attackSheet = images.strikeSpritesheet;
+    const sheet =
+      attackAction && attackSheet?.complete && attackSheet.naturalWidth > 0
+        ? attackSheet
+        : images.spritesheet;
     if (sheet && sheet.complete && sheet.naturalWidth > 0) {
-      renderPlayerSprite(ctx, sheet, px, py, cellW, cellH, p.dir, p.moving, p.moveProgress);
+      const frameCol = attackAction
+        ? getPlayerActionFrameCol(attackAction, p.actionTimer)
+        : getPlayerAnimationFrameCol(p.moving, p.moveProgress);
+      renderPlayerSprite(ctx, sheet, px, py, cellW, cellH, p.dir, frameCol);
     } else {
       const walkBob = p.moving ? Math.sin(p.moveProgress * Math.PI * 2) * 3 : 0;
       drawFallbackTaber(ctx, px, py, cellW, cellH, p.dir, walkBob);
     }
   }
+}
+
+function renderVictoryFlight(
+  ctx: CanvasRenderingContext2D,
+  images: LoadedImages,
+  startX: number,
+  startY: number,
+  cellW: number,
+  cellH: number,
+  progress: number,
+) {
+  const width = cellW * 21;
+  const height = cellH * 14;
+  const p = Math.max(0, Math.min(1, progress));
+  const converge = Math.min(1, p * 3);
+  const easedConverge = 1 - (1 - converge) ** 3;
+  const centerX = startX + cellW * 0.5 + (width * 0.5 - startX - cellW * 0.5) * easedConverge;
+  const centerY = startY + cellH * 0.5 + (height * 0.5 - startY - cellH * 0.5) * easedConverge;
+  const angle = p * Math.PI * 2 * 3;
+  const x = centerX + Math.cos(angle) * width * 0.36 * p;
+  const y = centerY + Math.sin(angle) * height * 0.36 * p;
+  const scale = 1 + p * 1.8;
+  const sheet = images.spritesheet;
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.scale(scale, scale);
+
+  if (sheet?.complete && sheet.naturalWidth > 0) {
+    const frameW = sheet.naturalWidth / SPRITE_COLS;
+    const frameH = sheet.naturalHeight / SPRITE_ROWS;
+    const frameCol = Math.floor(p * 24) % SPRITE_COLS;
+    const frameRow = getPlayerSpriteFrame("down");
+    const drawW = cellW * 1.6;
+    const drawH = drawW * (frameH / frameW);
+    ctx.drawImage(
+      sheet,
+      frameCol * frameW,
+      frameRow * frameH,
+      frameW,
+      frameH,
+      -drawW / 2,
+      -drawH / 2,
+      drawW,
+      drawH,
+    );
+  } else {
+    drawFallbackTaber(ctx, -cellW / 2, -cellH / 2, cellW, cellH, "down", 0);
+  }
+
+  ctx.restore();
 }
 
 /**

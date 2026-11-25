@@ -1,5 +1,4 @@
 import { Link, useSearch } from "@tanstack/react-router";
-import { SiteHeader } from "@/platform/layout/SiteHeader";
 import { GameFooter } from "@/platform/layout/GameFooter";
 import { TabernicleGame } from "../components/TabernicleGame";
 import { useI18n } from "@/platform/i18n";
@@ -20,8 +19,6 @@ export function PlayPage() {
 
   return (
     <div className="min-h-screen bg-stone-950 text-stone-100">
-      <SiteHeader />
-
       <main className="mx-auto max-w-5xl px-3 pb-16 pt-4 sm:px-4">
         {/* Navigation back bar */}
         <div className="mb-3 flex items-center justify-between">

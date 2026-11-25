@@ -30,6 +30,11 @@ import {
 
 const DIRECTION_HOLD_TO_MOVE_SECONDS = 0.08;
 const CREATURE_MOVE_INTERVAL_SECONDS = 0.9;
+const PETRIFIED_ROCK_LIFETIME_SECONDS = 25;
+const PETRIFIED_SMOKE_DURATION_SECONDS = 0.7;
+export const TIME_BONUS_SECONDS_PER_TICK = 5;
+export const TIME_BONUS_TICK_INTERVAL_SECONDS = 0.1;
+const TIME_BONUS_POINTS_PER_SECOND = 100;
 
 export interface InputState {
   direction: Direction | null;
@@ -181,6 +186,7 @@ export function initLevel(
     blocks,
     flames: [],
     blockBreakEffects: [],
+    petrifiedSmokeEffects: [],
     creatures,
     volcanoes,
     eggs,
@@ -190,6 +196,23 @@ export function initLevel(
     score,
     levelTimeSeconds: 0,
     levelTimeLimitSeconds: levelDef.timeLimitSeconds ?? DEFAULT_LEVEL_TIME_LIMIT_SECONDS,
+  };
+}
+
+export function applyTimeBonusTick(state: GameState): GameState {
+  if (state.status !== "level_won") return state;
+
+  const remainingSeconds = Math.max(0, state.levelTimeLimitSeconds - state.levelTimeSeconds);
+  const convertedSeconds = Math.min(TIME_BONUS_SECONDS_PER_TICK, remainingSeconds);
+  if (convertedSeconds === 0) return state;
+
+  return {
+    ...state,
+    levelTimeSeconds: Math.min(
+      state.levelTimeLimitSeconds,
+      state.levelTimeSeconds + convertedSeconds,
+    ),
+    score: state.score + Math.round(convertedSeconds * TIME_BONUS_POINTS_PER_SECOND),
   };
 }
 
@@ -301,6 +324,9 @@ export function stepGame(state: GameState, dt: number, input: InputState): GameS
     blockBreakEffects: state.blockBreakEffects
       .map((effect) => ({ ...effect, timeRemaining: effect.timeRemaining - dt }))
       .filter((effect) => effect.timeRemaining > 0),
+    petrifiedSmokeEffects: state.petrifiedSmokeEffects
+      .map((effect) => ({ ...effect, timeRemaining: effect.timeRemaining - dt }))
+      .filter((effect) => effect.timeRemaining > 0),
     creatures: state.creatures.map((c) => ({ ...c })),
     volcanoes: state.volcanoes.map((v) => ({ ...v })),
     eggs: state.eggs.map((e) => ({ ...e })),
@@ -311,6 +337,22 @@ export function stepGame(state: GameState, dt: number, input: InputState): GameS
   if (levelTimeSeconds >= state.levelTimeLimitSeconds) {
     nextState.status = "game_over";
     return nextState;
+  }
+
+  for (let i = nextState.blocks.length - 1; i >= 0; i--) {
+    const block = nextState.blocks[i];
+    if (!block.isPetrifiedCreature) continue;
+
+    block.petrifiedAgeSeconds = (block.petrifiedAgeSeconds ?? 0) + dt;
+    if (block.petrifiedAgeSeconds >= PETRIFIED_ROCK_LIFETIME_SECONDS) {
+      nextState.petrifiedSmokeEffects.push({
+        x: block.x,
+        y: block.y,
+        timeRemaining: PETRIFIED_SMOKE_DURATION_SECONDS,
+        duration: PETRIFIED_SMOKE_DURATION_SECONDS,
+      });
+      nextState.blocks.splice(i, 1);
+    }
   }
 
   const p = nextState.player;
@@ -515,6 +557,16 @@ export function stepGame(state: GameState, dt: number, input: InputState): GameS
       continue;
     }
 
+    const petrifiedBlock = nextState.blocks.find(
+      (block) =>
+        block.isPetrifiedCreature && Math.hypot(flame.x - block.x, flame.y - block.y) < 0.65,
+    );
+    if (petrifiedBlock) {
+      petrifiedBlock.petrifiedAgeSeconds = 0;
+      nextState.flames.splice(i, 1);
+      continue;
+    }
+
     // Creature collision -> CALCINATE!
     let creatureHit = false;
     for (let c = nextState.creatures.length - 1; c >= 0; c--) {
@@ -534,6 +586,8 @@ export function stepGame(state: GameState, dt: number, input: InputState): GameS
 
         nextState.blocks.push({
           id: `block-${Date.now()}-${Math.random()}`,
+          isPetrifiedCreature: true,
+          petrifiedAgeSeconds: 0,
           x: blockTileX,
           y: blockTileY,
           tileX: blockTileX,
@@ -632,12 +686,14 @@ export function stepGame(state: GameState, dt: number, input: InputState): GameS
   }
 
   // 6. Volcano Spawners
-  const aliveCreaturesCount = nextState.creatures.filter((c) => c.alive).length;
+  let activeCreaturesCount =
+    nextState.creatures.filter((creature) => creature.alive).length +
+    nextState.blocks.filter((block) => block.isPetrifiedCreature).length;
   for (const volcano of nextState.volcanoes) {
     volcano.timer -= dt;
     if (volcano.timer <= 0) {
       volcano.timer = volcano.cooldown;
-      if (aliveCreaturesCount < volcano.maxCreatures) {
+      if (activeCreaturesCount < volcano.maxCreatures) {
         // Spawn creature in adjacent walkable cell
         const dirs: Direction[] = ["down", "left", "right", "up"];
         for (const dir of dirs) {
@@ -664,6 +720,7 @@ export function stepGame(state: GameState, dt: number, input: InputState): GameS
               moveCooldown: CREATURE_MOVE_INTERVAL_SECONDS,
               alive: true,
             });
+            activeCreaturesCount++;
             break;
           }
         }

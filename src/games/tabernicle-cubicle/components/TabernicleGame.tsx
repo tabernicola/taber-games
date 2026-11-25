@@ -1,12 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import type { Direction, GameState } from "../logic/types";
-import { initLevel, stepGame, type InputState } from "../logic/engine";
+import {
+  applyTimeBonusTick,
+  initLevel,
+  stepGame,
+  TIME_BONUS_SECONDS_PER_TICK,
+  TIME_BONUS_TICK_INTERVAL_SECONDS,
+  type InputState,
+} from "../logic/engine";
 import { loadTaberImages, renderGame, type LoadedImages } from "../logic/renderer";
 import {
   initMusic,
   setMusicUrgency,
   startMusic,
   stopMusic,
+  playTimeBonusTick,
   tryPlayMusicOnInteraction,
 } from "../logic/audio";
 import { GameHud, GameStatusBar } from "./GameHud";
@@ -21,6 +29,13 @@ const LOCAL_STORAGE_KEY = "tabernicle_max_level";
 const LEVEL_INTRO_DURATION_SECONDS = 1.3;
 const DAMAGE_DARKNESS_DURATION_SECONDS = 0.9;
 const DAMAGE_DARKNESS_MAX_OPACITY = 0.38;
+
+interface VictoryTransition {
+  elapsedSeconds: number;
+  tickAccumulator: number;
+  tallyDurationSeconds: number;
+  durationSeconds: number;
+}
 
 interface TabernicleGameProps {
   lang: LangSlug;
@@ -43,6 +58,7 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
   const levelIntroElapsedRef = useRef(0);
   const levelMusicStartedRef = useRef(false);
   const damageDarknessRemainingRef = useRef(0);
+  const victoryTransitionRef = useRef<VictoryTransition | null>(null);
 
   // Modals
   const [helpOpen, setHelpOpen] = useState(false);
@@ -59,7 +75,15 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
   const prevDirectionRef = useRef<Direction | null>(null);
 
   // Loaded images ref
-  const imagesRef = useRef<LoadedImages>({ spritesheet: null });
+  const imagesRef = useRef<LoadedImages>({
+    spritesheet: null,
+    strikeSpritesheet: null,
+    petrifiedCracks5: null,
+    petrifiedCracks10: null,
+    petrifiedCracks15: null,
+    petrifiedCracks20: null,
+    petrifiedSmoke: null,
+  });
 
   // Update max level in localStorage
   const recordLevelProgress = (lvlIndex: number) => {
@@ -86,9 +110,30 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
     imagesRef.current = loadTaberImages();
   }, []);
 
-  // Initialize audio element once
+  // Stop music when the game is left, hidden, or unloaded.
   useEffect(() => {
     initMusic();
+
+    const stopWhenHidden = () => {
+      if (document.visibilityState === "hidden") {
+        levelMusicStartedRef.current = false;
+        stopMusic();
+      }
+    };
+    const stopOnPageHide = () => {
+      levelMusicStartedRef.current = false;
+      stopMusic();
+    };
+
+    document.addEventListener("visibilitychange", stopWhenHidden);
+    window.addEventListener("pagehide", stopOnPageHide);
+
+    return () => {
+      document.removeEventListener("visibilitychange", stopWhenHidden);
+      window.removeEventListener("pagehide", stopOnPageHide);
+      levelMusicStartedRef.current = false;
+      stopMusic();
+    };
   }, []);
 
   // Reload current stage when database level overrides finish loading
@@ -126,6 +171,8 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (gameStateRef.current.status === "level_won") return;
+
       if (
         e.repeat &&
         [
@@ -142,7 +189,6 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
         return;
       }
 
-      console.log("KeyDown:", e.code);
       // Try to start music on first interaction if autoplay was blocked
       if (gameStateRef.current.status === "playing" && levelMusicStartedRef.current) {
         tryPlayMusicOnInteraction();
@@ -211,6 +257,7 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
         if (ctx) {
           const current = gameStateRef.current;
           const introActive = levelIntroElapsedRef.current < LEVEL_INTRO_DURATION_SECONDS;
+          let victoryFlightProgress = 0;
 
           // Step physics and state
           if (introActive) {
@@ -270,6 +317,68 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
                 }
               }
             }
+          } else if (current.status === "level_won") {
+            if (!victoryTransitionRef.current) {
+              const remainingSeconds = Math.max(
+                0,
+                current.levelTimeLimitSeconds - current.levelTimeSeconds,
+              );
+              const tallyDurationSeconds =
+                Math.ceil(remainingSeconds / TIME_BONUS_SECONDS_PER_TICK) *
+                TIME_BONUS_TICK_INTERVAL_SECONDS;
+              victoryTransitionRef.current = {
+                elapsedSeconds: 0,
+                tickAccumulator: 0,
+                tallyDurationSeconds,
+                durationSeconds: tallyDurationSeconds + 2,
+              };
+              stopMusic();
+            }
+
+            const transition = victoryTransitionRef.current;
+            transition.elapsedSeconds += dt;
+            transition.tickAccumulator += dt;
+            let updatedState = current;
+
+            while (
+              transition.tickAccumulator + 1e-9 >= TIME_BONUS_TICK_INTERVAL_SECONDS &&
+              updatedState.levelTimeSeconds < updatedState.levelTimeLimitSeconds
+            ) {
+              transition.tickAccumulator -= TIME_BONUS_TICK_INTERVAL_SECONDS;
+              updatedState = applyTimeBonusTick(updatedState);
+              playTimeBonusTick();
+            }
+
+            if (updatedState !== current) {
+              gameStateRef.current = updatedState;
+              setGameState(updatedState);
+            }
+
+            if (transition.elapsedSeconds >= transition.durationSeconds) {
+              const nextIndex = updatedState.levelIndex + 1;
+              const nextState =
+                nextIndex >= activeLevelsRef.current.length
+                  ? { ...updatedState, status: "game_completed" as const }
+                  : initLevel(
+                      nextIndex,
+                      updatedState.player.lives,
+                      updatedState.score,
+                      activeLevelsRef.current,
+                    );
+              victoryTransitionRef.current = null;
+              inputRef.current.direction = null;
+              inputRef.current.firePressed = false;
+              inputRef.current.clubPressed = false;
+              inputRef.current.directionChanged = false;
+              gameStateRef.current = nextState;
+              setGameState(nextState);
+              beginLevelIntro();
+            } else {
+              victoryFlightProgress = Math.min(
+                1,
+                transition.elapsedSeconds / transition.durationSeconds,
+              );
+            }
           }
 
           damageDarknessRemainingRef.current = Math.max(0, damageDarknessRemainingRef.current - dt);
@@ -289,7 +398,7 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
             canvas.width,
             canvas.height,
             now,
-            { playerIntroProgress: introProgress, screenDarkness },
+            { playerIntroProgress: introProgress, screenDarkness, victoryFlightProgress },
           );
         }
       }
@@ -308,22 +417,6 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
     gameStateRef.current = fresh;
     setGameState(fresh);
     beginLevelIntro();
-  };
-
-  const handleNextLevel = () => {
-    const cur = gameStateRef.current;
-    const nextIndex = cur.levelIndex + 1;
-    if (nextIndex >= activeLevelsRef.current.length) {
-      const completedState: GameState = { ...cur, status: "game_completed" };
-      gameStateRef.current = completedState;
-      setGameState(completedState);
-      beginLevelIntro();
-    } else {
-      const nextState = initLevel(nextIndex, cur.player.lives, cur.score, activeLevelsRef.current);
-      gameStateRef.current = nextState;
-      setGameState(nextState);
-      beginLevelIntro();
-    }
   };
 
   const handleRestartGame = () => {
@@ -405,8 +498,6 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
       <VictoryModal
         state={gameState}
         lang={lang}
-        totalLevels={activeLevels.length}
-        onNextLevel={handleNextLevel}
         onRetryLevel={handleResetLevel}
         onRestartGame={handleRestartGame}
       />

@@ -20,6 +20,8 @@ export interface Mound {
 
 export interface StoneBlock {
   id: string;
+  isPetrifiedCreature?: boolean;
+  petrifiedAgeSeconds?: number;
   x: number; // continuous coordinate for smooth rendering
   y: number;
   tileX: number; // target or current grid cell
@@ -42,6 +44,13 @@ export interface BlockBreakEffect {
   x: number;
   y: number;
   dir: Direction;
+  timeRemaining: number;
+  duration: number;
+}
+
+export interface PetrifiedSmokeEffect {
+  x: number;
+  y: number;
   timeRemaining: number;
   duration: number;
 }
@@ -112,6 +121,7 @@ export interface GameState {
   blocks: StoneBlock[];
   flames: Flame[];
   blockBreakEffects: BlockBreakEffect[];
+  petrifiedSmokeEffects: PetrifiedSmokeEffect[];
   creatures: LavaCreature[];
   volcanoes: VolcanoSpawner[];
   eggs: DinoEgg[];

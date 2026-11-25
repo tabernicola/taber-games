@@ -1,110 +1,22 @@
 import type { GameState } from "../logic/types";
-import { LEVELS } from "../logic/levels";
-import { ArrowRight, RotateCcw, Trophy } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import type { LangSlug } from "@/platform/i18n";
 
 interface VictoryModalProps {
   state: GameState;
   lang: LangSlug;
-  totalLevels?: number;
-  onNextLevel: () => void;
   onRetryLevel: () => void;
   onRestartGame: () => void;
 }
 
-export function VictoryModal({
-  state,
-  lang,
-  totalLevels = LEVELS.length,
-  onNextLevel,
-  onRetryLevel,
-  onRestartGame,
-}: VictoryModalProps) {
-  if (
-    state.status !== "level_won" &&
-    state.status !== "game_over" &&
-    state.status !== "game_completed"
-  ) {
+export function VictoryModal({ state, lang, onRetryLevel, onRestartGame }: VictoryModalProps) {
+  if (state.status !== "game_over" && state.status !== "game_completed") {
     return null;
   }
 
   const isEu = lang === "eus";
   const isEn = lang === "en";
-  const isFinalStage = state.levelIndex >= totalLevels - 1;
   const timeExpired = state.levelTimeSeconds >= state.levelTimeLimitSeconds;
-
-  if (state.status === "level_won") {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md animate-in fade-in zoom-in-95 duration-200">
-        <div className="relative w-full max-w-md rounded-2xl border-2 border-amber-500 bg-stone-950 p-6 text-center shadow-2xl shadow-amber-950/50">
-          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-500/50 bg-amber-500/10 text-3xl">
-            🏆
-          </div>
-
-          <h3
-            className="text-2xl font-black uppercase tracking-wider text-amber-400"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            {isEu ? "Fasea Osatuta!" : isEn ? "Stage Cleared!" : "¡Fase Completada!"}
-          </h3>
-
-          <p className="mt-2 text-sm text-stone-300">
-            {isEu
-              ? "Arrautza guztiak salbatu dituzu!"
-              : isEn
-                ? "All dinosaur eggs safely collected!"
-                : "¡Has recogido todos los huevos de dinosaurio!"}
-          </p>
-
-          <div className="my-5 flex items-center justify-around rounded-xl border border-stone-800 bg-stone-900/60 p-3">
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
-                {isEu ? "Puntuak" : isEn ? "Score" : "Puntos"}
-              </span>
-              <div className="text-lg font-black text-amber-300">⭐ {state.score}</div>
-            </div>
-            <div className="h-8 w-px bg-stone-800" />
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
-                {isEu ? "Bizitzak" : isEn ? "Lives" : "Vidas"}
-              </span>
-              <div className="text-lg font-black text-red-400">❤️ x {state.player.lives}</div>
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              onClick={onRetryLevel}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-stone-700 bg-stone-800 py-3 text-xs font-bold text-stone-200 transition hover:bg-stone-700"
-            >
-              <RotateCcw className="h-4 w-4" />
-              {isEu ? "Errepikatu" : isEn ? "Replay" : "Repetir"}
-            </button>
-
-            <button
-              onClick={isFinalStage ? onRestartGame : onNextLevel}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-amber-500 bg-amber-600 py-3 text-xs font-black uppercase tracking-wider text-white shadow-lg transition hover:bg-amber-500 active:scale-95"
-            >
-              <span>
-                {isFinalStage
-                  ? isEu
-                    ? "Amaiera"
-                    : isEn
-                      ? "Victory!"
-                      : "¡Victoria!"
-                  : isEu
-                    ? "Hurrengoa"
-                    : isEn
-                      ? "Next"
-                      : "Siguiente"}
-              </span>
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (state.status === "game_completed") {
     return (

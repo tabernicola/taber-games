@@ -1,5 +1,23 @@
 import { coreTranslations } from "@/platform/i18n";
-import type { Lang } from "@/platform/i18n/engine";
+import type { Lang, LangSlug } from "@/platform/i18n/engine";
+
+/** Canonical URL base (used for canonical + hreflang alternates). */
+const SITE_URL = "https://taber-games.lovable.app";
+
+/** Build canonical (Spanish) + hreflang alternate links for a page path. */
+export function seoLinks({ lang, path }: { lang: LangSlug; path: string }) {
+  const links: { rel: string; href: string; hreflang?: string }[] = [
+    { rel: "canonical", href: `${SITE_URL}/es${path}` },
+  ];
+  for (const slug of ["eus", "es", "en"] as const) {
+    links.push({
+      rel: "alternate",
+      hreflang: slug === "eus" ? "eu" : slug,
+      href: `${SITE_URL}/${slug}${path}`,
+    });
+  }
+  return links;
+}
 
 /** Standard meta tags (title, description, Open Graph, Twitter card) for a page. */
 export function pageMeta({

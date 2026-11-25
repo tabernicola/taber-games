@@ -104,6 +104,10 @@ export function renderBlocks(
   state: GameState,
   cellW: number,
   cellH: number,
+  petrifiedCracks5: HTMLImageElement | null,
+  petrifiedCracks10: HTMLImageElement | null,
+  petrifiedCracks15: HTMLImageElement | null,
+  petrifiedCracks20: HTMLImageElement | null,
 ) {
   for (const block of state.blocks) {
     const bx = block.x * cellW;
@@ -112,6 +116,22 @@ export function renderBlocks(
     renderBlockShadow(ctx, bx, by, cellW, cellH);
     renderBlockFace(ctx, bx, by, cellW, cellH);
     renderBlockGlyph(ctx, bx, by, cellW, cellH);
+
+    if (block.isPetrifiedCreature && block.petrifiedAgeSeconds !== undefined) {
+      const agingImage =
+        block.petrifiedAgeSeconds >= 20
+          ? petrifiedCracks20
+          : block.petrifiedAgeSeconds >= 15
+            ? petrifiedCracks15
+            : block.petrifiedAgeSeconds >= 10
+              ? petrifiedCracks10
+              : block.petrifiedAgeSeconds >= 5
+                ? petrifiedCracks5
+                : null;
+      if (agingImage?.complete && agingImage.naturalWidth > 0) {
+        ctx.drawImage(agingImage, bx, by, cellW, cellH);
+      }
+    }
 
     if (block.sliding && block.slideDir) {
       renderBlockSpeedLines(ctx, bx, by, cellW, cellH, block.slideDir);

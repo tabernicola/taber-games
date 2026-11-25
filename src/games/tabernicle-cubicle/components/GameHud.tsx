@@ -38,13 +38,8 @@ export function GameHud({ state, lang, levels = LEVELS, onResetLevel, onOpenHelp
         </div>
       </div>
 
-      {/* Lives, Score & Actions */}
+      {/* Actions */}
       <div className="flex items-center gap-3">
-        {/* Score */}
-        <div className="hidden rounded-lg border border-amber-900/40 bg-amber-950/30 px-2.5 py-1 text-xs font-bold text-amber-300 sm:block">
-          ⭐ {state.score}
-        </div>
-
         {/* Sound toggle */}
         <button
           onClick={toggleSound}
@@ -58,7 +53,8 @@ export function GameHud({ state, lang, levels = LEVELS, onResetLevel, onOpenHelp
         {/* Reset level */}
         <button
           onClick={onResetLevel}
-          className="rounded-lg border border-stone-800 bg-stone-900/80 p-2 text-stone-300 transition-colors hover:bg-stone-800 hover:text-amber-400"
+          disabled={state.status === "level_won"}
+          className="rounded-lg border border-stone-800 bg-stone-900/80 p-2 text-stone-300 transition-colors hover:bg-stone-800 hover:text-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
           title="Reiniciar fase"
           aria-label="Reiniciar"
         >
@@ -85,13 +81,11 @@ interface GameStatusBarProps {
 }
 
 export function GameStatusBar({ state, lang }: GameStatusBarProps) {
-  const timeRemaining = Math.max(
-    0,
-    Math.ceil(state.levelTimeLimitSeconds - state.levelTimeSeconds),
+  const remainingDeciseconds = Math.floor(
+    Math.max(0, state.levelTimeLimitSeconds - state.levelTimeSeconds) * 10 + 1e-9,
   );
-  const timerLabel = `${Math.floor(timeRemaining / 60)
-    .toString()
-    .padStart(2, "0")}:${(timeRemaining % 60).toString().padStart(2, "0")}`;
+  const timeRemaining = remainingDeciseconds / 10;
+  const timerLabel = (timeRemaining * 1000).toString();
   const isLowOnTime = timeRemaining <= 15;
   const timeLabel =
     lang === "en" ? "Time remaining" : lang === "eus" ? "Geratzen den denbora" : "Tiempo restante";
@@ -101,21 +95,30 @@ export function GameStatusBar({ state, lang }: GameStatusBarProps) {
 
   return (
     <div className="flex min-h-12 w-full items-center justify-between gap-2 border-b border-amber-900/50 bg-stone-950/90 px-3 py-1.5 sm:px-5">
-      <div
-        className="flex items-center gap-1.5 rounded-lg border border-red-900/50 bg-red-950/30 px-2.5 py-1"
-        role="img"
-        aria-label={`${livesLabel}: ${state.player.lives}`}
-      >
-        {Array.from({ length: 3 }).map((_, idx) => (
-          <Heart
-            key={idx}
-            className={`h-4 w-4 ${
-              idx < state.player.lives
-                ? "fill-red-500 text-red-500"
-                : "fill-stone-800 text-stone-700"
-            }`}
-          />
-        ))}
+      <div className="flex items-center gap-1.5">
+        <div
+          className="flex items-center gap-1.5 rounded-lg border border-red-900/50 bg-red-950/30 px-2.5 py-1"
+          role="img"
+          aria-label={`${livesLabel}: ${state.player.lives}`}
+        >
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <Heart
+              key={idx}
+              className={`h-4 w-4 ${
+                idx < state.player.lives
+                  ? "fill-red-500 text-red-500"
+                  : "fill-stone-800 text-stone-700"
+              }`}
+            />
+          ))}
+        </div>
+
+        <div
+          className="rounded-lg border border-amber-800/50 bg-amber-950/40 px-2.5 py-1 text-xs font-black tabular-nums text-amber-300"
+          aria-label={`${lang === "en" ? "Score" : lang === "eus" ? "Puntuak" : "Puntuación"}: ${state.score}`}
+        >
+          ⭐ {state.score}
+        </div>
       </div>
 
       <div
