@@ -71,6 +71,7 @@ export function startMusic(): void {
   }
 
   audio.currentTime = 0;
+  audio.volume = sounds.enabled ? 0.4 : 0;
 
   audio.play().catch(() => {
     // Cualquier fallo de reproducción se trata como bloqueo de autoplay.
@@ -80,13 +81,10 @@ export function startMusic(): void {
 }
 
 /**
- * Desbloquea el elemento de audio para navegadores móviles.
+ * Prepares music playback from a user gesture for mobile browsers.
  *
- * Debe llamarse dentro del call stack de un gesto del usuario (click, tap,
- * touchstart). Reproduce y pausa inmediatamente (con el audio silenciado para
- * evitar un pitido) para cumplir la política de autoplay; a partir de ese
- * momento el mismo elemento puede reproducirse desde código (p. ej. al terminar
- * la intro del nivel) sin ser bloqueado.
+ * Keep the audio element playing silently so mobile browsers retain the
+ * user-gesture playback authorization until the level intro finishes.
  */
 export function unlockAudio(): void {
   const audio = initMusic();
@@ -94,24 +92,20 @@ export function unlockAudio(): void {
     return;
   }
 
-  const wasMuted = audio.muted;
-  audio.muted = true;
+  audio.volume = 0;
+  audio.muted = false;
 
   const playback = audio.play();
   if (playback && typeof playback.then === "function") {
     playback
       .then(() => {
-        audio.pause();
-        audio.currentTime = 0;
-        audio.muted = wasMuted;
+        autoplayBlocked = false;
       })
       .catch(() => {
-        audio.muted = wasMuted;
+        autoplayBlocked = true;
       });
   } else {
-    audio.pause();
-    audio.currentTime = 0;
-    audio.muted = wasMuted;
+    autoplayBlocked = false;
   }
 }
 
