@@ -4,6 +4,7 @@ import { GameFooter } from "@/platform/layout/GameFooter";
 import { useI18n } from "@/platform/i18n";
 import { LEVELS } from "../logic/levels";
 import { useTabernicleLevels } from "../logic/levelStore";
+import { unlockAudio } from "../logic/audio";
 import { Flame, Play, ShieldAlert, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -63,6 +64,7 @@ export function LandingPage() {
             to="/$lang/tabernicle-cubicle/play"
             params={{ lang: slug }}
             search={{ stage: 1 }}
+            onClick={() => unlockAudio()}
             className="group mt-6 flex items-center gap-3 rounded-2xl border-2 border-amber-500 bg-amber-600 px-8 py-3.5 text-base font-black uppercase tracking-wider text-white shadow-xl shadow-amber-950/60 transition-all hover:bg-amber-500 hover:shadow-amber-600/40 active:scale-95"
           >
             <Play className="h-5 w-5 fill-current transition-transform group-hover:scale-110" />
@@ -95,6 +97,7 @@ export function LandingPage() {
                   to="/$lang/tabernicle-cubicle/play"
                   params={{ lang: slug }}
                   search={{ stage: index + 1 }}
+                  onClick={() => unlockAudio()}
                   className="flex flex-col rounded-xl border border-amber-600/50 bg-amber-950/40 p-3 transition-all hover:-translate-y-0.5 hover:border-amber-400 hover:bg-amber-900/50"
                 >
                   <div className="flex items-center justify-between">

@@ -6,7 +6,7 @@
 /**
  * Path to the background music file.
  */
-const MUSIC_PATH = "/tabernicle-cubicle/sound/Lava Puzzle (Pure 8-Bit).mp3";
+const MUSIC_PATH = "/tabernicle-cubicle/sound/level1.mp3";
 
 /**
  * Single HTMLAudioElement instance for background music.
@@ -72,11 +72,47 @@ export function startMusic(): void {
 
   audio.currentTime = 0;
 
-  audio.play().catch((err) => {
-    if (err.name === "NotAllowedError") {
-      autoplayBlocked = true;
-    }
+  audio.play().catch(() => {
+    // Cualquier fallo de reproducción se trata como bloqueo de autoplay.
+    // El reintento se hará en la próxima interacción del usuario.
+    autoplayBlocked = true;
   });
+}
+
+/**
+ * Desbloquea el elemento de audio para navegadores móviles.
+ *
+ * Debe llamarse dentro del call stack de un gesto del usuario (click, tap,
+ * touchstart). Reproduce y pausa inmediatamente (con el audio silenciado para
+ * evitar un pitido) para cumplir la política de autoplay; a partir de ese
+ * momento el mismo elemento puede reproducirse desde código (p. ej. al terminar
+ * la intro del nivel) sin ser bloqueado.
+ */
+export function unlockAudio(): void {
+  const audio = initMusic();
+  if (!audio) {
+    return;
+  }
+
+  const wasMuted = audio.muted;
+  audio.muted = true;
+
+  const playback = audio.play();
+  if (playback && typeof playback.then === "function") {
+    playback
+      .then(() => {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.muted = wasMuted;
+      })
+      .catch(() => {
+        audio.muted = wasMuted;
+      });
+  } else {
+    audio.pause();
+    audio.currentTime = 0;
+    audio.muted = wasMuted;
+  }
 }
 
 /**
