@@ -35,7 +35,7 @@ export interface InputState {
   direction: Direction | null;
   firePressed: boolean;
   clubPressed: boolean;
-  directionChanged: boolean; // true when direction just changed
+  directionChanged?: boolean; // true when direction just changed
 }
 
 export function getDirDelta(dir: Direction): { dx: number; dy: number } {
