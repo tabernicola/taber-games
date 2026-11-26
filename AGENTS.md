@@ -24,3 +24,4 @@
 - Read Murdoku cases through the security-invoker `murdoku_playable_cases` view, which reconstructs the existing game contract under RLS and preserves legacy embedded cases without a board reference.
 - Reusable board/artwork catalogs are publicly readable and writable only through trusted database operations; cases expose only approved or caller-owned records, and player submissions cannot self-approve.
 - Tabernicle Cubicle stores admin-edited level overrides in `public.tabernicle_levels` (publicly readable, admin-writable via `has_role`) and merges them over the built-in `LEVELS` array at runtime so levels can be edited and reset to defaults safely.
+- Tabernicle Cubicle synthesizes action effects through a lazily created Web Audio context unlocked by player gestures and controlled by the existing sound toggle, avoiding extra media downloads and autoplay errors.

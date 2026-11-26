@@ -1,3 +1,5 @@
+import { playEffect, setEffectsEnabled, unlockEffects } from "./soundEffects";
+
 /**
  * Audio module for Tabernicle Cubicle background music.
  * Handles loading, looping playback, and level-start initialization.
@@ -20,7 +22,6 @@ let musicElement: HTMLAudioElement | null = null;
  */
 let autoplayBlocked = false;
 let urgencyMusic = false;
-let effectsContext: AudioContext | null = null;
 
 const NORMAL_PLAYBACK_RATE = 1;
 const URGENCY_PLAYBACK_RATE = 1.25;
@@ -87,6 +88,7 @@ export function startMusic(): void {
  * user-gesture playback authorization until the level intro finishes.
  */
 export function unlockAudio(): void {
+  unlockEffects();
   const audio = initMusic();
   if (!audio) {
     return;
@@ -161,6 +163,7 @@ export function setMusicUrgency(enabled: boolean): void {
  * This should be called on the first user interaction (keydown, touch, click).
  */
 export function tryPlayMusicOnInteraction(): void {
+  unlockEffects();
   if (autoplayBlocked && musicElement) {
     autoplayBlocked = false;
     musicElement.play().catch(() => {
@@ -174,6 +177,7 @@ export function tryPlayMusicOnInteraction(): void {
  * Should be called whenever the user toggles the sound in the UI.
  */
 export function updateVolume(): void {
+  setEffectsEnabled(sounds.enabled);
   if (!musicElement) {
     return;
   }
@@ -181,74 +185,71 @@ export function updateVolume(): void {
   musicElement.volume = sounds.enabled ? 0.4 : 0;
 }
 
-/**
- * Sound effect functions for game events.
- * These are currently placeholders for future SFX implementation.
- */
-export const playFire = () => {};
-export const playClubSmash = () => {};
-export const playEggCollect = () => {};
-export const playStageClear = () => {};
-export const playBlockSlide = () => {};
-export const playCalcine = () => {};
-export const playLavaFill = () => {};
-export const playBlockStop = () => {};
-export function playHurt(): void {
-  if (!sounds.enabled || typeof window === "undefined" || !window.AudioContext) {
-    return;
-  }
-
-  effectsContext ??= new AudioContext();
-  const context = effectsContext;
-  const oscillator = context.createOscillator();
-  const volume = context.createGain();
-  const start = () => {
-    const now = context.currentTime;
-    oscillator.type = "sawtooth";
-    oscillator.frequency.setValueAtTime(420, now);
-    oscillator.frequency.exponentialRampToValueAtTime(95, now + 0.32);
-    volume.gain.setValueAtTime(0.0001, now);
-    volume.gain.exponentialRampToValueAtTime(0.18, now + 0.025);
-    volume.gain.exponentialRampToValueAtTime(0.0001, now + 0.34);
-    oscillator.connect(volume);
-    volume.connect(context.destination);
-    oscillator.start(now);
-    oscillator.stop(now + 0.35);
-  };
-
-  if (context.state === "suspended") {
-    void context.resume().then(start, () => undefined);
-  } else {
-    start();
-  }
+/** A quick crackling whoosh when Taber shoots fire. */
+export function playFire(): void {
+  playEffect(sounds.enabled, [{ type: "noise", frequency: 3200, endFrequency: 350, duration: 0.22, volume: 0.22 }]);
 }
 
+/** A low wooden thud with a short swing. */
+export function playClubSmash(): void {
+  playEffect(sounds.enabled, [
+    { type: "noise", frequency: 1800, endFrequency: 250, duration: 0.09, volume: 0.12 },
+    { frequency: 170, endFrequency: 55, duration: 0.16, volume: 0.22, delay: 0.04 },
+  ]);
+}
+
+/** A quiet earthy footstep, once per completed tile. */
+export function playFootstep(): void {
+  playEffect(sounds.enabled, [{ type: "noise", frequency: 500, endFrequency: 140, duration: 0.065, volume: 0.07 }]);
+}
+
+/** A bright two-note reward for collecting an egg. */
+export function playEggCollect(): void {
+  playEffect(sounds.enabled, [
+    { frequency: 880, endFrequency: 880, duration: 0.12, volume: 0.12 },
+    { frequency: 1320, endFrequency: 1320, duration: 0.2, volume: 0.1, delay: 0.09 },
+  ]);
+}
+
+/** A short original ascending fanfare for clearing a level. */
+export function playStageClear(): void {
+  playEffect(sounds.enabled, [523, 659, 784, 1047].map((frequency, index) => ({
+    frequency, endFrequency: frequency, duration: 0.24, volume: 0.1, delay: index * 0.13,
+  })));
+}
+
+/** A gritty rumble when a rock starts sliding. */
+export function playBlockSlide(): void {
+  playEffect(sounds.enabled, [{ type: "noise", frequency: 700, endFrequency: 180, duration: 0.3, volume: 0.18 }]);
+}
+
+/** A brittle crack when a creature turns to stone. */
+export function playCalcine(): void {
+  playEffect(sounds.enabled, [{ type: "noise", frequency: 2400, endFrequency: 500, duration: 0.17, volume: 0.25 }]);
+}
+
+/** Steam and a bubbling plop when a rock forms a lava bridge. */
+export function playLavaFill(): void {
+  playEffect(sounds.enabled, [
+    { type: "noise", frequency: 3800, endFrequency: 400, duration: 0.5, volume: 0.2 },
+    { frequency: 180, endFrequency: 65, duration: 0.22, volume: 0.18 },
+  ]);
+}
+
+/** A heavy impact when a rolling rock stops or breaks. */
+export function playBlockStop(): void {
+  playEffect(sounds.enabled, [
+    { frequency: 120, endFrequency: 40, duration: 0.14, volume: 0.2 },
+    { type: "noise", frequency: 950, endFrequency: 160, duration: 0.12, volume: 0.15 },
+  ]);
+}
+
+/** A falling buzzy tone when Taber takes damage. */
+export function playHurt(): void {
+  playEffect(sounds.enabled, [{ type: "sawtooth", frequency: 420, endFrequency: 95, duration: 0.34, volume: 0.18 }]);
+}
+
+/** A soft tally tone for each time bonus increment. */
 export function playTimeBonusTick(): void {
-  if (!sounds.enabled || typeof window === "undefined" || !window.AudioContext) {
-    return;
-  }
-
-  effectsContext ??= new AudioContext();
-  const context = effectsContext;
-  const oscillator = context.createOscillator();
-  const volume = context.createGain();
-  const start = () => {
-    const now = context.currentTime;
-    oscillator.type = "sine";
-    oscillator.frequency.setValueAtTime(880, now);
-    oscillator.frequency.exponentialRampToValueAtTime(660, now + 0.06);
-    volume.gain.setValueAtTime(0.0001, now);
-    volume.gain.exponentialRampToValueAtTime(0.08, now + 0.008);
-    volume.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
-    oscillator.connect(volume);
-    volume.connect(context.destination);
-    oscillator.start(now);
-    oscillator.stop(now + 0.075);
-  };
-
-  if (context.state === "suspended") {
-    void context.resume().then(start, () => undefined);
-  } else {
-    start();
-  }
+  playEffect(sounds.enabled, [{ frequency: 880, endFrequency: 660, duration: 0.07, volume: 0.08 }]);
 }

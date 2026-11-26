@@ -16,7 +16,7 @@ import {
 } from "./types";
 import { LEVELS } from "./levels";
 import {
-  sounds,
+  playFootstep,
   playFire,
   playClubSmash,
   playEggCollect,
@@ -386,6 +386,7 @@ export function stepGame(state: GameState, dt: number, input: InputState): GameS
       const hitsWall = !isBehindInBounds || nextState.grid[behindY][behindX] === "wall";
 
       if (hitsWall) {
+        playBlockStop();
         nextState.blocks.splice(nextState.blocks.indexOf(blockAtTarget), 1);
         nextState.blockBreakEffects.push({
           x: blockAtTarget.x,
@@ -467,6 +468,7 @@ export function stepGame(state: GameState, dt: number, input: InputState): GameS
       p.y = p.tileY;
       p.moving = false;
       p.moveProgress = 0;
+      playFootstep();
       if (p.action === "walking") p.action = "idle";
 
       // Check egg pickup
