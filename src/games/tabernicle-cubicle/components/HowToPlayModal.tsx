@@ -142,6 +142,9 @@ export function HowToPlayModal({ isOpen, onClose, lang }: HowToPlayModalProps) {
             <div>
               • <b>{isEu ? "Mugikorra" : isEn ? "Mobile" : "Móvil"}:</b> D-Pad táctil
             </div>
+            <div>
+              • <b>{isEu ? "Pausatu" : isEn ? "Pause" : "Pausar"}:</b> P
+            </div>
           </div>
         </div>
 

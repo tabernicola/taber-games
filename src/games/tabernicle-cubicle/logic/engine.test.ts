@@ -133,6 +133,45 @@ describe("Tabernicle Cubicle Engine", () => {
     expect(state.creatures[0].tileY).toBe(4);
   });
 
+  it("moves creatures at a steady pace across the full 0.9-second step", () => {
+    const state = initLevel(1);
+    state.player.tileX = 8;
+    state.player.tileY = 5;
+    state.player.x = 8;
+    state.player.y = 5;
+    state.player.invincibleTimer = 10;
+    state.volcanoes = [];
+    state.blocks = [];
+    state.mounds = [];
+    state.creatures = [
+      {
+        id: "steady-creature",
+        x: 5,
+        y: 5,
+        tileX: 5,
+        tileY: 5,
+        dir: "right",
+        moveCooldown: 0,
+        alive: true,
+      },
+    ];
+
+    const firstStep = stepGame(state, 0.3, {
+      direction: null,
+      firePressed: false,
+      clubPressed: false,
+    });
+    expect(firstStep.creatures[0].tileX).toBe(6);
+    expect(firstStep.creatures[0].x).toBeCloseTo(5 + 1 / 3);
+
+    const secondStep = stepGame(firstStep, 0.3, {
+      direction: null,
+      firePressed: false,
+      clubPressed: false,
+    });
+    expect(secondStep.creatures[0].x).toBeCloseTo(5 + 2 / 3);
+  });
+
   it("avoids occupied enemy cells and turns to take another route", () => {
     const state = initLevel(1);
     state.player.tileX = 9;

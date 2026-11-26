@@ -77,11 +77,38 @@ export function renderCreatures(
   cellW: number,
   cellH: number,
   t: number,
+  spritesheet: HTMLImageElement | null,
 ) {
   for (const cr of state.creatures) {
     if (!cr.alive) continue;
     const cx = cr.x * cellW;
     const cy = cr.y * cellH;
+
+    if (spritesheet?.complete && spritesheet.naturalWidth > 0) {
+      const frameW = spritesheet.naturalWidth / 8;
+      const frameH = spritesheet.naturalHeight / 4;
+      const frameRow = cr.dir === "down" ? 0 : cr.dir === "up" ? 1 : cr.dir === "left" ? 2 : 3;
+      const distanceToTarget = Math.hypot(cr.tileX - cr.x, cr.tileY - cr.y);
+      const movementProgress = Math.max(0, Math.min(1, 1 - distanceToTarget));
+      const frameCol = distanceToTarget > 0.02 ? Math.min(7, Math.floor(movementProgress * 8)) : 0;
+      const drawW = cellW * 1.35;
+      const drawH = drawW * (frameH / frameW);
+      const drawX = cx + (cellW - drawW) / 2;
+      const drawY = cy + (cellH - drawH) / 2 - cellH * 0.12;
+
+      ctx.drawImage(
+        spritesheet,
+        frameCol * frameW,
+        frameRow * frameH,
+        frameW,
+        frameH,
+        drawX,
+        drawY,
+        drawW,
+        drawH,
+      );
+      continue;
+    }
 
     const crBounce = Math.sin(t * 8 + cr.x) * 3;
 

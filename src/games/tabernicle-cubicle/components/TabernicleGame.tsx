@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { ArrowLeft } from "lucide-react";
 import type { Direction, GameState } from "../logic/types";
 import {
   applyTimeBonusTick,
@@ -11,13 +13,15 @@ import {
 import { loadTaberImages, renderGame, type LoadedImages } from "../logic/renderer";
 import {
   initMusic,
+  pauseMusic,
+  resumeMusic,
   setMusicUrgency,
   startMusic,
   stopMusic,
   playTimeBonusTick,
   tryPlayMusicOnInteraction,
 } from "../logic/audio";
-import { GameHud, GameStatusBar } from "./GameHud";
+import { GameActions, GameStatusBar } from "./GameHud";
 import { TouchControls } from "./TouchControls";
 import { HowToPlayModal } from "./HowToPlayModal";
 import { VictoryModal } from "./VictoryModal";
@@ -78,6 +82,7 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
   const imagesRef = useRef<LoadedImages>({
     spritesheet: null,
     strikeSpritesheet: null,
+    enemySpritesheet: null,
     petrifiedCracks5: null,
     petrifiedCracks10: null,
     petrifiedCracks15: null,
@@ -98,12 +103,43 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
     }
   };
 
-  const beginLevelIntro = (darkenScreen = false) => {
+  const beginLevelIntro = useCallback((darkenScreen = false) => {
     levelIntroElapsedRef.current = 0;
     levelMusicStartedRef.current = false;
     damageDarknessRemainingRef.current = darkenScreen ? DAMAGE_DARKNESS_DURATION_SECONDS : 0;
     stopMusic();
-  };
+  }, []);
+
+  const handleResetLevel = useCallback(() => {
+    const cur = gameStateRef.current;
+    const fresh = initLevel(cur.levelIndex, 3, cur.score, activeLevelsRef.current);
+    gameStateRef.current = fresh;
+    setGameState(fresh);
+    beginLevelIntro();
+  }, [beginLevelIntro]);
+
+  const togglePause = useCallback(() => {
+    const currentState = gameStateRef.current;
+    if (currentState.status !== "playing" && currentState.status !== "paused") return;
+
+    inputRef.current = {
+      direction: null,
+      firePressed: false,
+      clubPressed: false,
+      directionChanged: false,
+    };
+    prevDirectionRef.current = null;
+    const nextStatus: GameState["status"] =
+      currentState.status === "playing" ? "paused" : "playing";
+    const nextState: GameState = { ...currentState, status: nextStatus };
+    gameStateRef.current = nextState;
+    setGameState(nextState);
+    if (nextStatus === "paused") {
+      pauseMusic();
+    } else {
+      resumeMusic();
+    }
+  }, []);
 
   // Preload Taber sprites once
   useEffect(() => {
@@ -171,7 +207,15 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (gameStateRef.current.status === "level_won") return;
+      const currentState = gameStateRef.current;
+      if (e.code === "KeyP" && !e.repeat) {
+        activeKeys.clear();
+        togglePause();
+        e.preventDefault();
+        return;
+      }
+
+      if (currentState.status === "level_won" || currentState.status === "paused") return;
 
       if (
         e.repeat &&
@@ -240,7 +284,7 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, []);
+  }, [handleResetLevel, togglePause]);
 
   // Game loop
   useEffect(() => {
@@ -260,7 +304,9 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
           let victoryFlightProgress = 0;
 
           // Step physics and state
-          if (introActive) {
+          if (current.status === "paused") {
+            // Keep simulation timers and level intro frozen while paused.
+          } else if (introActive) {
             levelIntroElapsedRef.current = Math.min(
               LEVEL_INTRO_DURATION_SECONDS,
               levelIntroElapsedRef.current + dt,
@@ -381,7 +427,12 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
             }
           }
 
-          damageDarknessRemainingRef.current = Math.max(0, damageDarknessRemainingRef.current - dt);
+          if (current.status !== "paused") {
+            damageDarknessRemainingRef.current = Math.max(
+              0,
+              damageDarknessRemainingRef.current - dt,
+            );
+          }
           const introProgress = Math.min(
             1,
             levelIntroElapsedRef.current / LEVEL_INTRO_DURATION_SECONDS,
@@ -398,7 +449,19 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
             canvas.width,
             canvas.height,
             now,
-            { playerIntroProgress: introProgress, screenDarkness, victoryFlightProgress },
+            {
+              playerIntroProgress: introProgress,
+              screenDarkness,
+              victoryFlightProgress,
+              paused: gameStateRef.current.status === "paused",
+              pauseTitle: lang === "en" ? "PAUSED" : lang === "eus" ? "PAUSATUTA" : "PAUSA",
+              pausePrompt:
+                lang === "en"
+                  ? "Press P or the button to resume"
+                  : lang === "eus"
+                    ? "Sakatu P edo botoia jarraitzeko"
+                    : "Pulsa P o el botón para continuar",
+            },
           );
         }
       }
@@ -408,17 +471,9 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
 
     animId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(animId);
-  }, []);
+  }, [beginLevelIntro, lang]);
 
   // Level controls
-  const handleResetLevel = () => {
-    const cur = gameStateRef.current;
-    const fresh = initLevel(cur.levelIndex, 3, cur.score, activeLevelsRef.current);
-    gameStateRef.current = fresh;
-    setGameState(fresh);
-    beginLevelIntro();
-  };
-
   const handleRestartGame = () => {
     const fresh = initLevel(0, 3, 0, activeLevelsRef.current);
     gameStateRef.current = fresh;
@@ -428,6 +483,7 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
 
   // Touch control callbacks
   const handleTouchDir = (dir: Direction | null) => {
+    if (gameStateRef.current.status !== "playing") return;
     if (gameStateRef.current.status === "playing" && levelMusicStartedRef.current) {
       tryPlayMusicOnInteraction();
     }
@@ -435,6 +491,7 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
   };
 
   const handleTouchFire = () => {
+    if (gameStateRef.current.status !== "playing") return;
     if (gameStateRef.current.status === "playing" && levelMusicStartedRef.current) {
       tryPlayMusicOnInteraction();
     }
@@ -442,6 +499,7 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
   };
 
   const handleTouchClub = () => {
+    if (gameStateRef.current.status !== "playing") return;
     if (gameStateRef.current.status === "playing" && levelMusicStartedRef.current) {
       tryPlayMusicOnInteraction();
     }
@@ -453,14 +511,29 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
 
   return (
     <div className="flex w-full flex-col items-center gap-2">
-      {/* Top HUD */}
-      <GameHud
-        state={gameState}
-        lang={lang}
-        levels={activeLevels}
-        onResetLevel={handleResetLevel}
-        onOpenHelp={() => setHelpOpen(true)}
-      />
+      <div className="mb-1 flex w-full items-center justify-between gap-2">
+        <Link
+          to="/$lang/tabernicle-cubicle"
+          params={{ lang }}
+          className="flex min-w-0 items-center gap-1.5 rounded-lg border border-stone-800 bg-stone-900/80 px-3 py-1.5 text-xs font-semibold text-stone-300 transition-colors hover:border-amber-600/60 hover:text-amber-400"
+        >
+          <ArrowLeft className="h-4 w-4 shrink-0" />
+          <span className="truncate">
+            {lang === "en"
+              ? "Back to Tabernicle"
+              : lang === "eus"
+                ? "Tabernicle-ra itzuli"
+                : "Volver"}
+          </span>
+        </Link>
+        <GameActions
+          state={gameState}
+          lang={lang}
+          onPauseToggle={togglePause}
+          onResetLevel={handleResetLevel}
+          onOpenHelp={() => setHelpOpen(true)}
+        />
+      </div>
 
       {/* Main 21:14 Canvas Container */}
       <div className="w-full overflow-hidden rounded-2xl border-4 border-amber-900/60 bg-stone-950 shadow-2xl shadow-amber-950/40">
@@ -490,7 +563,8 @@ export function TabernicleGame({ lang, initialLevel = 0 }: TabernicleGameProps) 
       {/* Desktop keyboard hint footer */}
       <div className="hidden text-center text-xs text-stone-400 sm:block">
         <b>Mover:</b> Flechas / WASD &nbsp;|&nbsp; <b>Fuego:</b> Espacio / J &nbsp;|&nbsp;{" "}
-        <b>Pivote (Garrote):</b> K / Shift &nbsp;|&nbsp; <b>Reiniciar:</b> R
+        <b>Pivote (Garrote):</b> K / Shift &nbsp;|&nbsp; <b>Pausa:</b> P &nbsp;|&nbsp;{" "}
+        <b>Reiniciar:</b> R
       </div>
 
       {/* Modals */}

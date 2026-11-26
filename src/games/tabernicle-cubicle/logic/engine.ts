@@ -753,9 +753,17 @@ export function stepGame(state: GameState, dt: number, input: InputState): GameS
       }
     }
 
-    // Smooth position interpolation
-    creature.x += (creature.tileX - creature.x) * Math.min(1, 10 * dt);
-    creature.y += (creature.tileY - creature.y) * Math.min(1, 10 * dt);
+    const remainingX = creature.tileX - creature.x;
+    const remainingY = creature.tileY - creature.y;
+    const remainingDistance = Math.hypot(remainingX, remainingY);
+    const movementDistance = dt / CREATURE_MOVE_INTERVAL_SECONDS;
+    if (remainingDistance <= movementDistance) {
+      creature.x = creature.tileX;
+      creature.y = creature.tileY;
+    } else if (remainingDistance > 0) {
+      creature.x += (remainingX / remainingDistance) * movementDistance;
+      creature.y += (remainingY / remainingDistance) * movementDistance;
+    }
 
     // Collision with Player
     if (p.invincibleTimer === 0 && p.action !== "hit") {
