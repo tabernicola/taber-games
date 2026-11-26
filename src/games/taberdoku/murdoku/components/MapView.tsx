@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import type { CaseContent, Character, Clue, Position, Room, RoomElement } from "../data/gameSchema";
 import { useI18n } from "@/platform/i18n";
 import { getRoomForCell, localize, posKey } from "../logic/game";
+import { splitHighlightedClueText } from "../logic/clueText";
 import { CharacterSpriteAnimation } from "@/platform/characters/CharacterSpriteAnimation";
 
 const LONG_PRESS_DURATION_MS = 500;
@@ -155,17 +156,14 @@ export function MapView({
     const text = resolveClueText(clue);
     if (!char) return text;
 
-    // Check if character name is in the text and highlight it
-    const nameParts = char.name.split(" ");
-    let highlightedText = text;
-    nameParts.forEach((namePart) => {
-      if (namePart.length > 2) {
-        const regex = new RegExp(`(${namePart})`, "gi");
-        highlightedText = highlightedText.replace(regex, "<strong>$1</strong>");
-      }
-    });
-
-    return <span dangerouslySetInnerHTML={{ __html: highlightedText }} />;
+    const segments = splitHighlightedClueText(text, char.name);
+    return (
+      <span>
+        {segments.map((segment, index) =>
+          segment.highlight ? <strong key={index}>{segment.text}</strong> : segment.text,
+        )}
+      </span>
+    );
   };
 
   const elementAt = (pos: Position): RoomElement | undefined => {
